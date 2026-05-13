@@ -1,5 +1,5 @@
+#AVISO. Para que este codigo funcione, necesitas tener Ollama con el modelo "qwen2.5-coder:3b" instalado. Aparte, necesitarás un mac por los applescript. Lo siento, ya haré un port para windows.
 from docx import Document
-import sys
 import time
 import subprocess
 #                                               Imports

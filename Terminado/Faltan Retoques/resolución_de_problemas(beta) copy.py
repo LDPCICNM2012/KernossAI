@@ -16,7 +16,7 @@ instrucciones = ( #Ponemos las intrucciones que le vamos a dar a la ia
 
 #Funcion de la IA para responder con memoria y en tiempo real
 def proceso_ia_responder(historial_mensajes): #Nombramos a la funcion y le pasamos la memoria de la conversación
-    print("\n[IA] Pensando...", end="\r")
+    print("\n[IA]Pensando...")
     
     # Activamos stream=True para que el texto salga poco a poco
     response = ollama.chat(
