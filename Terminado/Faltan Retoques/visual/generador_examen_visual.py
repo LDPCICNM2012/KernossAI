@@ -38,7 +38,7 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
         self.sidebar = ctk.CTkFrame(self, width=280, corner_radius=0)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
         
-        ctk.CTkLabel(self.sidebar, text="⚙️ Configuración", font=("Segoe UI", 20, "bold")).pack(pady=20)
+        ctk.CTkLabel(self.sidebar, text="Configuración", font=("Segoe UI", 20, "bold")).pack(pady=20)
 
         self.entry_nombre = ctk.CTkEntry(self.sidebar, placeholder_text="Tu nombre...")
         self.entry_nombre.pack(fill="x", padx=20, pady=10)
@@ -51,10 +51,10 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
         self.txt_tema = ctk.CTkTextbox(self.sidebar, height=150)
         self.txt_tema.pack(fill="x", padx=20, pady=10)
 
-        self.btn_generar = ctk.CTkButton(self.sidebar, text="🚀 Generar Examen", command=self.iniciar_generacion)
+        self.btn_generar = ctk.CTkButton(self.sidebar, text="Generar Examen", command=self.iniciar_generacion)
         self.btn_generar.pack(fill="x", padx=20, pady=10)
 
-        self.btn_exportar = ctk.CTkButton(self.sidebar, text="💾 Exportar Word", fg_color="transparent", border_width=2, command=self.exportar_word)
+        self.btn_exportar = ctk.CTkButton(self.sidebar, text="Exportar Word", fg_color="transparent", border_width=2, command=self.exportar_word)
         self.btn_exportar.pack(fill="x", padx=20, pady=10)
 
         # ───── ÁREA PRINCIPAL ─────
@@ -86,7 +86,7 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
             return
         
         self.output_text.delete("1.0", "end")
-        self.output_text.insert("end", f"🤖 Generando examen sobre: {tema}...\n\n")
+        self.output_text.insert("end", f"Generando examen sobre: {tema}...\n\n")
         self.btn_generar.configure(state="disabled")
         
         # Ejecutar en hilo separado para no bloquear la UI

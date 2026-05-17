@@ -39,7 +39,7 @@ class SolucionadorIA(ctk.CTk):
         self.entry_nombre = ctk.CTkEntry(self.sidebar, placeholder_text="¿Cuál es tu nombre?")
         self.entry_nombre.pack(fill="x", padx=20, pady=10)
 
-        self.btn_exportar = ctk.CTkButton(self.sidebar, text="💾 Exportar a Word", 
+        self.btn_exportar = ctk.CTkButton(self.sidebar, text="Exportar a Word", 
                                          fg_color="#2c3e50", hover_color="#34495e",
                                          command=self.exportar_a_word)
         self.btn_exportar.pack(fill="x", padx=20, pady=10)

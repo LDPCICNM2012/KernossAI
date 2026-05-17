@@ -58,9 +58,9 @@ class ApuntadorNotas(ctk.CTk):
         self.frame_btns = ctk.CTkFrame(self.frame_editor, fg_color="transparent")
         self.frame_btns.grid(row=2, column=0, pady=(15, 0), sticky="ew")
         
-        ctk.CTkButton(self.frame_btns, text="💾 Guardar", command=self.guardar_nota).pack(side="left", padx=5)
-        ctk.CTkButton(self.frame_btns, text="🗑️ Eliminar", fg_color="#dc3545", hover_color="#c82333", command=self.eliminar_nota).pack(side="left", padx=5)
-        ctk.CTkButton(self.frame_btns, text="📥 Exportar Word", command=self.exportar_nota_word).pack(side="right", padx=5)
+        ctk.CTkButton(self.frame_btns, text="Guardar", command=self.guardar_nota).pack(side="left", padx=5)
+        ctk.CTkButton(self.frame_btns, text="Eliminar", fg_color="#dc3545", hover_color="#c82333", command=self.eliminar_nota).pack(side="left", padx=5)
+        ctk.CTkButton(self.frame_btns, text="Exportar Word", command=self.exportar_nota_word).pack(side="right", padx=5)
 
         self.actualizar_listbox()
 

@@ -39,7 +39,7 @@ class LanderResumidor(ctk.CTk):
         
         self.label_titulo = ctk.CTkLabel(
             self.header_frame, 
-            text="🎓 Lander_Resumidor 2.0", 
+            text="🎓Resumidor De Textos", 
             font=("Segoe UI", 28, "bold")
         )
         self.label_titulo.pack(side="left")
@@ -79,7 +79,7 @@ class LanderResumidor(ctk.CTk):
 
         self.btn_procesar = ctk.CTkButton(
             self.footer_frame, 
-            text="🔍 Generar Resumen Riguroso", 
+            text="Generar Resumen Riguroso", 
             height=45, 
             font=("Segoe UI", 14, "bold"),
             command=self.iniciar_proceso
@@ -88,7 +88,7 @@ class LanderResumidor(ctk.CTk):
 
         self.btn_word = ctk.CTkButton(
             self.footer_frame, 
-            text="📝 Guardar en Word", 
+            text="Guardar en Word", 
             height=45,
             width=200, # El tamaño se define aquí, no en el pack
             fg_color="#27ae60",

@@ -2,36 +2,21 @@ import sys
 import os
 
 # ───── ENRUTADOR MÁGICO PARA PYINSTALLER (MAC) ─────
+# Si la app está compilada y recibe un argumento oculto, actúa como intérprete de ese submódulo
 if getattr(sys, 'frozen', False) and len(sys.argv) > 1:
     script_a_abrir = sys.argv[1]
     ruta_interna = os.path.join(sys._MEIPASS, script_a_abrir)
-
+    
     if os.path.exists(ruta_interna):
-        try:
-            with open(ruta_interna, 'r', encoding='utf-8') as f:
-                codigo = f.read()
-            exec(codigo, {'__name__': '__main__', '__file__': ruta_interna})
-        except Exception as e:
-            import tkinter as tk
-            from tkinter import messagebox
-            root = tk.Tk()
-            root.withdraw()
-            messagebox.showerror("Error al abrir módulo", f"{script_a_abrir}\n\n{e}")
-            root.destroy()
-    else:
-        import tkinter as tk
-        from tkinter import messagebox
-        root = tk.Tk()
-        root.withdraw()
-        messagebox.showerror("Módulo no encontrado", f"No se encontró:\n{ruta_interna}")
-        root.destroy()
-
-    sys.exit(0)
+        with open(ruta_interna, 'r', encoding='utf-8') as f:
+            codigo = f.read()
+        # Ejecuta el script haciéndole creer que es el archivo principal
+        exec(codigo, {'__name__': '__main__', '__file__': ruta_interna})
+    sys.exit(0)  # Cierra el subproceso al terminar, sin cargar el Dashboard
 # ───────────────────────────────────────────────────
 
 import customtkinter as ctk
 from tkinter import messagebox
-from PIL import Image
 import subprocess
 
 # Configuración estética global de CustomTkinter
@@ -42,17 +27,22 @@ class DashboardEstudios(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        # Configuración básica de la ventana principal
         self.title("Immune Study Suite 2026 - Dashboard")
         self.geometry("1200x680")
         self.resizable(False, False)
 
+        # Matriz dinámica para registrar y matar los procesos hijos
         self.procesos_activos = []
+
+        # Capturar el evento nativo de hacer clic en la "X" roja superior de macOS
         self.protocol("WM_DELETE_WINDOW", self.al_cerrar_ventana)
 
+        # Configuración del contenedor principal de la interfaz
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        # ───── CABECERA ─────
+        # ───── CABECERA (HEADER) ─────
         self.header = ctk.CTkFrame(self, height=100, fg_color="#1a1a1a", corner_radius=0)
         self.header.grid(row=0, column=0, sticky="ew")
 
@@ -72,13 +62,14 @@ class DashboardEstudios(ctk.CTk):
         )
         self.subtitle_label.pack(pady=(0, 15))
 
-        # ───── GRID DE TARJETAS ─────
+        # ───── CONTENEDOR DE TARJETAS (GRID DE 3 COLUMNAS X 2 FILAS = 6 APPS) ─────
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.grid(row=1, column=0, padx=30, pady=15, sticky="nsew")
 
         self.grid_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="equal")
         self.grid_frame.grid_rowconfigure((0, 1), weight=1, uniform="equal")
 
+        # Configuración de las 6 aplicaciones orientadas a scripts independientes
         self.apps = [
             {
                 "titulo": "Calculadora de Medias",
@@ -109,6 +100,12 @@ class DashboardEstudios(ctk.CTk):
                 "desc": "Analiza problemas complejos, identifica causas raíz y genera soluciones técnicas paso a paso.",
                 "color": "#00acc1",
                 "script": "Ayudador_de_problemas_visual.py"
+            },
+            {
+                "titulo": "Agenda y Calendario",
+                "desc": "Calendario sincronizado con tu dispositivo para organizar tus entregas y exámenes de forma persistente.",
+                "color": "#fb8c00",
+                "script": "Calendario_FINAL.py"  # <--- Nombre modificado de tu archivo
             }
         ]
 
@@ -179,12 +176,9 @@ class DashboardEstudios(ctk.CTk):
     def lanzar_herramienta(self, nombre_archivo):
         try:
             if getattr(sys, 'frozen', False):
-                # En una app compilada de PyInstaller en macOS,
-                # usamos el propio ejecutable pasando el script como argumento.
+                # Estrategia nativa de Bundle macOS: Buscar el binario ejecutable real dentro del .app
                 exe_path = sys.executable
-
-                # En macOS .app, a veces sys.executable apunta al Python del sistema.
-                # Nos aseguramos de usar el binario real del bundle.
+                
                 bundle_exe = os.path.join(
                     os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
                     "MacOS",
@@ -194,13 +188,13 @@ class DashboardEstudios(ctk.CTk):
                     exe_path = bundle_exe
 
                 env = os.environ.copy()
-                # Pasamos _MEIPASS al subproceso para que el enrutador lo encuentre
                 if hasattr(sys, '_MEIPASS'):
                     env['_MEIPASS2'] = sys._MEIPASS
 
+                # Ejecutamos la propia app pasándole el script como argumento
                 proceso = subprocess.Popen([exe_path, nombre_archivo], env=env)
             else:
-                # Ejecución normal desde VS Code / terminal
+                # Entorno local (VS Code / Terminal suelta)
                 ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), nombre_archivo)
                 proceso = subprocess.Popen([sys.executable, ruta])
 
