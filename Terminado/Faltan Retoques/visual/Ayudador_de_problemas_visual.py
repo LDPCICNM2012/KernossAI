@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
-import ollama
+from openai import OpenAI  # <--- Cambiado de 'import ollama'
 from docx import Document
 import threading
 import os
@@ -13,8 +13,15 @@ class SolucionadorIA(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("AI Problem Solver - Alto Rendimiento")
+        self.title("AI Problem Solver - Alto Rendimiento Cloud")
         self.geometry("1000x700")
+
+        # ───── CONFIGURACIÓN DEL CLIENTE GROQ ─────
+        # RECUERDA: Tus amigos solo necesitan internet, la clave ya va integrada dentro de la app (.app)
+        self.cliente_groq = OpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key="TU API KEY AQUI"  # <--- Pega aquí tu gsk_... de console.groq.com
+        )
 
         # Variables de lógica
         self.historial_conversacion = []
@@ -49,8 +56,8 @@ class SolucionadorIA(ctk.CTk):
                                         command=self.limpiar_chat)
         self.btn_limpiar.pack(fill="x", padx=20, pady=10)
 
-        ctk.CTkLabel(self.sidebar, text="Estatus de Ollama:", font=("Segoe UI", 12)).pack(side="bottom", pady=5)
-        self.status_label = ctk.CTkLabel(self.sidebar, text="🟢 Listo", text_color="green")
+        ctk.CTkLabel(self.sidebar, text="Motor de IA:", font=("Segoe UI", 12)).pack(side="bottom", pady=5)
+        self.status_label = ctk.CTkLabel(self.sidebar, text="🟢 Groq Cloud Listo", text_color="green")
         self.status_label.pack(side="bottom", pady=(0, 20))
 
         # ───── ÁREA DE CHAT ─────
@@ -94,12 +101,12 @@ class SolucionadorIA(ctk.CTk):
 
         self.agregar_texto(nombre, pregunta)
         self.entry_pregunta.delete(0, "end")
-        self.status_label.configure(text="🟡 Analizando...", text_color="orange")
+        self.status_label.configure(text="🟡 Pensando (Groq)...", text_color="orange")
         
-        # Guardar en memoria
+        # Guardar en memoria (formato compatible con OpenAI/Groq)
         self.historial_conversacion.append({'role': 'user', 'content': pregunta})
         
-        # Lanzar hilo para no congelar la UI
+        # Lanzar hilo para no congelar la UI de CustomTkinter
         threading.Thread(target=self.proceso_ia, daemon=True).start()
 
     def proceso_ia(self):
@@ -107,25 +114,29 @@ class SolucionadorIA(ctk.CTk):
             self.txt_chat.configure(state="normal")
             self.txt_chat.insert("end", "\n IA:\n")
             
-            response = ollama.chat(
-                model="llama3.2",
+            # Llamada exacta a la API Cloud de Groq utilizando streaming
+            response = self.cliente_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
                 messages=[{'role': 'system', 'content': self.instrucciones}] + self.historial_conversacion,
                 stream=True,
-                options={"temperature": 0.2}
+                temperature=0.2
             )
 
             respuesta_completa = ""
             for chunk in response:
-                contenido = chunk['message']['content']
-                respuesta_completa += contenido
-                # Actualizar texto en tiempo real
-                self.after(0, self.stream_update, contenido)
+                # Comprobar que el fragmento de texto tiene contenido
+                if chunk.choices[0].delta.content:
+                    contenido = chunk.choices[0].delta.content
+                    respuesta_completa += contenido
+                    # Actualizar texto en la UI de CustomTkinter
+                    self.after(0, self.stream_update, contenido)
             
             self.historial_conversacion.append({'role': 'assistant', 'content': respuesta_completa})
-            self.after(0, lambda: self.status_label.configure(text="🟢 Listo", text_color="green"))
+            self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
             
         except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Error", f"Ollama no responde: {str(e)}"))
+            self.after(0, lambda: messagebox.showerror("Error", f"Fallo de conexión Cloud: {str(e)}"))
+            self.after(0, lambda: self.status_label.configure(text="🔴 Error de red", text_color="red"))
         finally:
             self.after(0, lambda: self.txt_chat.configure(state="disabled"))
 

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
-import ollama
+from openai import OpenAI  # <--- Cambiado de 'import ollama' para compatibilidad con Groq
 from docx import Document
 import threading
 import os
@@ -13,8 +13,15 @@ class AppExamenIA(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("AI Exam Generator & Evaluator (Ollama Edition)")
+        self.title("AI Exam Generator & Evaluator (Groq Cloud Edition)")
         self.geometry("1100x800")
+
+        # ───── CONFIGURACIÓN DEL CLIENTE CLOUD GRATUITO ─────
+        # La clave va integrada dentro del paquete ejecutable .app final
+        self.cliente_groq = OpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key="TU API KEY AQUI"  # <--- Pega aquí tu gsk_... de console.groq.com
+        )
 
         # Variables de estado
         self.examen_en_memoria = ""
@@ -43,9 +50,10 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
         self.entry_nombre = ctk.CTkEntry(self.sidebar, placeholder_text="Tu nombre...")
         self.entry_nombre.pack(fill="x", padx=20, pady=10)
 
-        self.entry_modelo = ctk.CTkEntry(self.sidebar, placeholder_text="Modelo (ej: llama3.2)")
-        self.entry_modelo.insert(0, "llama3.2")
-        self.entry_modelo.pack(fill="x", padx=20, pady=10)
+        # Estatus del Motor Cloud
+        ctk.CTkLabel(self.sidebar, text="Servicio de IA:", font=("Segoe UI", 12)).pack(pady=(10, 0))
+        self.status_label = ctk.CTkLabel(self.sidebar, text="🟢 Groq Cloud Listo", text_color="green", font=("Segoe UI", 12, "bold"))
+        self.status_label.pack(fill="x", padx=20, pady=5)
 
         ctk.CTkLabel(self.sidebar, text="Tema del examen:", font=("Segoe UI", 12)).pack(pady=(20,0))
         self.txt_tema = ctk.CTkTextbox(self.sidebar, height=150)
@@ -88,35 +96,44 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
         self.output_text.delete("1.0", "end")
         self.output_text.insert("end", f"Generando examen sobre: {tema}...\n\n")
         self.btn_generar.configure(state="disabled")
+        self.status_label.configure(text="🟡 Elaborando Examen...", text_color="orange")
         
-        # Ejecutar en hilo separado para no bloquear la UI
-        thread = threading.Thread(target=self.proceso_ollama, args=(tema,))
+        # Ejecutar en hilo separado para no bloquear la UI de CustomTkinter
+        thread = threading.Thread(target=self.proceso_groq, args=(tema,))
         thread.start()
 
-    def proceso_ollama(self, tema):
+    def proceso_groq(self, tema):
         try:
-            modelo = self.entry_modelo.get()
             self.historial_conversacion = [
                 {'role': 'system', 'content': self.instrucciones_base},
                 {'role': 'user', 'content': f"Hazme un examen sobre: {tema}"}
             ]
 
-            response = ollama.chat(model=modelo, messages=self.historial_conversacion, stream=True)
+            # Llamada exacta a la API con el modelo inteligente de 70B
+            response = self.cliente_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=self.historial_conversacion,
+                stream=True,
+                temperature=0.3
+            )
             
             full_response = ""
             for chunk in response:
-                content = chunk['message']['content']
-                full_response += content
-                # Actualizar la UI desde el hilo
-                self.after(0, self.update_output, content)
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+                    # Actualizar la interfaz gráfica de forma segura desde el hilo secundario
+                    self.after(0, self.update_output, content)
             
             self.examen_en_memoria = full_response
             self.historial_conversacion.append({'role': 'assistant', 'content': full_response})
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
+            self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
             
         except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Error de Ollama", str(e)))
+            self.after(0, lambda: messagebox.showerror("Error de Conexión Cloud", str(e)))
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
+            self.after(0, lambda: self.status_label.configure(text="🔴 Error de red", text_color="red"))
 
     def enviar_respuesta(self):
         msg = self.entry_respuesta.get().strip()
@@ -124,6 +141,7 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
 
         self.output_text.insert("end", f"\n\n👤 TÚ: {msg}\n\n🤖 IA: ")
         self.entry_respuesta.delete(0, "end")
+        self.status_label.configure(text="🟡 Corrigiendo...", text_color="orange")
         
         self.historial_conversacion.append({'role': 'user', 'content': msg})
         
@@ -132,18 +150,25 @@ REGLA CRÍTICA: No des las respuestas hasta que el usuario responda. No pongas l
 
     def proceso_respuesta_ia(self):
         try:
-            modelo = self.entry_modelo.get()
-            response = ollama.chat(model=modelo, messages=self.historial_conversacion, stream=True)
+            response = self.cliente_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=self.historial_conversacion,
+                stream=True,
+                temperature=0.2
+            )
             
             full_response = ""
             for chunk in response:
-                content = chunk['message']['content']
-                full_response += content
-                self.after(0, self.update_output, content)
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+                    self.after(0, self.update_output, content)
             
             self.historial_conversacion.append({'role': 'assistant', 'content': full_response})
+            self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error", str(e)))
+            self.after(0, lambda: self.status_label.configure(text="🔴 Error de red", text_color="red"))
 
     def update_output(self, texto):
         self.output_text.insert("end", texto)

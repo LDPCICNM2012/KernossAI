@@ -2,9 +2,13 @@
 
 from PyInstaller.utils.hooks import collect_all
 
-# Recoger dinámicamente recursos de librerías complejas
+# Recoger dinámicamente recursos de librerías complejas de interfaz y gráficos
 mpl_datas, mpl_binaries, mpl_hiddenimports = collect_all('matplotlib')
 ctk_datas, ctk_binaries, ctk_hiddenimports = collect_all('customtkinter')
+
+# 👇 RECOLECCIÓN CRUCIAL: Forzamos la integración completa de OpenAI y HTTPX 👇
+openai_datas, openai_binaries, openai_hiddenimports = collect_all('openai')
+httpx_datas, httpx_binaries, httpx_hiddenimports = collect_all('httpx')
 
 block_cipher = None
 
@@ -12,21 +16,20 @@ block_cipher = None
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[] + mpl_binaries + ctk_binaries,
+    binaries=[] + mpl_binaries + ctk_binaries + openai_binaries + httpx_binaries,
     datas=[
         ('Calculador_Notas_Tkinter_FINAL.py', '.'),
         ('Apuntador_Notas_Visual.py', '.'),
         ('resumidor_de_textos_visual.py', '.'),
         ('generador_examen_visual.py', '.'),
         ('Ayudador_de_problemas_visual.py', '.'),
-        ('Calendario_FINAL.py', '.'),  # <--- Módulo de la Agenda añadido correctamente
+        ('Calendario_FINAL.py', '.'),
         ('logo.icns', '.'),
-    ] + mpl_datas + ctk_datas,
+    ] + mpl_datas + ctk_datas + openai_datas + httpx_datas,
     hiddenimports=[
         'PIL',
         'PIL._imagingtk',
         'PIL.ImageTk',
-        # Forzar backends de gráficos explícitamente en macOS
         'matplotlib.backends.backend_tkagg',
         'matplotlib.backends.backend_agg',
         'matplotlib.backends._backend_tk',
@@ -34,14 +37,15 @@ a = Analysis(
         'docx',
         'docx.shared',
         'docx.enum.text',
-        'ollama',
         'numpy',
         'threading',
         'json',
-    ] + mpl_hiddenimports + ctk_hiddenimports,
+        'anyio',       # Requerido por el cliente HTTP asíncrono
+        'httpcore',    # Motor de red subyacente de la IA
+        'pydantic',    # Validador de datos que usa internamente OpenAI
+    ] + mpl_hiddenimports + ctk_hiddenimports + openai_hiddenimports + httpx_hiddenimports,
     hookspath=[],
     hooksconfig={
-        # Forzar a PyInstaller a incluir TkAgg en lugar de solo MacOSX nativo para evitar crasheos de GUI
         'matplotlib': {
             'backends': 'TkAgg',
         },
@@ -61,14 +65,17 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,       
+    a.zipfiles,       
+    a.datas,          
     [],
-    exclude_binaries=True,
+    exclude_binaries=False,  
     name='Immune Study Suite',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # Falso oculta la ventana negra de comandos (Terminal) en producción
+    console=False, 
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
@@ -77,20 +84,9 @@ exe = EXE(
     icon=['logo.icns'],
 )
 
-# ───── RECOPILACIÓN DEL CONTENIDO INTERNO ─────
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='Immune Study Suite',
-)
-
 # ───── EMPAQUETADO FINAL EN BUNDLE MAC (.APP) ─────
 app = BUNDLE(
-    coll,
+    exe,              
     name='Immune Study Suite.app',
     icon='logo.icns',
     bundle_identifier='com.immune.studysuite',

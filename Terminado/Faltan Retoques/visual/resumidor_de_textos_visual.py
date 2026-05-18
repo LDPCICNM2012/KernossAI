@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
-import ollama
+from openai import OpenAI  # <--- Cambiado de 'import ollama' para compatibilidad con Groq
 from docx import Document
 import threading
 import os
@@ -13,11 +13,17 @@ class LanderResumidor(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Lander_Resumidor 2.0 Pro Plus Ultra Deluxe")
+        self.title("Lander_Resumidor 2.0 Pro Plus Ultra Deluxe (Groq Edition)")
         self.geometry("1100x850")
 
-        # Configuración de la IA
-        self.modelo = "llama3.2"
+        # ───── CONFIGURACIÓN DE LA IA CLOUD GRATUITA ─────
+        # Tus amigos solo necesitan conexión a internet, el motor va en este ejecutable final
+        self.cliente_groq = OpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key="TU API KEY AQUI"  # <--- Pega aquí tu gsk_... de console.groq.com
+        )
+
+        self.modelo = "llama-3.3-70b-versatile"  # <--- Modelo de alto rendimiento en la nube
         self.instrucciones = (
             "Eres un experto en el tema proporcionado. Tu conocimiento se basa estrictamente en hechos reales. "
             "REGLA DE SEGURIDAD ABSOLUTA: Solo puedes responder a temas que pertenezcan al ámbito educativo, "
@@ -110,27 +116,31 @@ class LanderResumidor(ctk.CTk):
         self.progress_bar.configure(mode="indeterminate")
         self.progress_bar.start()
 
-        # Hilo para Ollama
+        # Hilo para que la conexión remota no congele la UI de CustomTkinter
         threading.Thread(target=self.ejecutar_ia, args=(texto,), daemon=True).start()
 
     def ejecutar_ia(self, texto_usuario):
         try:
-            response = ollama.chat(
+            # Llamada con soporte de streaming nativo usando la API de Groq
+            response = self.cliente_groq.chat.completions.create(
                 model=self.modelo,
                 messages=[
                     {'role': 'system', 'content': self.instrucciones},
                     {'role': 'user', 'content': f"Desarrolla o resume de manera extensa y rigurosa: {texto_usuario}"}
                 ],
-                options={"temperature": 0.2, "num_predict": 2000},
+                temperature=0.2,
+                max_tokens=2000,
                 stream=True
             )
 
             for chunk in response:
-                contenido = chunk['message']['content']
-                self.after(0, self.escribir_en_output, contenido)
+                if chunk.choices[0].delta.content:
+                    contenido = chunk.choices[0].delta.content
+                    # Pintar caracteres de forma segura desde el hilo secundario
+                    self.after(0, self.escribir_en_output, contenido)
 
         except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Error", f"Fallo al conectar con Ollama: {e}"))
+            self.after(0, lambda: messagebox.showerror("Error Cloud", f"Fallo al conectar con el servidor de IA: {e}"))
         finally:
             self.after(0, self.finalizar_proceso)
 
