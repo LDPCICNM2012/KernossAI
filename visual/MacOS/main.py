@@ -1,220 +1,199 @@
 import sys
 import os
 
-# ───── ENRUTADOR MÁGICO PARA PYINSTALLER (MAC) ─────
-# Si la app está compilada y recibe un argumento oculto, actúa como intérprete de ese submódulo
+# ─────────────────────────────────────────────────────────────────────────────
+#  ENRUTADOR PYINSTALLER — macOS
+#  Cuando el .app lanza un subprocess pasándole el nombre del script como
+#  argumento, este bloque intercepta la llamada y ejecuta ese módulo
+#  directamente desde dentro del bundle, sin necesidad de carpetas externas.
+# ─────────────────────────────────────────────────────────────────────────────
 if getattr(sys, 'frozen', False) and len(sys.argv) > 1:
     script_a_abrir = sys.argv[1]
-    ruta_interna = os.path.join(sys._MEIPASS, script_a_abrir)
-    
+    ruta_interna = os.path.join(
+        getattr(sys, '_MEIPASS', os.path.dirname(sys.executable)),
+        script_a_abrir
+    )
     if os.path.exists(ruta_interna):
         with open(ruta_interna, 'r', encoding='utf-8') as f:
             codigo = f.read()
-        # Ejecuta el script haciéndole creer que es el archivo principal
         exec(codigo, {'__name__': '__main__', '__file__': ruta_interna})
-    sys.exit(0)  # Cierra el subproceso al terminar, sin cargar el Dashboard
-# ───────────────────────────────────────────────────
+    sys.exit(0)
+# ─────────────────────────────────────────────────────────────────────────────
 
+import subprocess
 import customtkinter as ctk
 from tkinter import messagebox
-import subprocess
 
-# Configuración estética global de CustomTkinter
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+
 
 class DashboardEstudios(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        # Configuración básica de la ventana principal
-        self.title("Immune Study Suite 2026 - Dashboard")
+        self.title("Immune Study Suite 2026")
         self.geometry("1200x680")
         self.resizable(False, False)
 
-        # Matriz dinámica para registrar y matar los procesos hijos
         self.procesos_activos = []
-
-        # Capturar el evento nativo de hacer clic en la "X" roja superior de macOS
         self.protocol("WM_DELETE_WINDOW", self.al_cerrar_ventana)
 
-        # Configuración del contenedor principal de la interfaz
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self._construir_ui()
 
-        # ───── CABECERA (HEADER) ─────
-        self.header = ctk.CTkFrame(self, height=100, fg_color="#1a1a1a", corner_radius=0)
-        self.header.grid(row=0, column=0, sticky="ew")
+    # ──────────────────────────────────────────────────────────────────────────
+    #  UI
+    # ──────────────────────────────────────────────────────────────────────────
+    def _construir_ui(self):
+        # ── Sidebar izquierdo ──
+        self.sidebar = ctk.CTkFrame(self, width=280, corner_radius=0)
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
 
-        self.title_label = ctk.CTkLabel(
-            self.header,
-            text="IMMUNE TECHNOLOGY INSTITUTE",
-            font=("Segoe UI", 24, "bold"),
-            text_color="#64b5f6"
+        # Logo / nombre
+        ctk.CTkLabel(
+            self.sidebar,
+            text="IMMUNE\nStudy Suite",
+            font=("SF Pro Display", 24, "bold"),
+            text_color="#1f6aa5",
+            justify="center"
+        ).pack(pady=(40, 6))
+
+        # Indicador de estado de conexión cloud
+        self.lbl_status = ctk.CTkLabel(
+            self.sidebar,
+            text="🟢 Groq Cloud conectado",
+            font=("SF Pro Text", 11, "italic"),
+            text_color="#2ecc71"
         )
-        self.title_label.pack(pady=(20, 5))
+        self.lbl_status.pack(pady=(0, 28))
 
-        self.subtitle_label = ctk.CTkLabel(
-            self.header,
-            text="Suite de Herramientas de Alto Rendimiento • Beta Testing Edition",
-            font=("Segoe UI", 12),
-            text_color="gray"
-        )
-        self.subtitle_label.pack(pady=(0, 15))
+        # Separador visual
+        ctk.CTkFrame(self.sidebar, height=1, fg_color="#2d2d2d").pack(fill="x", padx=20, pady=(0, 20))
 
-        # ───── CONTENEDOR DE TARJETAS (GRID DE 3 COLUMNAS X 2 FILAS = 6 APPS) ─────
-        self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.grid_frame.grid(row=1, column=0, padx=30, pady=15, sticky="nsew")
-
-        self.grid_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="equal")
-        self.grid_frame.grid_rowconfigure((0, 1), weight=1, uniform="equal")
-
-        # Configuración de las 6 aplicaciones orientadas a scripts independientes
-        self.apps = [
-            {
-                "titulo": "Calculadora de Medias",
-                "desc": "Calcula promedios simples y ponderados divididos por bloques internos al 100%.",
-                "color": "#1e88e5",
-                "script": "Calculador_Notas_Tkinter_FINAL.py"
-            },
-            {
-                "titulo": "Apuntador de Notas",
-                "desc": "Editor de texto nativo para guardar apuntes de clases y exportarlos a Word.",
-                "color": "#43a047",
-                "script": "Apuntador_Notas_Visual.py"
-            },
-            {
-                "titulo": "Resumidor Académico IA",
-                "desc": "Genera extensos resúmenes de tus temas utilizando modelos locales de Ollama.",
-                "color": "#e53935",
-                "script": "resumidor_de_textos_visual.py"
-            },
-            {
-                "titulo": "Generador de Exámenes IA",
-                "desc": "Genera evaluaciones personalizadas de opción múltiple y desarrollo mediante IA.",
-                "color": "#8e24aa",
-                "script": "generador_examen_visual.py"
-            },
-            {
-                "titulo": "Ayudador de Problemas IA",
-                "desc": "Analiza problemas complejos, identifica causas raíz y genera soluciones técnicas paso a paso.",
-                "color": "#00acc1",
-                "script": "Ayudador_de_problemas_visual.py"
-            },
-            {
-                "titulo": "Agenda y Calendario",
-                "desc": "Calendario sincronizado con tu dispositivo para organizar tus entregas y exámenes de forma persistente.",
-                "color": "#fb8c00",
-                "script": "Calendario_FINAL.py"  # <--- Nombre modificado de tu archivo
-            }
+        # Botones de módulo
+        modulos = [
+            ("  📊  Calculadora de Medias",   "Calculador_Notas_Tkinter_FINAL.py"),
+            ("  📝  Apuntador de Notas",       "Apuntador_Notas_Visual.py"),
+            ("  🔍  Resumidor Académico IA",   "resumidor_de_textos_visual.py"),
+            ("  🎯  Generador de Exámenes",    "generador_examen_visual.py"),
+            ("  🤖  Ayudante de Problemas",    "Ayudador_de_problemas_visual.py"),
+            ("  📅  Agenda y Calendario",      "Calendario_FINAL.py"),
         ]
+        for texto, script in modulos:
+            self._crear_boton(texto, script)
 
-        for index, app in enumerate(self.apps):
-            row = index // 3
-            col = index % 3
-            self.crear_tarjeta(self.grid_frame, app, row, col)
+        # Separador y botón salir al fondo
+        ctk.CTkFrame(self.sidebar, height=1, fg_color="#2d2d2d").pack(fill="x", padx=20, pady=(20, 16))
 
-        # ───── BOTÓN SALIR ─────
-        self.btn_salir_suite = ctk.CTkButton(
-            self,
-            text="Cerrar Suite Completa",
-            font=("Segoe UI", 13, "bold"),
+        ctk.CTkButton(
+            self.sidebar,
+            text="Cerrar suite",
+            font=("SF Pro Text", 12),
             fg_color="#c62828",
             hover_color="#9e1c1c",
-            text_color="white",
-            height=40,
-            corner_radius=10,
-            command=self.al_cerrar_ventana
-        )
-        self.btn_salir_suite.grid(row=2, column=0, padx=45, pady=(10, 5), sticky="ew")
-
-        self.footer = ctk.CTkLabel(
-            self,
-            text="© 2026 Lander S.L & Immune Technology Institute • Todos los derechos reservados",
-            font=("Segoe UI", 10),
-            text_color="gray"
-        )
-        self.footer.grid(row=3, column=0, pady=(5, 10))
-
-    def darken_color(self, hex_color):
-        hex_color = hex_color.lstrip('#')
-        rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        dark_rgb = tuple(max(0, c - 30) for c in rgb)
-        return '#{:02x}{:02x}{:02x}'.format(*dark_rgb)
-
-    def crear_tarjeta(self, parent, app_data, row, col):
-        hover_c = self.darken_color(app_data["color"])
-
-        card = ctk.CTkFrame(
-            parent,
-            corner_radius=15,
-            border_width=1,
-            border_color=["#e0e0e0", "#2d2d2d"],
-            fg_color=["#ffffff", "#242424"]
-        )
-        card.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
-
-        lbl_title = ctk.CTkLabel(card, text=app_data["titulo"], font=("Segoe UI", 18, "bold"), text_color=app_data["color"])
-        lbl_title.pack(pady=(20, 5), padx=20, anchor="w")
-
-        lbl_desc = ctk.CTkLabel(card, text=app_data["desc"], font=("Segoe UI", 12), text_color=["#666666", "#aaaaaa"], wraplength=320, justify="left")
-        lbl_desc.pack(pady=(0, 20), padx=20, anchor="w", fill="x", expand=True)
-
-        btn_abrir = ctk.CTkButton(
-            card,
-            text="Iniciar Módulo",
-            font=("Segoe UI", 12, "bold"),
-            fg_color=app_data["color"],
-            hover_color=hover_c,
-            text_color="white",
-            height=35,
+            height=38,
             corner_radius=8,
-            command=lambda s=app_data["script"]: self.lanzar_herramienta(s)
-        )
-        btn_abrir.pack(pady=(0, 20), padx=20, fill="x")
+            command=self.al_cerrar_ventana
+        ).pack(fill="x", padx=20, pady=(0, 20))
 
-    def lanzar_herramienta(self, nombre_archivo):
+        # ── Panel derecho: bienvenida ──
+        self.panel = ctk.CTkFrame(self, corner_radius=0, fg_color="#161616")
+        self.panel.pack(side="right", fill="both", expand=True)
+
+        # Contenedor centrado verticalmente
+        centro = ctk.CTkFrame(self.panel, fg_color="transparent")
+        centro.place(relx=0.5, rely=0.45, anchor="center")
+
+        ctk.CTkLabel(
+            centro,
+            text="Bienvenido a tu Suite de Estudios",
+            font=("SF Pro Display", 26, "bold"),
+            text_color="#f0f0f0"
+        ).pack(pady=(0, 10))
+
+        ctk.CTkLabel(
+            centro,
+            text="Selecciona una herramienta del menú lateral para empezar.",
+            font=("SF Pro Text", 13),
+            text_color="#666666"
+        ).pack()
+
+        ctk.CTkLabel(
+            centro,
+            text="Los módulos de IA se ejecutan en la nube — no requieren GPU local.",
+            font=("SF Pro Text", 12),
+            text_color="#444444"
+        ).pack(pady=(4, 0))
+
+        # Footer
+        ctk.CTkLabel(
+            self.panel,
+            text="© 2026 Lander S.L & Immune Technology Institute",
+            font=("SF Pro Text", 10),
+            text_color="#333333"
+        ).place(relx=0.5, rely=0.97, anchor="center")
+
+    def _crear_boton(self, texto, script):
+        ctk.CTkButton(
+            self.sidebar,
+            text=texto,
+            font=("SF Pro Text", 13, "bold"),
+            height=44,
+            anchor="w",
+            fg_color="transparent",
+            hover_color="#1e1e1e",
+            text_color=["#1a1a1a", "#e0e0e0"],
+            border_width=0,
+            corner_radius=8,
+            command=lambda s=script: self._lanzar(s)
+        ).pack(fill="x", padx=16, pady=4)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    #  Lanzador de submódulos
+    # ──────────────────────────────────────────────────────────────────────────
+    def _lanzar(self, nombre_archivo):
         try:
             if getattr(sys, 'frozen', False):
-                # Estrategia nativa de Bundle macOS: Buscar el binario ejecutable real dentro del .app
-                exe_path = sys.executable
-                
+                # Dentro del .app: localizar el binario ejecutable real
                 bundle_exe = os.path.join(
                     os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
                     "MacOS",
                     "Immune Study Suite"
                 )
-                if os.path.isfile(bundle_exe):
-                    exe_path = bundle_exe
+                exe_path = bundle_exe if os.path.isfile(bundle_exe) else sys.executable
 
                 env = os.environ.copy()
                 if hasattr(sys, '_MEIPASS'):
                     env['_MEIPASS2'] = sys._MEIPASS
 
-                # Ejecutamos la propia app pasándole el script como argumento
                 proceso = subprocess.Popen([exe_path, nombre_archivo], env=env)
             else:
-                # Entorno local (VS Code / Terminal suelta)
+                # Desarrollo local
                 ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), nombre_archivo)
                 proceso = subprocess.Popen([sys.executable, ruta])
 
             self.procesos_activos.append(proceso)
 
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo abrir:\n{e}")
+            messagebox.showerror("Error", f"No se pudo abrir el módulo:\n{e}")
 
+    # ──────────────────────────────────────────────────────────────────────────
+    #  Cierre limpio
+    # ──────────────────────────────────────────────────────────────────────────
     def al_cerrar_ventana(self):
-        for proceso in self.procesos_activos:
-            if proceso.poll() is None:
+        for p in self.procesos_activos:
+            if p.poll() is None:
                 try:
-                    proceso.kill()
+                    p.kill()
                 except Exception:
                     pass
-
         self.quit()
         self.destroy()
         os._exit(0)
 
+
 if __name__ == "__main__":
+    __spec__ = None
     app = DashboardEstudios()
     app.mainloop()

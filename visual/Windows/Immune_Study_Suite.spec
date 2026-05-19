@@ -1,77 +1,95 @@
-# -*- mode: python ; coding: utf-8 -*-
+# ─────────────────────────────────────────────────────────────────────────────
+#  Immune Study Suite 2026 — PyInstaller SPEC (Windows)
+#  Genera: dist/Immune Study Suite.exe  (todo-en-uno, sin carpetas)
+#
+#  INSTRUCCIONES RÁPIDAS:
+#    1. Coloca este .spec en la misma carpeta que todos los .py y el logo.ico
+#    2. Abre CMD / PowerShell en esa carpeta
+#    3. Ejecuta:  pyinstaller build_windows.spec
+#    4. El .exe estará en dist/  — puedes borrar build/ y dist/ excepto el .exe
+# ─────────────────────────────────────────────────────────────────────────────
 
-from PyInstaller.utils.hooks import collect_all
+import os
 
-# Recoger dinámicamente recursos de librerías complejas
-mpl_datas, mpl_binaries, mpl_hiddenimports = collect_all('matplotlib')
-ctk_datas, ctk_binaries, ctk_hiddenimports = collect_all('customtkinter')
-openai_datas, openai_binaries, openai_hiddenimports = collect_all('openai')
-httpx_datas, httpx_binaries, httpx_hiddenimports = collect_all('httpx')
+# Raíz del proyecto (donde está este .spec)
+ROOT = os.path.dirname(os.path.abspath(SPEC))
 
-block_cipher = None
+# ── Todos los scripts secundarios que el dashboard lanzará en subprocess ──
+scripts_secundarios = [
+    "Calculador_Notas_Tkinter_FINAL.py",
+    "Apuntador_Notas_Visual.py",
+    "resumidor_de_textos_visual.py",
+    "generador_examen_visual.py",
+    "Ayudador_de_problemas_visual.py",
+    "Calendario_FINAL.py",
+]
 
+# ── Datos extra a empaquetar dentro del EXE (scripts + icono) ──
+datas_list = [
+    (os.path.join(ROOT, "logo.ico"), "."),
+]
+for s in scripts_secundarios:
+    datas_list.append((os.path.join(ROOT, s), "."))
+
+# ── Imports ocultos necesarios para que CustomTkinter y matplotlib no fallen ──
+hidden = [
+    "customtkinter",
+    "PIL._tkinter_finder",
+    "matplotlib",
+    "matplotlib.backends.backend_tkagg",
+    "matplotlib.backends._backend_tk",
+    "numpy",
+    "openai",
+    "docx",
+    "json",
+    "threading",
+    "calendar",
+    "subprocess",
+]
+
+# ─────────────── BLOQUE ANALYSIS ───────────────
 a = Analysis(
-    ['main.py'],
-    pathex=[],
-    binaries=[] + mpl_binaries + ctk_binaries + openai_binaries + httpx_binaries,
-    datas=[
-        ('Calculador_Notas_Tkinter_FINAL.py', '.'),
-        ('Apuntador_Notas_Visual.py', '.'),
-        ('resumidor_de_textos_visual.py', '.'),
-        ('generador_examen_visual.py', '.'),
-        ('Ayudador_de_problemas_visual.py', '.'),
-        ('Calendario_FINAL.py', '.'),
-    ] + mpl_datas + ctk_datas + openai_datas + httpx_datas,
-    hiddenimports=[
-        'PIL',
-        'PIL._imagingtk',
-        'PIL.ImageTk',
-        'matplotlib.backends.backend_tkagg',
-        'matplotlib.backends.backend_agg',
-        'matplotlib.backends._backend_tk',
-        'docx',
-        'docx.shared',
-        'docx.enum.text',
-        'numpy',
-        'threading',
-        'json',
-        'anyio',
-        'httpcore',
-        'pydantic',
-    ] + mpl_hiddenimports + ctk_hiddenimports + openai_hiddenimports + httpx_hiddenimports,
+    [os.path.join(ROOT, "main.py")],   # Punto de entrada principal (Windows)
+    pathex=[ROOT],
+    binaries=[],
+    datas=datas_list,
+    hiddenimports=hidden,
     hookspath=[],
-    hooksconfig={
-        'matplotlib': {
-            'backends': 'TkAgg',
-        },
-    },
+    hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
-    optimize=0,
 )
 
+# ─────────────── BLOQUE PYZ (bytecode comprimido) ───────────────
 pyz = PYZ(a.pure)
 
+# ─────────────── BLOQUE EXE (ejecutable único) ───────────────
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,     # Empaqueta los binarios dentro del EXE único
-    a.zipfiles,     # Empaqueta las librerías comprimidas dentro del EXE único
-    a.datas,        # Empaqueta los scripts secundarios (.py) dentro del EXE único
-    name='Immune Study Suite',
+    a.binaries,
+    a.datas,
+    [],
+    name="Immune Study Suite",          # Nombre final del .exe
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    console=False,   # Oculta la terminal negra de Windows
+    upx=True,                           # Compresión UPX (si está instalado)
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,                      # Sin ventana de consola negra
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['logo.ico'],
+    icon=os.path.join(ROOT, "logo.ico"),  # Icono del ejecutable
+    onefile=True,                       # TODO EN UN SOLO .exe
 )
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  NOTA POST-BUILD:
+#  Tras ejecutar pyinstaller, puedes borrar la carpeta "build/" sin problema.
+#  El EXE final es únicamente:  dist/Immune Study Suite.exe
+#  No necesita ninguna DLL, carpeta ni archivo adicional para funcionar.
+# ─────────────────────────────────────────────────────────────────────────────

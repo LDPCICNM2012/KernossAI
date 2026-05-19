@@ -20,7 +20,7 @@ class AppExamenIA(ctk.CTk):
         # La clave va integrada dentro del paquete ejecutable .app final
         self.cliente_groq = OpenAI(
             base_url="https://api.groq.com/openai/v1",
-            api_key="TU API KEY"  # <--- Pega aquí tu gsk_... de console.groq.com
+            api_key="Your API KEY"  # <--- Pega aquí tu gsk_... de console.groq.com
         )
 
         # Variables de estado
