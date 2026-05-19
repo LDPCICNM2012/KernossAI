@@ -20,7 +20,7 @@ class SolucionadorIA(ctk.CTk):
         # RECUERDA: Tus amigos solo necesitan internet, la clave ya va integrada dentro de la app (.app)
         self.cliente_groq = OpenAI(
             base_url="https://api.groq.com/openai/v1",
-            api_key="TU API KEY AQUI"  # <--- Pega aquí tu gsk_... de console.groq.com
+            api_key="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"  # <--- Pega aquí tu gsk_... de console.groq.com
         )
 
         # Variables de lógica
