@@ -20,7 +20,7 @@ class SolucionadorIA(ctk.CTk):
         # RECUERDA: Tus amigos solo necesitan internet, la clave ya va integrada dentro de la app (.app)
         self.cliente_groq = OpenAI(
             base_url="https://api.groq.com/openai/v1",
-            api_key="Tu API KEY"  # <--- Pega aquí tu gsk_... de console.groq.com
+            api_key="TU API KEY"  # <--- Pega aquí tu gsk_... de console.groq.com
         )
 
         # Variables de lógica
@@ -30,6 +30,10 @@ class SolucionadorIA(ctk.CTk):
             "Tu enfoque es: Analizar el problema -> Identificar la causa -> Dar solución técnica/práctica. -> Dar consejos para evitarlo en el futuro. "
             "Responde siempre con estructura de puntos clave y da conversación para acompañar y dar consejos."
         )
+
+        # Estructura interna para almacenar múltiples chats guardados
+        self.chats_guardados = {}
+        self.id_chat_actual = None
 
         self.setup_ui()
 
@@ -45,6 +49,18 @@ class SolucionadorIA(ctk.CTk):
 
         self.entry_nombre = ctk.CTkEntry(self.sidebar, placeholder_text="¿Cuál es tu nombre?")
         self.entry_nombre.pack(fill="x", padx=20, pady=10)
+
+        # --- SECCIÓN DE HISTORIAL DE CHATS INTEGRADA ---
+        lbl_historial = ctk.CTkLabel(self.sidebar, text="🗂️ Historial de Chats", font=("Segoe UI", 12, "bold"), text_color="gray")
+        lbl_historial.pack(anchor="w", padx=20, pady=(15, 5))
+
+        self.btn_nuevo_chat = ctk.CTkButton(self.sidebar, text="+ Nuevo Chat", fg_color="#1f6aa5", hover_color="#144d75", command=self.limpiar_chat)
+        self.btn_nuevo_chat.pack(fill="x", padx=20, pady=5)
+
+        # Contenedor con scrollbar para listar los chats previos
+        self.scroll_historial = ctk.CTkScrollableFrame(self.sidebar, height=180, fg_color="transparent")
+        self.scroll_historial.pack(fill="x", padx=10, pady=5)
+        # -----------------------------------------------
 
         self.btn_exportar = ctk.CTkButton(self.sidebar, text="Exportar a Word", 
                                          fg_color="#2c3e50", hover_color="#34495e",
@@ -99,6 +115,13 @@ class SolucionadorIA(ctk.CTk):
         if not pregunta:
             return
 
+        # Si es el primer mensaje de una sesión limpia, inicializamos su título en el historial
+        if not self.historial_conversacion:
+            # Recortamos la pregunta inicial para usarla como nombre del botón del historial
+            titulo_chat = pregunta[:20] + "..." if len(pregunta) > 20 else pregunta
+            self.id_chat_actual = titulo_chat
+            self.chats_guardados[self.id_chat_actual] = self.historial_conversacion
+
         self.agregar_texto(nombre, pregunta)
         self.entry_pregunta.delete(0, "end")
         self.status_label.configure(text="🟡 Pensando (Groq)...", text_color="orange")
@@ -132,6 +155,12 @@ class SolucionadorIA(ctk.CTk):
                     self.after(0, self.stream_update, contenido)
             
             self.historial_conversacion.append({'role': 'assistant', 'content': respuesta_completa})
+            
+            # Almacenar la conversación actualizada en nuestra matriz y regenerar los botones de la barra lateral
+            if self.id_chat_actual:
+                self.chats_guardados[self.id_chat_actual] = list(self.historial_conversacion)
+                self.after(0, self.actualizar_lista_historial)
+
             self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
             
         except Exception as e:
@@ -146,11 +175,85 @@ class SolucionadorIA(ctk.CTk):
         self.txt_chat.see("end")
         self.txt_chat.configure(state="disabled")
 
+    # --- NUEVAS FUNCIONES DE SOPORTE PARA EL HISTORIAL ---
+    def actualizar_lista_historial(self):
+        # Limpiar los widgets antiguos del panel de scroll
+        for widget in self.scroll_historial.winfo_children():
+            widget.destroy()
+
+        # Crear un contenedor por cada fila (botón de chat + botón borrar)
+        for titulo in list(self.chats_guardados.keys()):
+            color_btn = "#1f6aa5" if titulo == self.id_chat_actual else "#2b2b2b"
+            
+            # Frame contenedor horizontal fino para la línea del historial
+            item_frame = ctk.CTkFrame(self.scroll_historial, fg_color="transparent")
+            item_frame.pack(fill="x", padx=2, pady=2)
+            
+            # Botón principal para cargar el chat
+            btn_item = ctk.CTkButton(
+                item_frame, 
+                text=f"💬 {titulo}", 
+                fg_color=color_btn,
+                hover_color="#3a3a3a",
+                anchor="w",
+                height=32,
+                command=lambda t=titulo: self.cargar_chat_del_historial(t)
+            )
+            btn_item.pack(side="left", fill="x", expand=True, padx=(0, 4))
+
+            # Botón independiente con la papelera para borrar este chat específico
+            btn_borrar = ctk.CTkButton(
+                item_frame,
+                text="🗑️",
+                width=32,
+                height=32,
+                fg_color="#742a2a" if titulo == self.id_chat_actual else "#3a3a3a",
+                hover_color="#ba3c3c",
+                command=lambda t=titulo: self.eliminar_chat_especifico(t)
+            )
+            btn_borrar.pack(side="right")
+
+    def cargar_chat_del_historial(self, titulo):
+        self.id_chat_actual = titulo
+        self.historial_conversacion = list(self.chats_guardados[titulo])
+        
+        self.txt_chat.configure(state="normal")
+        self.txt_chat.delete("1.0", "end")
+        
+        nombre_usuario = self.entry_nombre.get().strip() or "Tú"
+        for msg in self.historial_conversacion:
+            if msg['role'] == 'user':
+                self.txt_chat.insert("end", f"\n\n {nombre_usuario}:\n{msg['content']}\n")
+            else:
+                self.txt_chat.insert("end", f"\n IA:\n{msg['content']}")
+                
+        self.txt_chat.configure(state="disabled")
+        self.txt_chat.see("end")
+        self.actualizar_lista_historial()
+
+    def eliminar_chat_especifico(self, titulo):
+        # Elimina el elemento seleccionado del diccionario en memoria
+        if titulo in self.chats_guardados:
+            del self.chats_guardados[titulo]
+        
+        # Si el chat que se ha eliminado coincide con el que el usuario estaba leyendo actualmente, reseteamos la UI
+        if self.id_chat_actual == titulo:
+            self.id_chat_actual = None
+            self.historial_conversacion = []
+            self.txt_chat.configure(state="normal")
+            self.txt_chat.delete("1.0", "end")
+            self.txt_chat.configure(state="disabled")
+
+        self.actualizar_lista_historial()
+    # -----------------------------------------------------
+
     def limpiar_chat(self):
         self.txt_chat.configure(state="normal")
         self.txt_chat.delete("1.0", "end")
         self.txt_chat.configure(state="disabled")
         self.historial_conversacion = []
+        self.id_chat_actual = None
+        self.actualizar_lista_historial()
 
     def exportar_a_word(self):
         if not self.historial_conversacion:

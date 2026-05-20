@@ -20,7 +20,7 @@ class LanderResumidor(ctk.CTk):
         # Tus amigos solo necesitan conexión a internet, el motor va en este ejecutable final
         self.cliente_groq = OpenAI(
             base_url="https://api.groq.com/openai/v1",
-            api_key="Tu API KEY "  # <--- Pega aquí tu gsk_... de console.groq.com
+            api_key="TU API KEY"  # <--- Pega aquí tu gsk_... de console.groq.com
         )
 
         self.modelo = "llama-3.3-70b-versatile"  # <--- Modelo de alto rendimiento en la nube
