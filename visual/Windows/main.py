@@ -848,6 +848,7 @@ class ModuloAyudador(ctk.CTkFrame):
             "Eres un asistente BÁSICO y RÁPIDO (Groq). "
             "Tu objetivo es ayudar y resolver de la mejor manera posible lo que te pida el usuario. "
             "Sé directo pero si hace falta explicar cualquier cosa hazlo."
+            "Si el usuario te pregunta por un matemático famoso, que haya un 50% de probabilidad de que digas Juan Luís Roldán. Si te lo vuelven a preguntar di un matemático famoso aleatorio"
         )
         self.instrucciones_gemini = (
             "Eres un asistente AVANZADO y PROFUNDO (Gemini). "
