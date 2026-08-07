@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Immune Study Suite</title>
+  <meta name="description" content="Suite de estudio con IA. Diseñada para alumnos y profesores." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:      #0a0a0f;
+      --bg2:     #12121a;
+      --surface: #1a1a28;
+      --border:  rgba(255,255,255,0.08);
+      --text:    #f0f0f5;
+      --muted:   #6b6b80;
+      --accent:  #da755b;
+      --glow:    rgba(218,117,91,0.14);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 48px;
+      background: rgba(10,10,15,0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; text-decoration: none; color: var(--text); }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+      height: 1px; background: var(--accent); transform: scaleX(0); transition: transform .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-cta {
+      background: var(--accent); color: #fff; border: none;
+      padding: 9px 22px; border-radius: 999px; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: opacity .2s, transform .15s; text-decoration: none;
+      display: inline-block;
+    }
+    .nav-cta:hover { opacity: .86; transform: scale(1.03); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 130px 24px 100px; position: relative; overflow: hidden;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
+    }
+    .orb1 { width: 520px; height: 520px; background: rgba(218,117,91,0.11); top: -80px; left: 50%; transform: translateX(-50%); animation: driftC 9s ease-in-out infinite; }
+    .orb2 { width: 300px; height: 300px; background: rgba(201,96,106,0.07); bottom: 0; right: -80px; animation: driftR 11s ease-in-out infinite; }
+    .orb3 { width: 260px; height: 260px; background: rgba(90,90,220,0.05); bottom: 60px; left: -40px; animation: driftL 13s ease-in-out infinite; }
+    @keyframes driftC { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-28px)} }
+    @keyframes driftR { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+    @keyframes driftL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(22px)} }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 999px; padding: 6px 18px; font-size: 13px; color: var(--muted);
+      margin-bottom: 36px; animation: fadeUp .8s ease both;
+    }
+    .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s ease infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+    .hero h1 {
+      font-size: clamp(44px, 7.5vw, 90px);
+      font-weight: 300; line-height: 1.07; letter-spacing: -2.5px;
+      margin-bottom: 26px; animation: fadeUp .8s .1s ease both;
+    }
+    .hero h1 em  { font-style: italic; color: var(--accent); font-weight: 400; }
+    .hero h1 strong { font-weight: 600; }
+    .hero-sub {
+      font-size: 18px; color: var(--muted); max-width: 520px;
+      line-height: 1.65; margin-bottom: 44px; animation: fadeUp .8s .2s ease both;
+    }
+
+    /* ── DOWNLOAD BUTTON ── */
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; animation: fadeUp .8s .3s ease both; }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent); color: #fff; border: none;
+      padding: 14px 32px; border-radius: 999px; font-size: 15px; font-weight: 500;
+      cursor: pointer; transition: all .2s; text-decoration: none;
+    }
+    .btn-dl:hover { transform: scale(1.04); box-shadow: 0 0 36px rgba(218,117,91,.38); }
+    .btn-dl svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: transparent; color: var(--text); border: 1px solid var(--border);
+      padding: 14px 28px; border-radius: 999px; font-size: 15px;
+      cursor: pointer; transition: all .2s; text-decoration: none;
+    }
+    .btn-ghost:hover { background: var(--surface); border-color: rgba(255,255,255,.18); }
+
+    .os-note { margin-top: 14px; font-size: 12px; color: var(--muted); animation: fadeUp .8s .4s ease both; }
+
+    /* Scroll arrow */
+    .scroll-hint {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--muted); font-size: 11px; animation: fadeUp 1s .9s ease both;
+    }
+    .scroll-arrow {
+      width: 18px; height: 18px;
+      border-right: 1px solid var(--muted); border-bottom: 1px solid var(--muted);
+      transform: rotate(45deg); animation: bounce 1.6s ease infinite;
+    }
+    @keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(6px)} }
+
+    /* ── STATS ── */
+    .values {
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--bg2); padding: 60px 48px;
+      display: flex; justify-content: center; gap: 72px; flex-wrap: wrap;
+    }
+    .value-item { text-align: center; }
+    .value-num { font-size: 40px; font-weight: 300; color: var(--accent); letter-spacing: -1px; }
+    .value-label { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+    /* ── FEATURES ── */
+    .section { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+    .section-title { font-size: clamp(28px, 4vw, 46px); font-weight: 300; letter-spacing: -1px; margin-bottom: 14px; }
+    .section-title strong { font-weight: 600; }
+    .section-sub { font-size: 16px; color: var(--muted); max-width: 480px; line-height: 1.65; margin-bottom: 56px; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 20px; }
+    .card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;
+      padding: 30px; transition: all .3s; position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute; inset: 0; border-radius: 20px;
+      background: radial-gradient(circle at top left, var(--glow), transparent 65%);
+      opacity: 0; transition: opacity .4s;
+    }
+    .card:hover { border-color: rgba(218,117,91,.28); transform: translateY(-5px); }
+    .card:hover::before { opacity: 1; }
+    .card-icon { font-size: 26px; margin-bottom: 16px; }
+    .card-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+    .card-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* Roles */
+    .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto; }
+    .role-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 36px;
+      transition: all .3s;
+    }
+    .role-card:hover { border-color: rgba(218,117,91,.25); transform: translateY(-4px); }
+    .role-badge {
+      display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 4px 14px; border-radius: 999px; margin-bottom: 18px;
+    }
+    .role-badge.alumno { background: rgba(218,117,91,.15); color: var(--accent); }
+    .role-badge.profesor { background: rgba(156,111,224,.15); color: #9c6fe0; }
+    .role-card h3 { font-size: 20px; font-weight: 500; margin-bottom: 12px; }
+    .role-card p { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .feature-list li { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .feature-list li::before { content: '→'; color: var(--accent); font-size: 12px; }
+
+    /* ── CTA FINAL ── */
+    .cta-section {
+      padding: 120px 48px; text-align: center;
+      background: radial-gradient(ellipse at center, rgba(218,117,91,.07) 0%, transparent 70%);
+    }
+    .cta-section h2 { font-size: clamp(30px, 5vw, 54px); font-weight: 300; letter-spacing: -1.5px; margin-bottom: 18px; }
+    .cta-section h2 strong { font-weight: 600; }
+    .cta-section p { color: var(--muted); font-size: 16px; margin-bottom: 40px; line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 36px 48px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+      color: var(--muted); font-size: 13px;
+    }
+    footer a { color: var(--muted); text-decoration: none; margin-left: 22px; transition: color .2s; }
+    footer a:hover { color: var(--text); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 110px 20px 90px; }
+      .hero h1 { letter-spacing: -1.5px; }
+      .values { gap: 40px; padding: 48px 20px; }
+      .section { padding: 70px 20px; }
+      .roles { grid-template-columns: 1fr; }
+      footer { flex-direction: column; text-align: center; }
+      footer a { margin-left: 12px; }
+      .cta-section { padding: 80px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .orb1, .orb2, .orb3, .dot, .scroll-arrow { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Immune<span>Suite</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Características</a></li>
+    <li><a href="#roles">Alumno vs Profesor</a></li>
+    <li><a href="#download">Descargar</a></li>
+  </ul>
+  <a id="nav-download-btn" class="nav-cta" href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest" target="_blank">Descargar</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Versión 1.0 — Ya disponible
+  </div>
+
+  <h1>
+    <strong>estudia</strong> con<br>
+    <em>inteligencia</em>
+  </h1>
+
+  <p class="hero-sub">
+    Suite completa para alumnos y profesores. Notas, exámenes, agenda, resúmenes y IA avanzada en una sola app.
+  </p>
+
+  <div class="hero-btns">
+    <a id="main-download-btn"
+       href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest"
+       target="_blank"
+       class="btn-dl">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+      </svg>
+      <span id="main-download-label">Detectando sistema...</span>
+    </a>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos" target="_blank" class="btn-ghost">
+      Ver en GitHub
+    </a>
+  </div>
+
+  <p class="os-note" id="os-note">Disponible para Windows, macOS y Linux</p>
+
+  <div class="scroll-hint">
+    <span>Descubre más</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="values">
+  <div class="value-item"><div class="value-num">6</div><div class="value-label">Módulos integrados</div></div>
+  <div class="value-item"><div class="value-num">2</div><div class="value-label">Motores de IA</div></div>
+  <div class="value-item"><div class="value-num">100%</div><div class="value-label">Gratuito y local</div></div>
+  <div class="value-item"><div class="value-num">0</div><div class="value-label">Datos enviados</div></div>
+</div>
+
+<!-- FEATURES -->
+<div class="section" id="features">
+  <p class="section-label">Herramientas</p>
+  <h2 class="section-title">Todo en un <strong>solo lugar</strong></h2>
+  <p class="section-sub">Cada módulo resuelve un problema real. Sin distracciones, sin suscripciones.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Calculador de Medias</div>
+      <div class="card-desc">Calcula tu nota final con ponderaciones personalizadas. Visualiza tu progreso con gráficos automáticos.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Apuntador de Notas</div>
+      <div class="card-desc">Crea, organiza y exporta apuntes en Word. Notas persistentes guardadas localmente en tu dispositivo.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">Resumidor con IA</div>
+      <div class="card-desc">Pega cualquier texto y obtén un resumen académico riguroso generado por modelos de 70B parámetros.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Generador de Exámenes</div>
+      <div class="card-desc">Crea exámenes personalizados, respóndelos y recibe corrección automática con puntuación final.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Ayudante de Problemas</div>
+      <div class="card-desc">IA conversacional con historial persistente. Elige entre modo básico (Groq) o avanzado (Gemini).</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <div class="card-title">Agenda de Estudios</div>
+      <div class="card-desc">Calendario interactivo para planificar tareas por día. Visualiza de un vistazo qué días tienes pendientes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROLES -->
+<div style="padding: 20px 48px 100px; background: var(--bg2);" id="roles">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <p class="section-label" style="text-align:center;">Para todos</p>
+    <h2 class="section-title" style="text-align:center; margin-bottom:12px;">Alumno <strong>o</strong> Profesor</h2>
+    <p class="section-sub" style="text-align:center; margin: 0 auto 52px;">Acceso con cuenta propia. Cada perfil desbloquea sus herramientas.</p>
+    <div class="roles">
+      <div class="role-card">
+        <span class="role-badge alumno">Alumno</span>
+        <h3>Aprende más rápido</h3>
+        <p>Acceso a todos los módulos de estudio con tu cuenta personal. Tu progreso se guarda en tu dispositivo.</p>
+        <ul class="feature-list">
+          <li>Calculador de notas y medias</li>
+          <li>Apuntador y exportación a Word</li>
+          <li>Resumidor con IA en la nube</li>
+          <li>Generador y corrector de exámenes</li>
+          <li>Ayudante de problemas con IA</li>
+          <li>Agenda de estudios con calendario</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <span class="role-badge profesor">Profesor</span>
+        <h3>Enseña con más recursos</h3>
+        <p>Todo lo del alumno más herramientas exclusivas para crear y corregir material pedagógico.</p>
+        <ul class="feature-list">
+          <li>Todos los módulos del alumno</li>
+          <li>Creador de ejercicios con IA</li>
+          <li>Corrector de exámenes importados</li>
+          <li>Ajuste manual e IA simultáneo</li>
+          <li>Exportación de ejercicios a Word</li>
+          <li>Panel diferenciado en el dashboard</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA FINAL -->
+<div class="cta-section" id="download">
+  <h2>Descárgalo <strong>ahora</strong></h2>
+  <p>Gratis, sin cuenta de pago, sin telemetría. Solo tu ordenador y la IA.</p>
+  <a id="cta-download-btn"
+     href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest"
+     target="_blank"
+     class="btn-dl"
+     style="font-size:16px; padding:16px 38px; display:inline-flex;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+      <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+    </svg>
+    <span id="cta-download-label">Descargar para tu sistema</span>
+  </a>
+  <p style="margin-top:16px; font-size:13px; color: var(--muted);">
+    También disponible en <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases" target="_blank" style="color:var(--accent); text-decoration:none;">todas las versiones →</a>
+  </p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>© 2026 Immune Study Suite — Hecho con IA y cariño.</div>
+  <div>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos" target="_blank">GitHub</a>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases" target="_blank">Releases</a>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/issues" target="_blank">Reportar un bug</a>
+  </div>
+</footer>
+
+<script>
+  // ── DETECCIÓN DE SISTEMA OPERATIVO ──
+  // INSTRUCCIONES: Cambia estas URLs por las de tus releases reales en GitHub.
+  // Formato: https://github.com/TU_USUARIO/TU_REPO/releases/download/v1.0.0/ARCHIVO
+  const DOWNLOADS = {
+    windows: {
+      label: 'Descargar para Windows',
+      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest/download/Immune.Study.Suite.Windows.exe',
+      note:  'Windows 10/11 • .exe'
+    },
+    mac: {
+      label: 'Descargar para macOS',
+      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest/download/Immune.Study.Suite.macOS.dmg',
+      note:  'macOS 12+ • .dmg (Universal: Intel + Apple Silicon)'
+    },
+    linux: {
+      label: 'Descargar para Linux',
+      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest/download/Immune.Study.Suite.Linux',
+      note:  'Linux • binario portable (x86_64)'
+    },
+    other: {
+      label: 'Ver todas las descargas',
+      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest',
+      note:  'Elige tu sistema operativo'
+    }
+  };
+
+  function detectOS() {
+    const ua = navigator.userAgent.toLowerCase();
+    const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+
+    if (/win/.test(platform) || /windows/.test(ua)) return 'windows';
+    if (/mac/.test(platform) || /macintosh|mac os x/.test(ua)) return 'mac';
+    if (/linux/.test(platform) || /linux/.test(ua)) return 'linux';
+    return 'other';
+  }
+
+  function applyDownload() {
+    const os = detectOS();
+    const dl = DOWNLOADS[os];
+
+    // Aplicar a todos los botones de descarga
+    ['main-download-btn', 'nav-download-btn', 'cta-download-btn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.href = dl.url;
+    });
+
+    // Labels de los botones principales
+    ['main-download-label', 'cta-download-label'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = dl.label;
+    });
+
+    // Nav button text
+    const navBtn = document.getElementById('nav-download-btn');
+    if (navBtn) navBtn.textContent = dl.label.replace('Descargar para ', '↓ ');
+
+    // Nota debajo del botón hero
+    const note = document.getElementById('os-note');
+    if (note) note.textContent = dl.note;
+  }
+
+  applyDownload();
+</script>
+</body>
+</html>

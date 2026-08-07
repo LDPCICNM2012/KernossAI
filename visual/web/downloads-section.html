@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Descargas – Immune Study Suite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg:      #0a0a0f;
+      --bg2:     #12121a;
+      --surface: #1a1a28;
+      --border:  rgba(255,255,255,0.08);
+      --text:    #f0f0f5;
+      --muted:   #6b6b80;
+      --accent:  #da755b;
+      --glow:    rgba(218,117,91,0.13);
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+    .orb { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+    @keyframes driftC { 0%,100%{transform:translateX(-50%) translateY(0)}  50%{transform:translateX(-50%) translateY(-26px)} }
+    @keyframes driftR { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+    @keyframes driftL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(22px)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+
+    .downloads-wrap {
+      position: relative; overflow: hidden;
+      padding: 110px 24px 120px;
+      border-top: 1px solid var(--border);
+    }
+    .orb-d1 { width: 500px; height: 500px; background: rgba(218,117,91,0.09); top: -120px; left: 50%; animation: driftC 10s ease-in-out infinite; }
+    .orb-d2 { width: 280px; height: 280px; background: rgba(90,90,220,0.06);  bottom: -60px; right: -80px; animation: driftR 13s ease-in-out infinite; }
+    .orb-d3 { width: 220px; height: 220px; background: rgba(201,96,106,0.06); bottom: 40px;  left: -60px;  animation: driftL 11s ease-in-out infinite; }
+
+    .dl-inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; text-align: center; }
+    .dl-title { font-size: clamp(30px, 5vw, 52px); font-weight: 300; letter-spacing: -1.5px; text-align: center; margin-bottom: 14px; }
+    .dl-title strong { font-weight: 600; }
+    .dl-sub { font-size: 16px; color: var(--muted); text-align: center; line-height: 1.65; margin-bottom: 56px; }
+
+    .detected-banner {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 40px; animation: fadeUp .6s ease both;
+    }
+    .detected-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(218,117,91,0.12); border: 1px solid rgba(218,117,91,0.25);
+      border-radius: 999px; padding: 7px 18px; font-size: 13px; color: var(--accent);
+    }
+    .detected-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s ease infinite; }
+
+    .os-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .os-card {
+      position: relative; overflow: hidden;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 22px; padding: 32px 28px 28px;
+      transition: border-color .3s, transform .3s;
+      animation: fadeUp .6s ease both;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      display: block;
+    }
+    .os-card::before {
+      content: ''; position: absolute; inset: 0; border-radius: 22px;
+      background: radial-gradient(circle at top left, var(--glow), transparent 65%);
+      opacity: 0; transition: opacity .4s;
+    }
+    .os-card:hover { border-color: rgba(218,117,91,.3); transform: translateY(-5px); }
+    .os-card:hover::before { opacity: 1; }
+
+    .os-card.active {
+      border-color: rgba(218,117,91,.45);
+      background: linear-gradient(135deg, rgba(218,117,91,.07) 0%, var(--bg2) 60%);
+    }
+    .os-card.active::before { opacity: 1; }
+    .os-card.active::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(218,117,91,.5), transparent);
+      background-size: 400px 1px;
+      animation: shimmer 2.5s ease-in-out infinite;
+    }
+
+    .active-badge {
+      position: absolute; top: 16px; right: 16px;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 600; letter-spacing: 1px;
+      padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
+      display: none;
+    }
+    .os-card.active .active-badge { display: block; }
+
+    .os-icon { font-size: 38px; margin-bottom: 18px; display: block; }
+    .os-name { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+    .os-detail { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 16px; }
+    .os-ext {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      letter-spacing: 1px; color: var(--accent);
+      background: rgba(218,117,91,.1); border-radius: 6px;
+      padding: 3px 10px; margin-bottom: 22px; font-family: monospace;
+    }
+
+    .btn-download {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%;
+      background: var(--accent); color: #fff; border: none;
+      padding: 13px 20px; border-radius: 12px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: all .2s; text-decoration: none;
+    }
+    .btn-download:hover { opacity: .88; transform: scale(1.02); box-shadow: 0 0 24px rgba(218,117,91,.3); }
+    .btn-download svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .os-card:not(.active) .btn-download {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .os-card:not(.active) .btn-download:hover {
+      background: var(--surface);
+      border-color: rgba(255,255,255,.18);
+      box-shadow: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .checksum-note {
+      text-align: center; font-size: 13px; color: var(--muted);
+      padding: 28px 0 0;
+      border-top: 1px solid var(--border);
+    }
+    .checksum-note a { color: var(--accent); text-decoration: none; }
+    .checksum-note a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .os-grid { grid-template-columns: 1fr; }
+      .downloads-wrap { padding: 80px 20px 90px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .orb-d1, .orb-d2, .orb-d3, .detected-dot { animation: none; }
+      .os-card.active::after { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+<section class="downloads-wrap" id="download">
+  <div class="orb orb-d1"></div>
+  <div class="orb orb-d2"></div>
+  <div class="orb orb-d3"></div>
+
+  <div class="dl-inner">
+    <p class="section-label">Descargas</p>
+    <h2 class="dl-title">Elige tu <strong>sistema</strong></h2>
+    <p class="dl-sub">Gratuito, sin cuenta de pago, sin telemetría.<br>Descarga el instalador para tu plataforma.</p>
+
+    <div class="detected-banner">
+      <div class="detected-pill">
+        <span class="detected-dot"></span>
+        <span id="detected-text">Detectando tu sistema...</span>
+      </div>
+    </div>
+
+    <div class="os-grid">
+
+        <a class="os-card" id="card-windows"
+         href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest/download/Immune.Study.Suite.Windows.exe"
+         target="_blank"
+         rel="noopener noreferrer"
+         download>
+        <span class="active-badge">Tu sistema</span>
+        <div class="os-name">Windows</div>
+        <div class="os-detail">Compatible con Windows 10 y Windows 11. Instalador gráfico paso a paso.</div>
+        <div class="os-ext">.exe</div>
+        <span class="btn-download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          </svg>
+          Descargar para Windows
+        </span>
+      </a>
+
+      <a class="os-card" id="card-mac"
+         href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest/download/Immune.Study.Suite.macOS.dmg"
+         target="_blank"
+         rel="noopener noreferrer"
+         download>
+        <span class="active-badge">Tu sistema</span>
+        <div class="os-name">macOS</div>
+        <div class="os-detail">Universal: Intel y Apple Silicon (M1/M2/M3). Requiere macOS 12 o superior.</div>
+        <div class="os-ext">.dmg</div>
+        <span class="btn-download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          </svg>
+          Descargar para macOS
+        </span>
+      </a>
+
+      <a class="os-card" id="card-linux"
+         href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest/download/Immune.Study.Suite.Linux"
+         target="_blank"
+         rel="noopener noreferrer"
+         download>
+        <span class="active-badge">Tu sistema</span>
+        <span class="os-icon">🐧</span>
+        <div class="os-name">Linux</div>
+        <div class="os-detail">Archivo portable x86_64. Compatible con Arch, Ubuntu, Fedora y derivados.</div>
+        <div class="os-ext">binario</div>
+        <span class="btn-download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          </svg>
+          Descargar para Linux
+        </span>
+      </a>
+
+    </div>
+
+    <div class="checksum-note">
+      ¿No ves tu plataforma? Consulta el
+      <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases" target="_blank">historial completo de releases →</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  const OS_LABELS = {
+    windows: 'Windows detectado — descarga recomendada resaltada',
+    mac:     'macOS detectado — descarga recomendada resaltada',
+    linux:   'Linux detectado — descarga recomendada resaltada',
+    other:   'Sistema no identificado — elige tu plataforma'
+  };
+
+  function detectOS() {
+    const modernPlatform = (navigator.userAgentData?.platform || '').toLowerCase();
+    if (modernPlatform) {
+      if (modernPlatform.includes('win'))   return 'windows';
+      if (modernPlatform.includes('mac'))   return 'mac';
+      if (modernPlatform.includes('linux')) return 'linux';
+    }
+    const ua   = navigator.userAgent.toLowerCase();
+    const plat = (navigator.platform || '').toLowerCase();
+    if (plat.includes('win')   || ua.includes('windows'))                          return 'windows';
+    if (plat.includes('mac')   || ua.includes('macintosh') || ua.includes('mac os x')) return 'mac';
+    if (plat.includes('linux') || ua.includes('linux'))                            return 'linux';
+    return 'other';
+  }
+
+  function applyDetection() {
+    const os = detectOS();
+    document.getElementById('detected-text').textContent = OS_LABELS[os];
+    ['windows', 'mac', 'linux'].forEach(id => {
+      document.getElementById('card-' + id).classList.toggle('active', id === os);
+    });
+  }
+
+  applyDetection();
+</script>
+</body>
+</html>
