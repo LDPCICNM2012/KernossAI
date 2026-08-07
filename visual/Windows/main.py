@@ -40,9 +40,9 @@ RUTA_SESION    = os.path.expanduser("~/.immune_session.json")
 RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
 
 # ── API Keys ──
-GROQ_API_KEY   = ""   # ← pega tu gsk_... de console.groq.com
-GEMINI_API_KEY = "" # ← pega tu clave de aistudio.google.com
-GEMINI_MODEL   = "gemini-2.5-flash"
+GROQ_API_KEY   = "XX"   # ← pega tu gsk_... de console.groq.com
+GEMINI_API_KEY = "XX" # ← pega tu clave de aistudio.google.com
+GEMINI_MODEL   = "gemini-3.6-flash"
 
 # ─────────────────────────────────────────────
 #  UTILIDADES DE SESIÓN
