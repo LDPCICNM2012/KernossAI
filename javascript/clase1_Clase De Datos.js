@@ -60,4 +60,24 @@ false || false // False
 !true // False
 !false // True
 
+// EJEMPLOS DE COMBINACION DE OPERADORES LOGICOS:
+2 < 3 && 3 < 4 // True
+2 + 2 < 3 && 10 < 8 * 2
+// Primero se hacen las operaciones aritméticas:
+// → 4 < 3 && 10 < 16
+// Ahora las comparaciones:
+// → false && true
+// Finalmente:
+// → false
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Variables
+
+let numero = 1 // let es el equivalente a poner VARIABLE = X solo que hay que poner let antes.
+numero + 1 // Esto es igual que en python, que es 2
+numero = 5
+numero + 1 // Como en python, en cualquier momente so puede reasignar el valor, que ahora daría 6
+numero = numero + 1 // Esto es lo mismo de arriba solo que guarda el nuevo valor en la variable.
+
 
