@@ -29,7 +29,6 @@ import google.generativeai as genai_legacy
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from dotenv import load_dotenv
 
 # ─────────────────────────────────────────────
 #  CONFIGURACIÓN GLOBAL
@@ -40,12 +39,11 @@ ctk.set_default_color_theme("blue")
 RUTA_SESION    = os.path.expanduser("~/.immune_session.json")
 RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
 
-load_dotenv()  # carga las variables de entorno desde .env
 
 
 # ── API Keys ──
-GROQ_API_KEY   = os.getenv("GROQ_API_KEY")   # ← pega tu gsk_... de console.groq.com
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY") # ← pega tu clave de aistudio.google.com
+GROQ_API_KEY   = "XX"  # ← pega tu gsk_... de console.groq.com
+GEMINI_API_KEY = "XX" # ← pega tu clave de aistudio.google.com
 GEMINI_MODEL   = "gemini-3.6-flash"
 
 # ─────────────────────────────────────────────
