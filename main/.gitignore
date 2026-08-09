@@ -1,0 +1,3 @@
+# Ocultar claves y variables locales
+.env
+*.env
