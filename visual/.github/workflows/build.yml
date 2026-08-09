@@ -1,0 +1,144 @@
+name: Build KernosIA
+ 
+# Se ejecuta cuando creas un Release en GitHub
+on:
+  release:
+    types: [created]
+  # También puedes lanzarlo manualmente desde la pestaña Actions
+  workflow_dispatch:
+ 
+jobs:
+ 
+  # ══════════════════════════════
+  #  WINDOWS → KernosIA-Windows.exe
+  # ══════════════════════════════
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+ 
+      - name: Instalar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+ 
+      - name: Instalar dependencias
+        run: |
+          pip install pyinstaller customtkinter openai google-generativeai python-docx
+ 
+      - name: Compilar con PyInstaller
+        run: |
+          pyinstaller --onefile --windowed --icon=logo.ico --name="KernosIA-Windows" `
+            --add-data "Apuntador_Notas_Visual.py;." `
+            --add-data "Ayudador_de_problemas_visual.py;." `
+            --add-data "Calculador_Notas_Tkinter_FINAL.py;." `
+            --add-data "Calendario_FINAL.py;." `
+            --add-data "generador_examen_visual.py;." `
+            --add-data "resumidor_de_textos_visual.py;." `
+            --add-data "creador_ejercicios_profesor.py;." `
+            --collect-data customtkinter `
+            main.py
+ 
+      - name: Subir al Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/KernosIA-Windows.exe
+ 
+  # ══════════════════════════════
+  #  MACOS → KernosIA-MacOs.zip
+  # ══════════════════════════════
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+ 
+      - name: Instalar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+ 
+      - name: Instalar dependencias
+        run: |
+          pip install pyinstaller customtkinter openai google-generativeai python-docx
+ 
+      - name: Convertir logo.ico a logo.icns
+        run: |
+          mkdir -p logo.iconset
+          sips -z 16 16     logo.ico --out logo.iconset/icon_16x16.png
+          sips -z 32 32     logo.ico --out logo.iconset/icon_16x16@2x.png
+          sips -z 32 32     logo.ico --out logo.iconset/icon_32x32.png
+          sips -z 64 64     logo.ico --out logo.iconset/icon_32x32@2x.png
+          sips -z 128 128   logo.ico --out logo.iconset/icon_128x128.png
+          sips -z 256 256   logo.ico --out logo.iconset/icon_128x128@2x.png
+          sips -z 256 256   logo.ico --out logo.iconset/icon_256x256.png
+          sips -z 512 512   logo.ico --out logo.iconset/icon_256x256@2x.png
+          sips -z 512 512   logo.ico --out logo.iconset/icon_512x512.png
+          sips -z 1024 1024 logo.ico --out logo.iconset/icon_512x512@2x.png
+          iconutil -c icns logo.iconset -o logo.icns
+ 
+      - name: Compilar con PyInstaller
+        run: |
+          pyinstaller --onedir --windowed --icon=logo.icns --name="KernosIA" \
+            --add-data "Apuntador_Notas_Visual.py:." \
+            --add-data "Ayudador_de_problemas_visual.py:." \
+            --add-data "Calculador_Notas_Tkinter_FINAL.py:." \
+            --add-data "Calendario_FINAL.py:." \
+            --add-data "generador_examen_visual.py:." \
+            --add-data "resumidor_de_textos_visual.py:." \
+            --add-data "creador_ejercicios_profesor.py:." \
+            --collect-data customtkinter \
+            main.py
+ 
+      - name: Empaquetar en .zip
+        run: |
+          cd dist
+          zip -r KernosIA-MacOs.zip KernosIA.app
+ 
+      - name: Subir al Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/KernosIA-MacOs.zip
+ 
+  # ══════════════════════════════
+  #  LINUX → KernosIA-Linux
+  # ══════════════════════════════
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+ 
+      - name: Instalar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+ 
+      - name: Instalar dependencias del sistema (para tkinter)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+ 
+      - name: Instalar dependencias Python
+        run: |
+          pip install pyinstaller customtkinter openai google-generativeai python-docx
+ 
+      - name: Compilar con PyInstaller
+        run: |
+          pyinstaller --onefile --windowed --name="KernosIA-Linux" \
+            --add-data "Apuntador_Notas_Visual.py:." \
+            --add-data "Ayudador_de_problemas_visual.py:." \
+            --add-data "Calculador_Notas_Tkinter_FINAL.py:." \
+            --add-data "Calendario_FINAL.py:." \
+            --add-data "generador_examen_visual.py:." \
+            --add-data "resumidor_de_textos_visual.py:." \
+            --add-data "creador_ejercicios_profesor.py:." \
+            --collect-data customtkinter \
+            main.py
+ 
+      - name: Subir al Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/KernosIA-Linux
+ 

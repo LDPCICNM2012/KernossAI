@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  IMMUNE STUDY SUITE 2026  —  main.py  (MONOLÍTICO, sin subprocesos)
+#  KernosAI  —  main.py  (MONOLÍTICO, sin subprocesos)
 #  Todos los módulos están integrados aquí directamente.
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -40,8 +40,8 @@ RUTA_SESION    = os.path.expanduser("~/.immune_session.json")
 RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
 
 # ── API Keys ──
-GROQ_API_KEY   = "XX"   # ← pega tu gsk_... de console.groq.com
-GEMINI_API_KEY = "XX" # ← pega tu clave de aistudio.google.com
+GROQ_API_KEY   = "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"   # ← pega tu gsk_... de console.groq.com
+GEMINI_API_KEY = "AQ.Ab8RN6JWBr1xylo43bq7YB_SxwpTA38itxsYUtziYm93dj3ZKw" # ← pega tu clave de aistudio.google.com
 GEMINI_MODEL   = "gemini-3.6-flash"
 
 # ─────────────────────────────────────────────
@@ -87,14 +87,14 @@ def hash_password(password):
 class PantallaLogin(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Immune Study Suite 2026 – Acceso")
+        self.title("KernosAI – Acceso")
         self.geometry("520x640")
         self.resizable(False, False)
         self.usuario_autenticado = None
         self._build_ui()
 
     def _build_ui(self):
-        ctk.CTkLabel(self, text="IMMUNE\nStudy Suite",
+        ctk.CTkLabel(self, text="KERNOS\nAI",
                      font=("Segoe UI", 36, "bold"), text_color="#1f6aa5").pack(pady=(50, 5))
         ctk.CTkLabel(self, text="2026 Edition",
                      font=("Segoe UI", 14), text_color="#888").pack(pady=(0, 40))
@@ -1886,7 +1886,7 @@ class DashboardEstudios(ctk.CTk):
         self.nombre  = sesion.get("nombre", "Usuario")
         self.email   = sesion.get("email", "")
 
-        self.title(f"Immune Study Suite 2026 – {self.rol}: {self.nombre}")
+        self.title(f"KernosAI – {self.rol}: {self.nombre}")
         self.geometry("1400x820")
         self.resizable(True, True)
 
@@ -1903,7 +1903,7 @@ class DashboardEstudios(ctk.CTk):
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        ctk.CTkLabel(self.sidebar, text="IMMUNE\nStudy Suite",
+        ctk.CTkLabel(self.sidebar, text="Kernos\nAI",
                      font=("Segoe UI", 24, "bold"), text_color="#1f6aa5").pack(pady=(30, 5))
         ctk.CTkLabel(self.sidebar, text="2026 Edition",
                      font=("Segoe UI", 11), text_color="#555").pack()
