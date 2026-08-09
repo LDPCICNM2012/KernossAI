@@ -1,101 +1,45 @@
-name: Build KernosIA
+name: Compilar App con PyInstaller
 
 on:
-  release:
-    types: [created]
-  workflow_dispatch:
-
-permissions:
-  contents: write
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  # ══════════════════════════════
-  # WINDOWS → KernosIA-Windows.exe
-  # ══════════════════════════════
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Instalar Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Instalar dependencias
-        run: |
-          pip install pyinstaller customtkinter openai google-generativeai python-docx Pillow
-
-      - name: Compilar con PyInstaller
-        run: |
-          pyinstaller --onefile --windowed --icon=main/logo.ico --name="KernosIA-Windows" --collect-data customtkinter main/main.py
-
-      - name: Subir al Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/KernosIA-Windows.exe
-
-  # ══════════════════════════════
-  # MACOS → KernosIA-MacOs.zip
-  # ══════════════════════════════
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Instalar Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Instalar dependencias
-        run: |
-          pip install pyinstaller customtkinter openai google-generativeai python-docx Pillow
-
-      - name: Compilar con PyInstaller
-        run: |
-          pyinstaller --onedir --windowed --icon=main/logo.icns --name="KernosIA" --collect-data customtkinter main/main.py
-
-      - name: Empaquetar en .zip
-        run: |
-          cd dist
-          zip -r KernosIA-MacOs.zip KernosIA.app
-
-      - name: Subir al Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/KernosIA-MacOs.zip
-
-  # ══════════════════════════════
-  # LINUX → KernosIA-Linux
-  # ══════════════════════════════
-  build-linux:
+  build:
+    # Si quieres generar ejecutable para Mac cambia a 'macos-latest', o 'windows-latest' para .exe
     runs-on: ubuntu-latest
+
     steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
+    - name: Descargar código del repositorio
+      uses: actions/checkout@v4
 
-      - name: Instalar Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
 
-      - name: Instalar dependencias del sistema (para tkinter)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-tk
+    - name: Instalar soporte para GUI / Tkinter (Requerido para CustomTkinter en Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-tk
 
-      - name: Instalar dependencias Python
-        run: |
-          pip install pyinstaller customtkinter openai google-generativeai python-docx Pillow
+    - name: Instalar todas las dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller matplotlib python-docx google-genai google-generativeai python-dotenv customtkinter openai
 
-      - name: Compilar con PyInstaller
-        run: |
-          pyinstaller --onefile --windowed --name="KernosIA-Linux" --collect-data customtkinter main/main.py
+    - name: Compilar con PyInstaller
+      env:
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: |
+        pyinstaller --onefile --noconsole main.py
 
-      - name: Subir al Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/KernosIA-Linux
+    - name: Guardar ejecutable generado (Artefacto)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ejecutable-compilado
+        path: dist/
