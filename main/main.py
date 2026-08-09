@@ -41,7 +41,7 @@ RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
 
 # ── API Keys ──
 GROQ_API_KEY   = "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"   # ← pega tu gsk_... de console.groq.com
-GEMINI_API_KEY = "AQ.Ab8RN6JWBr1xylo43bq7YB_SxwpTA38itxsYUtziYm93dj3ZKw" # ← pega tu clave de aistudio.google.com
+GEMINI_API_KEY = "AQ.Ab8RN6JyiclYJSQhpi6WfCnxg0onKyRDTFiMJkWdbQTmh_sDWg" # ← pega tu clave de aistudio.google.com
 GEMINI_MODEL   = "gemini-3.6-flash"
 
 # ─────────────────────────────────────────────

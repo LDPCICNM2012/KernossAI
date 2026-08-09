@@ -246,7 +246,7 @@
     <li><a href="#roles">Alumno vs Profesor</a></li>
     <li><a href="#download">Descargar</a></li>
   </ul>
-  <a id="nav-download-btn" class="nav-cta" href="https://github.com/TU_USUARIO/TU_REPO/releases/latest" target="_blank">Descargar</a>
+  <a id="nav-download-btn" class="nav-cta" href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest" target="_blank">Descargar</a>
 </nav>
 
 <!-- HERO -->
@@ -271,7 +271,7 @@
 
   <div class="hero-btns">
     <a id="main-download-btn"
-       href="https://github.com/TU_USUARIO/TU_REPO/releases/latest"
+       href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest"
        target="_blank"
        class="btn-dl">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -279,7 +279,7 @@
       </svg>
       <span id="main-download-label">Detectando sistema...</span>
     </a>
-    <a href="https://github.com/TU_USUARIO/TU_REPO" target="_blank" class="btn-ghost">
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos" target="_blank" class="btn-ghost">
       Ver en GitHub
     </a>
   </div>
@@ -382,7 +382,7 @@
   <h2>Descárgalo <strong>ahora</strong></h2>
   <p>Gratis, sin cuenta de pago, sin telemetría. Solo tu ordenador y la IA.</p>
   <a id="cta-download-btn"
-     href="https://github.com/TU_USUARIO/TU_REPO/releases/latest"
+     href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/latest"
      target="_blank"
      class="btn-dl"
      style="font-size:16px; padding:16px 38px; display:inline-flex;">
@@ -400,26 +400,28 @@
 <footer>
   <div>© 2026 KernosIA — Hecho con IA y cariño.</div>
   <div>
-    <a href="https://github.com/TU_USUARIO/TU_REPO" target="_blank">GitHub</a>
-    <a href="https://github.com/TU_USUARIO/TU_REPO/releases" target="_blank">Releases</a>
-    <a href="https://github.com/TU_USUARIO/TU_REPO/issues" target="_blank">Reportar un bug</a>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos" target="_blank">GitHub</a>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases" target="_blank">Releases</a>
+    <a href="https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/issues" target="_blank">Reportar un bug</a>
   </div>
 </footer>
 
 <script>
-  // ── DETECCIÓN DE SISTEMA OPERATIVO ──
-  // INSTRUCCIONES: Cambia estas URLs por las de tus releases reales en GitHub.
-  // Formato: https://github.com/TU_USUARIO/TU_REPO/releases/download/v1.0.0/ARCHIVO
   const DOWNLOADS = {
     windows: {
       label: 'Descargar para Windows',
       url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/download/Immune_Study_Suite/KernosIA-Windows.exe',
       note:  'Windows 10/11 • .exe'
     },
-    mac: {
-      label: 'Descargar para macOS',
-      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/download/Immune_Study_Suite/KernosIA-MacOs.zip',
-      note:  'macOS 12+ • .zip (Universal: Intel + Apple Silicon)'
+    'mac-arm': {
+      label: 'Descargar para Mac (Apple Silicon)',
+      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/download/Immune_Study_Suite/KernosIA-MacOs-ARM.zip',
+      note:  'macOS 12+ • .zip (Apple Silicon M1/M2/M3/M4)'
+    },
+    'mac-intel': {
+      label: 'Descargar para Mac (Intel)',
+      url:   'https://github.com/LDPCICNM2012/Proyecto_Final_IMMUNE_2025-2026_LanderDePablos/releases/download/Immune_Study_Suite/KernosIA-MacOs-Intel.zip',
+      note:  'macOS 12+ • .zip (Procesadores Intel)'
     },
     linux: {
       label: 'Descargar para Linux',
@@ -433,12 +435,32 @@
     }
   };
 
+  function detectMacArch() {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
+          if (renderer.includes('intel') || renderer.includes('amd') || renderer.includes('radeon') || renderer.includes('nvidia')) {
+            return 'mac-intel';
+          }
+          if (renderer.includes('apple')) {
+            return 'mac-arm';
+          }
+        }
+      }
+    } catch (e) {}
+    return 'mac-arm';
+  }
+
   function detectOS() {
     const ua = navigator.userAgent.toLowerCase();
     const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
 
     if (/win/.test(platform) || /windows/.test(ua)) return 'windows';
-    if (/mac/.test(platform) || /macintosh|mac os x/.test(ua)) return 'mac';
+    if (/mac/.test(platform) || /macintosh|mac os x/.test(ua)) return detectMacArch();
     if (/linux/.test(platform) || /linux/.test(ua)) return 'linux';
     return 'other';
   }
@@ -469,7 +491,6 @@
     if (osNote && dl) osNote.textContent = dl.note;
   }
 
-  // Esperar a que el DOM esté listo antes de manipular elementos
   document.addEventListener('DOMContentLoaded', applyDownload);
 </script>
 </body>
