@@ -29,7 +29,7 @@ jobs:
 
       - name: Compilar con PyInstaller
         run: |
-          pyinstaller --onefile --windowed --icon=logo.ico --name="KernosIA-Windows" --collect-data customtkinter main.py
+          pyinstaller --onefile --windowed --icon=main/logo.ico --name="KernosIA-Windows" --collect-data customtkinter main/main.py
 
       - name: Subir al Release
         uses: softprops/action-gh-release@v2
@@ -54,25 +54,9 @@ jobs:
         run: |
           pip install pyinstaller customtkinter openai google-generativeai python-docx Pillow
 
-      - name: Convertir logo.ico a logo.icns
-        run: |
-          python -c "from PIL import Image; Image.open('logo.ico').save('logo.png')"
-          mkdir -p logo.iconset
-          sips -z 16 16     logo.png --out logo.iconset/icon_16x16.png
-          sips -z 32 32     logo.png --out logo.iconset/icon_16x16@2x.png
-          sips -z 32 32     logo.png --out logo.iconset/icon_32x32.png
-          sips -z 64 64     logo.png --out logo.iconset/icon_32x32@2x.png
-          sips -z 128 128   logo.png --out logo.iconset/icon_128x128.png
-          sips -z 256 256   logo.png --out logo.iconset/icon_128x128@2x.png
-          sips -z 256 256   logo.png --out logo.iconset/icon_256x256.png
-          sips -z 512 512   logo.png --out logo.iconset/icon_512x512.png
-          sips -z 512 512   logo.png --out logo.iconset/icon_512x512@2x.png
-          sips -z 1024 1024 logo.png --out logo.iconset/icon_512x512@2x.png
-          iconutil -c icns logo.iconset -o logo.icns
-
       - name: Compilar con PyInstaller
         run: |
-          pyinstaller --onedir --windowed --icon=logo.icns --name="KernosIA" --collect-data customtkinter main.py
+          pyinstaller --onedir --windowed --icon=main/logo.icns --name="KernosIA" --collect-data customtkinter main/main.py
 
       - name: Empaquetar en .zip
         run: |
@@ -109,7 +93,7 @@ jobs:
 
       - name: Compilar con PyInstaller
         run: |
-          pyinstaller --onefile --windowed --name="KernosIA-Linux" --collect-data customtkinter main.py
+          pyinstaller --onefile --windowed --name="KernosIA-Linux" --collect-data customtkinter main/main.py
 
       - name: Subir al Release
         uses: softprops/action-gh-release@v2
