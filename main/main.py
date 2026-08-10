@@ -117,14 +117,14 @@ def hash_password(password):
 class PantallaLogin(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Kernoss AI – Acceso")
+        self.title("Kernosss AI – Acceso")
         self.geometry("520x640")
         self.resizable(False, False)
         self.usuario_autenticado = None
         self._build_ui()
 
     def _build_ui(self):
-        ctk.CTkLabel(self, text="Kernoss\nAI",
+        ctk.CTkLabel(self, text="Kernosss\nAI",
                      font=("Segoe UI", 36, "bold"), text_color="#1f6aa5").pack(pady=(50, 5))
         ctk.CTkLabel(self, text="2026 Edition",
                      font=("Segoe UI", 14), text_color="#888").pack(pady=(0, 40))
@@ -1850,7 +1850,7 @@ class DashboardEstudios(ctk.CTk):
         self.nombre  = sesion.get("nombre", "Usuario")
         self.email   = sesion.get("email", "")
 
-        self.title(f"Kernoss AI – {self.rol}: {self.nombre}")
+        self.title(f"Kernosss AI – {self.rol}: {self.nombre}")
         self.geometry("1400x820")
         self.resizable(True, True)
 
@@ -1867,7 +1867,7 @@ class DashboardEstudios(ctk.CTk):
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        ctk.CTkLabel(self.sidebar, text="\nKernoss AI",
+        ctk.CTkLabel(self.sidebar, text="\nKernosss AI",
                      font=("Segoe UI", 24, "bold"), text_color="#1f6aa5").pack(pady=(30, 5))
         ctk.CTkLabel(self.sidebar, text="2026 Edition",
                      font=("Segoe UI", 11), text_color="#555").pack()

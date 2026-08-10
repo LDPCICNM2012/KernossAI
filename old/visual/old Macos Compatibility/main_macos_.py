@@ -46,7 +46,7 @@ class DashboardEstudios(ctk.CTk):
         super().__init__()
 
         # Ventana principal estilizada
-        self.title("KernosAI – Panel de Control")
+        self.title("KernosssAI – Panel de Control")
         self.geometry("1240x720")
         self.resizable(False, False)
         self.configure(fg_color="#121214")  # Fondo oscuro premium ultra-clean
@@ -202,7 +202,7 @@ class DashboardEstudios(ctk.CTk):
                 bundle_exe = os.path.join(
                     os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
                     "MacOS",
-                    "KernossAI"
+                    "KernosssAI"
                 )
                 exe_path = bundle_exe if os.path.isfile(bundle_exe) else sys.executable
 
