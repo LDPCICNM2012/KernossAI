@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  KernosAI  —  main.py  (MONOLÍTICO, sin subprocesos)
+#  sAI  —  main.py  (MONOLÍTICO, sin subprocesos)
 #  Todos los módulos están integrados aquí directamente.
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,17 +14,13 @@ import re
 import threading
 import calendar
 from datetime import datetime
+import requests
 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-from openai import OpenAI
-from google import genai
-from google.genai import types
-import google.generativeai as genai_legacy
 
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
@@ -39,12 +35,44 @@ ctk.set_default_color_theme("blue")
 RUTA_SESION    = os.path.expanduser("~/.immune_session.json")
 RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
 
+BACKEND_URL = "https://kernosai-backend.onrender.com/api/evaluar"
+APP_SECRET = "DepablosCuevasLander72712"
 
 
-# ── API Keys ──
-GROQ_API_KEY   = ""  # ← pega tu gsk_... de console.groq.com
-GEMINI_API_KEY = "" # ← pega tu clave de aistudio.google.com
-GEMINI_MODEL   = "gemini-3.6-flash"
+def consultar_ia_backend(prompt: str, modelo: str = "gemini") -> str:
+    """Función centralizada que envía la consulta a tu servidor."""
+    headers = {
+        "X-App-Token": APP_SECRET,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "prompt": prompt,
+        "model": modelo
+    }
+    try:
+        response = requests.post(BACKEND_URL, json=payload, headers=headers, timeout=60)
+        if response.status_code == 200:
+            return response.json().get("resultado", "Sin respuesta.")
+        return f"Error ({response.status_code}): {response.text}"
+    except Exception as e:
+        return f"Error de conexión: {str(e)}"
+
+
+def llamar_gemini(prompt):
+    return consultar_ia_backend(prompt, modelo="gemini")
+
+
+def llamar_groq(prompt):
+    return consultar_ia_backend(prompt, modelo="groq")
+
+
+def construir_prompt(instrucciones, historial=None):
+    partes = [instrucciones.strip()]
+    if historial:
+        for msg in historial:
+            rol = "IA" if msg.get("role") == "assistant" else msg.get("role", "Usuario").capitalize()
+            partes.append(f"{rol}: {msg.get('content', '')}")
+    return "\n\n".join(partes)
 
 # ─────────────────────────────────────────────
 #  UTILIDADES DE SESIÓN
@@ -89,14 +117,14 @@ def hash_password(password):
 class PantallaLogin(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("KernosAI – Acceso")
+        self.title("Kernoss AI – Acceso")
         self.geometry("520x640")
         self.resizable(False, False)
         self.usuario_autenticado = None
         self._build_ui()
 
     def _build_ui(self):
-        ctk.CTkLabel(self, text="KERNOS\nAI",
+        ctk.CTkLabel(self, text="Kernoss\nAI",
                      font=("Segoe UI", 36, "bold"), text_color="#1f6aa5").pack(pady=(50, 5))
         ctk.CTkLabel(self, text="2026 Edition",
                      font=("Segoe UI", 14), text_color="#888").pack(pady=(0, 40))
@@ -591,8 +619,7 @@ class ModuloApuntador(ctk.CTkFrame):
 class ModuloResumidor(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
-        self.cliente_groq = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        self.modelo = "llama-3.3-70b-versatile"
+        self.modelo = "groq"
         self.instrucciones = (
             "Eres un experto en el tema proporcionado. Tu conocimiento se basa estrictamente en hechos reales. "
             "REGLA DE SEGURIDAD ABSOLUTA: Solo puedes responder a temas que pertenezcan al ámbito educativo, "
@@ -657,15 +684,10 @@ class ModuloResumidor(ctk.CTkFrame):
 
     def _ejecutar_ia(self, texto):
         try:
-            response = self.cliente_groq.chat.completions.create(
-                model=self.modelo,
-                messages=[{'role': 'system', 'content': self.instrucciones},
-                          {'role': 'user', 'content': f"Desarrolla o resume de manera extensa y rigurosa: {texto}"}],
-                temperature=0.2, max_tokens=2000, stream=True)
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    contenido = chunk.choices[0].delta.content
-                    self.after(0, self._escribir_output, contenido)
+            resultado = llamar_groq(
+                f"{self.instrucciones}\n\nDesarrolla o resume de manera extensa y rigurosa: {texto}"
+            )
+            self.after(0, self._escribir_output, resultado)
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error Cloud", f"Fallo al conectar con IA: {e}"))
         finally:
@@ -705,7 +727,6 @@ class ModuloResumidor(ctk.CTkFrame):
 class ModuloExamen(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
-        self.cliente_groq = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
         self.examen_en_memoria = ""
         self.historial_conversacion = []
         self.instrucciones_base = (
@@ -767,21 +788,16 @@ class ModuloExamen(ctk.CTkFrame):
 
     def _proceso_groq(self, tema):
         try:
+            prompt = (
+                f"{self.instrucciones_base}\n\nHazme un examen sobre: {tema}"
+            )
+            full = llamar_groq(prompt)
+            self.examen_en_memoria = full
             self.historial_conversacion = [
                 {'role': 'system', 'content': self.instrucciones_base},
-                {'role': 'user', 'content': f"Hazme un examen sobre: {tema}"}
+                {'role': 'assistant', 'content': full}
             ]
-            response = self.cliente_groq.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=self.historial_conversacion, stream=True, temperature=0.3)
-            full = ""
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    c = chunk.choices[0].delta.content
-                    full += c
-                    self.after(0, self._update_output, c)
-            self.examen_en_memoria = full
-            self.historial_conversacion.append({'role': 'assistant', 'content': full})
+            self.after(0, self._update_output, full)
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
             self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
         except Exception as e:
@@ -801,16 +817,9 @@ class ModuloExamen(ctk.CTkFrame):
 
     def _proceso_respuesta(self):
         try:
-            response = self.cliente_groq.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=self.historial_conversacion, stream=True, temperature=0.2)
-            full = ""
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    c = chunk.choices[0].delta.content
-                    full += c
-                    self.after(0, self._update_output, c)
+            full = llamar_groq(construir_prompt(self.instrucciones_base, self.historial_conversacion))
             self.historial_conversacion.append({'role': 'assistant', 'content': full})
+            self.after(0, self._update_output, full)
             self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error", str(e)))
@@ -842,8 +851,6 @@ class ModuloAyudador(ctk.CTkFrame):
     def __init__(self, master, sesion=None):
         super().__init__(master, fg_color="transparent")
         self.sesion = sesion or {}
-        self.cliente_groq   = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        self.cliente_gemini = genai.Client(api_key=GEMINI_API_KEY)
         self.modelo_actual  = "groq"
         self.historial_conversacion = []
         self.instrucciones_groq = (
@@ -946,8 +953,8 @@ class ModuloAyudador(ctk.CTkFrame):
         else:
             self.btn_avanzado.configure(fg_color="#7b1fa2")
             self.btn_basico.configure(fg_color="transparent")
-            self.lbl_limite.configure(text=f"ℹ️ Gemini: 5 msgs/minuto ({GEMINI_MODEL})")
-            self.lbl_banner.configure(text=f"Modelo activo: Gemini ({GEMINI_MODEL})  •  Límite: 5 mensajes / minuto")
+            self.lbl_limite.configure(text="ℹ️ Gemini: 5 msgs/minuto")
+            self.lbl_banner.configure(text="Modelo activo: Gemini  •  Límite: 5 mensajes / minuto")
             self.status_label.configure(text="🟣 Gemini Listo", text_color="#bb86fc")
             self.txt_instrucciones.insert("1.0", self.instrucciones_gemini)
 
@@ -975,32 +982,13 @@ class ModuloAyudador(ctk.CTkFrame):
         try:
             self.after(0, lambda: self._stream_update("\n IA:\n"))
             instrucciones = self.txt_instrucciones.get("1.0", "end-1c").strip()
+            prompt = construir_prompt(instrucciones, self.historial_conversacion)
             if self.modelo_actual == "groq":
-                response = self.cliente_groq.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "system", "content": instrucciones}] + self.historial_conversacion,
-                    stream=True, temperature=0.2)
-                respuesta_completa = ""
-                for chunk in response:
-                    delta = chunk.choices[0].delta.content
-                    if delta:
-                        respuesta_completa += delta
-                        self.after(0, self._stream_update, delta)
+                respuesta_completa = llamar_groq(prompt)
             else:
-                gemini_contents = []
-                for msg in self.historial_conversacion:
-                    rol_g = "user" if msg["role"] == "user" else "model"
-                    gemini_contents.append(types.Content(role=rol_g,
-                                                         parts=[types.Part.from_text(text=msg["content"])]))
-                config_g = types.GenerateContentConfig(system_instruction=instrucciones, temperature=0.2)
-                response = self.cliente_gemini.models.generate_content_stream(
-                    model=GEMINI_MODEL, contents=gemini_contents, config=config_g)
-                respuesta_completa = ""
-                for chunk in response:
-                    if chunk.text:
-                        respuesta_completa += chunk.text
-                        self.after(0, self._stream_update, chunk.text)
+                respuesta_completa = llamar_gemini(prompt)
             self.historial_conversacion.append({"role": "assistant", "content": respuesta_completa})
+            self.after(0, self._stream_update, respuesta_completa)
             self._guardar_historial()
             color = "green" if self.modelo_actual == "groq" else "#bb86fc"
             texto = "🟢 Groq Listo" if self.modelo_actual == "groq" else "🟣 Gemini Listo"
@@ -1279,9 +1267,6 @@ del ejercicio que te proporcionan. Explica cada paso y por qué es correcto."""
 class ModuloCreadorEjercicios(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
-        self.cliente_groq = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        genai_legacy.configure(api_key=GEMINI_API_KEY)
-        self.cliente_gemini = genai_legacy.GenerativeModel("gemini-2.5-flash")
         self.modelo_actual = "groq"
         self.ejercicio_actual = ""
         self.solucionario_actual = ""
@@ -1402,16 +1387,10 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             self.lbl_limite.configure(text="Gemini: 15 msgs/minuto")
 
     def _llamar_ia(self, prompt):
+        full_prompt = f"{INSTRUCCIONES_EJERCICIO}\n\n{prompt}"
         if self.modelo_actual == "groq":
-            r = self.cliente_groq.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{'role': 'system', 'content': INSTRUCCIONES_EJERCICIO},
-                          {'role': 'user', 'content': prompt}],
-                temperature=0.4)
-            return r.choices[0].message.content
-        else:
-            r = self.cliente_gemini.generate_content(f"{INSTRUCCIONES_EJERCICIO}\n\n{prompt}")
-            return r.text
+            return llamar_groq(full_prompt)
+        return llamar_gemini(full_prompt)
 
     def _construir_prompt(self):
         tema  = self.entry_tema.get().strip() or "tema libre"
@@ -1492,18 +1471,10 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             messagebox.showwarning("Atención", "Primero genera un ejercicio.")
             return
         self.status.configure(text="Generando solucionario...", text_color="orange")
-        prompt = f"Genera el solucionario completo de este ejercicio:\n\n{self.ejercicio_actual}"
+        prompt = f"{INSTRUCCIONES_SOLUCIONES}\n\nGenera el solucionario completo de este ejercicio:\n\n{self.ejercicio_actual}"
         def _thread():
             try:
-                if self.modelo_actual == "groq":
-                    r = self.cliente_groq.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=[{'role': 'system', 'content': INSTRUCCIONES_SOLUCIONES},
-                                  {'role': 'user', 'content': prompt}], temperature=0.2)
-                    sol = r.choices[0].message.content
-                else:
-                    r = self.cliente_gemini.generate_content(f"{INSTRUCCIONES_SOLUCIONES}\n\n{prompt}")
-                    sol = r.text
+                sol = llamar_groq(prompt) if self.modelo_actual == "groq" else llamar_gemini(prompt)
                 self.solucionario_actual = sol
                 def _mostrar():
                     ven = ctk.CTkToplevel(self)
@@ -1583,9 +1554,6 @@ Sé justo, constructivo y motivador en el tono."""
 class ModuloCorrectorExamenes(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
-        self.cliente_groq = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        genai_legacy.configure(api_key=GEMINI_API_KEY)
-        self.cliente_gemini = genai_legacy.GenerativeModel("gemini-2.5-flash")
         self.modelo_actual = "groq"
         self.correccion_actual = ""
         self.alumnos = {}
@@ -1712,16 +1680,10 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
             self.lbl_limite.configure(text="Gemini: 15 msgs/minuto")
 
     def _llamar_ia(self, prompt):
+        full_prompt = f"{INSTRUCCIONES_CORRECTOR}\n\n{prompt}"
         if self.modelo_actual == "groq":
-            r = self.cliente_groq.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{'role': 'system', 'content': INSTRUCCIONES_CORRECTOR},
-                          {'role': 'user', 'content': prompt}],
-                temperature=0.2)
-            return r.choices[0].message.content
-        else:
-            r = self.cliente_gemini.generate_content(f"{INSTRUCCIONES_CORRECTOR}\n\n{prompt}")
-            return r.text
+            return llamar_groq(full_prompt)
+        return llamar_gemini(full_prompt)
 
     def corregir_examen(self):
         enunciado = self.txt_enunciado.get("1.0", "end-1c").strip()
@@ -1888,7 +1850,7 @@ class DashboardEstudios(ctk.CTk):
         self.nombre  = sesion.get("nombre", "Usuario")
         self.email   = sesion.get("email", "")
 
-        self.title(f"KernosAI – {self.rol}: {self.nombre}")
+        self.title(f"Kernoss AI – {self.rol}: {self.nombre}")
         self.geometry("1400x820")
         self.resizable(True, True)
 
@@ -1905,7 +1867,7 @@ class DashboardEstudios(ctk.CTk):
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        ctk.CTkLabel(self.sidebar, text="Kernos\nAI",
+        ctk.CTkLabel(self.sidebar, text="\nKernoss AI",
                      font=("Segoe UI", 24, "bold"), text_color="#1f6aa5").pack(pady=(30, 5))
         ctk.CTkLabel(self.sidebar, text="2026 Edition",
                      font=("Segoe UI", 11), text_color="#555").pack()

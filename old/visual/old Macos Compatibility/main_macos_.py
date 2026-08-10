@@ -202,7 +202,7 @@ class DashboardEstudios(ctk.CTk):
                 bundle_exe = os.path.join(
                     os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
                     "MacOS",
-                    "KernosAI"
+                    "KernossAI"
                 )
                 exe_path = bundle_exe if os.path.isfile(bundle_exe) else sys.executable
 

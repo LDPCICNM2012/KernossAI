@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════════
-#  KernosAI  —  main.py  (MONOLÍTICO, sin subprocesos)
+#  KernossAI  —  main.py  (MONOLÍTICO, sin subprocesos)
 #  Todos los módulos están integrados aquí directamente.
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -87,14 +87,14 @@ def hash_password(password):
 class PantallaLogin(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("KernosAI – Acceso")
+        self.title("KernossAI – Acceso")
         self.geometry("520x640")
         self.resizable(False, False)
         self.usuario_autenticado = None
         self._build_ui()
 
     def _build_ui(self):
-        ctk.CTkLabel(self, text="KERNOS\nAI",
+        ctk.CTkLabel(self, text="KERNOSS\nAI",
                      font=("Segoe UI", 36, "bold"), text_color="#1f6aa5").pack(pady=(50, 5))
         ctk.CTkLabel(self, text="2026 Edition",
                      font=("Segoe UI", 14), text_color="#888").pack(pady=(0, 40))
@@ -1886,7 +1886,7 @@ class DashboardEstudios(ctk.CTk):
         self.nombre  = sesion.get("nombre", "Usuario")
         self.email   = sesion.get("email", "")
 
-        self.title(f"KernosAI – {self.rol}: {self.nombre}")
+        self.title(f"KernossAI – {self.rol}: {self.nombre}")
         self.geometry("1400x820")
         self.resizable(True, True)
 
@@ -1903,7 +1903,7 @@ class DashboardEstudios(ctk.CTk):
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        ctk.CTkLabel(self.sidebar, text="Kernos\nAI",
+        ctk.CTkLabel(self.sidebar, text="Kernoss\nAI",
                      font=("Segoe UI", 24, "bold"), text_color="#1f6aa5").pack(pady=(30, 5))
         ctk.CTkLabel(self.sidebar, text="2026 Edition",
                      font=("Segoe UI", 11), text_color="#555").pack()
