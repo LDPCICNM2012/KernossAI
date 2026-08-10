@@ -1,10 +1,12 @@
-Final project made by Lander de Pablos to finish the course of IMMUNE Technology Institute 2025-2026.
-This if the first time im my whole live that I actually develop an app for a operating system
-and this is for me like a dream come true, and being only 14 years-old, for me, is like a big achievement.
-This project if focused on students or workers(mostly studients) that need a quick app
-for studiyng or working, and beacuse the AI companies are always so money-hungry they sometimes don`t let you
-type to the AI anymore unless you pay.
-That's why I created a portal for having quick tools accesible for any person.
-I'm very proud of myself and I had a pretty good time developing this code.
-Thanks to Claude and Gemini for doing the styles and teaching me on how to use some parts of the visual code
-Lander.
+# KernosAI
+
+KernosAI is a Python-based application that provides a comprehensive suite of modules and tools powered by artificial intelligence to assist students and teachers. The platform optimizes academic workflows, helping users streamline their study habits and generate tailored exercises efficiently.
+
+## Core Technologies
+The current version relies on Groq and Google Gemini to power its intelligent features. However, the long-term roadmap focuses on transitioning toward proprietary, custom-trained AI models to enhance autonomy and local processing capabilities.
+
+## Future Development
+While the initial release focuses on desktop environments, future iterations aim to expand the ecosystem into native applications for both iOS and Android platforms. 
+
+## Contributions and Feedback
+KernosAI is a brand-new project under active development. The platform is open to new ideas, feature suggestions, and architectural feedback from the community to help shape its future roadmap.
