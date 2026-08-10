@@ -1,0 +1,19 @@
+# Permitir que todos los buscadores tradicionales indexen la web
+User-agent: *
+Disallow:
+
+# Permitir explícitamente a los principales Bots de IA rastrear el contenido
+User-agent: Googlebot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Enlace directo a tu sitemap para ayudar a los rastreadores
+Sitemap: https://ldpcicnm2012.github.io/KernosAI/sitemap.xml
