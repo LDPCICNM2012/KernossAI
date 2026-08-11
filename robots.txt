@@ -16,4 +16,4 @@ User-agent: PerplexityBot
 Allow: /
 
 # Enlace directo a tu sitemap para ayudar a los rastreadores
-Sitemap: https://ldpcicnm2012.github.io/KernosssAI/sitemap.xml
+Sitemap: https://ldpcicnm2012.github.io/KernossAI/sitemap.xml
