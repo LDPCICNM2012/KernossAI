@@ -26,6 +26,8 @@ from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+from auth_backend import login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token
+
 # ─────────────────────────────────────────────
 #  CONFIGURACIÓN GLOBAL
 # ─────────────────────────────────────────────
@@ -35,35 +37,7 @@ ctk.set_default_color_theme("blue")
 RUTA_SESION    = os.path.expanduser("~/.immune_session.json")
 RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
 
-BACKEND_URL = "https://kernosai-backend.onrender.com/api/evaluar"
-APP_SECRET = "DepablosCuevasLander72712"
 
-
-def consultar_ia_backend(prompt: str, modelo: str = "gemini") -> str:
-    """Función centralizada que envía la consulta a tu servidor."""
-    headers = {
-        "X-App-Token": APP_SECRET,
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "prompt": prompt,
-        "model": modelo
-    }
-    try:
-        response = requests.post(BACKEND_URL, json=payload, headers=headers, timeout=60)
-        if response.status_code == 200:
-            return response.json().get("resultado", "Sin respuesta.")
-        return f"Error ({response.status_code}): {response.text}"
-    except Exception as e:
-        return f"Error de conexión: {str(e)}"
-
-
-def llamar_gemini(prompt):
-    return consultar_ia_backend(prompt, modelo="gemini")
-
-
-def llamar_groq(prompt):
-    return consultar_ia_backend(prompt, modelo="groq")
 
 
 def construir_prompt(instrucciones, historial=None):
