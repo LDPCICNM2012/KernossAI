@@ -1,45 +1,34 @@
-# ══════════════════════════════════════════════════════════════════════════════
-#  sAI  —  main.py  (MONOLÍTICO, sin subprocesos)
-#  Todos los módulos están integrados aquí directamente.
-# ══════════════════════════════════════════════════════════════════════════════
 
+ 
 import matplotlib
 matplotlib.use("TkAgg")
-
+ 
 import sys
 import os
 import json
-import hashlib
 import re
 import threading
 import calendar
 from datetime import datetime
-import requests
-
+ 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
-
+ 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+ 
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-
+ 
 from auth_backend import login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token
-
+ 
 # ─────────────────────────────────────────────
 #  CONFIGURACIÓN GLOBAL
 # ─────────────────────────────────────────────
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
-
-RUTA_SESION    = os.path.expanduser("~/.immune_session.json")
-RUTA_USUARIOS  = os.path.expanduser("~/.immune_usuarios.json")
-
-
-
-
+ 
 def construir_prompt(instrucciones, historial=None):
     partes = [instrucciones.strip()]
     if historial:
@@ -47,44 +36,14 @@ def construir_prompt(instrucciones, historial=None):
             rol = "IA" if msg.get("role") == "assistant" else msg.get("role", "Usuario").capitalize()
             partes.append(f"{rol}: {msg.get('content', '')}")
     return "\n\n".join(partes)
-
+ 
 # ─────────────────────────────────────────────
-#  UTILIDADES DE SESIÓN
+#  UTILIDADES DE SESIÓN  (gestionadas por auth_backend)
 # ─────────────────────────────────────────────
-def cargar_sesion():
-    if os.path.exists(RUTA_SESION):
-        try:
-            with open(RUTA_SESION, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception:
-            return None
-    return None
-
-def guardar_sesion(datos):
-    with open(RUTA_SESION, 'w', encoding='utf-8') as f:
-        json.dump(datos, f, ensure_ascii=False, indent=2)
-
-def cerrar_sesion():
-    if os.path.exists(RUTA_SESION):
-        os.remove(RUTA_SESION)
-
-def cargar_usuarios():
-    if os.path.exists(RUTA_USUARIOS):
-        try:
-            with open(RUTA_USUARIOS, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception:
-            return {}
-    return {}
-
-def guardar_usuarios(usuarios):
-    with open(RUTA_USUARIOS, 'w', encoding='utf-8') as f:
-        json.dump(usuarios, f, ensure_ascii=False, indent=2)
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
+# Login, registro y token JWT → auth_backend.py
+# No hay secrets ni passwords locales aquí.
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PANTALLA DE LOGIN / REGISTRO
 # ══════════════════════════════════════════════════════════════════════════════
@@ -96,21 +55,21 @@ class PantallaLogin(ctk.CTk):
         self.resizable(False, False)
         self.usuario_autenticado = None
         self._build_ui()
-
+ 
     def _build_ui(self):
         ctk.CTkLabel(self, text="Kernosss\nAI",
                      font=("Segoe UI", 36, "bold"), text_color="#1f6aa5").pack(pady=(50, 5))
         ctk.CTkLabel(self, text="2026 Edition",
                      font=("Segoe UI", 14), text_color="#888").pack(pady=(0, 40))
-
+ 
         self.frame = ctk.CTkFrame(self, corner_radius=16, fg_color="#1a1a2e")
         self.frame.pack(padx=50, fill="x")
-
+ 
         self.tab = ctk.CTkTabview(self.frame, height=320)
         self.tab.pack(fill="x", padx=20, pady=20)
         self.tab.add("Iniciar Sesión")
         self.tab.add("Registrarse")
-
+ 
         # ── LOGIN ──
         login = self.tab.tab("Iniciar Sesión")
         ctk.CTkLabel(login, text="Correo electrónico", anchor="w").pack(fill="x", padx=10, pady=(10, 2))
@@ -124,7 +83,7 @@ class PantallaLogin(ctk.CTk):
                       command=self._login).pack(fill="x", padx=10, pady=(20, 5))
         self.lbl_login_error = ctk.CTkLabel(login, text="", text_color="red", font=("Segoe UI", 11))
         self.lbl_login_error.pack()
-
+ 
         # ── REGISTRO ──
         reg = self.tab.tab("Registrarse")
         ctk.CTkLabel(reg, text="Nombre completo", anchor="w").pack(fill="x", padx=10, pady=(10, 2))
@@ -143,28 +102,25 @@ class PantallaLogin(ctk.CTk):
                       command=self._registrar).pack(fill="x", padx=10, pady=(15, 5))
         self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color="red", font=("Segoe UI", 11))
         self.lbl_reg_error.pack()
-
+ 
         ctk.CTkLabel(self, text="Tus datos se guardan localmente en tu dispositivo.",
                      font=("Segoe UI", 10), text_color="#555").pack(pady=(20, 0))
-
+ 
     def _login(self):
         email    = self.entry_login_email.get().strip().lower()
         password = self.entry_login_pass.get()
         if not email or not password:
             self.lbl_login_error.configure(text="Completa todos los campos.")
             return
-        usuarios = cargar_usuarios()
-        if email not in usuarios:
-            self.lbl_login_error.configure(text="Correo no registrado.")
+        self.lbl_login_error.configure(text="Conectando...", text_color="#888")
+        self.update()
+        exito, error, sesion = login(email, password)
+        if not exito:
+            self.lbl_login_error.configure(text=error, text_color="red")
             return
-        if usuarios[email]["password"] != hash_password(password):
-            self.lbl_login_error.configure(text="Contraseña incorrecta.")
-            return
-        sesion = {"email": email, "nombre": usuarios[email]["nombre"], "rol": usuarios[email]["rol"]}
-        guardar_sesion(sesion)
         self.usuario_autenticado = sesion
         self.destroy()
-
+ 
     def _registrar(self):
         nombre   = self.entry_reg_nombre.get().strip()
         email    = self.entry_reg_email.get().strip().lower()
@@ -179,18 +135,16 @@ class PantallaLogin(ctk.CTk):
         if len(password) < 6:
             self.lbl_reg_error.configure(text="La contraseña debe tener al menos 6 caracteres.")
             return
-        usuarios = cargar_usuarios()
-        if email in usuarios:
-            self.lbl_reg_error.configure(text="Este correo ya está registrado.")
+        self.lbl_reg_error.configure(text="Creando cuenta...", text_color="#888")
+        self.update()
+        exito, error, sesion = registro(nombre, email, password, rol)
+        if not exito:
+            self.lbl_reg_error.configure(text=error, text_color="red")
             return
-        usuarios[email] = {"nombre": nombre, "password": hash_password(password), "rol": rol}
-        guardar_usuarios(usuarios)
-        sesion = {"email": email, "nombre": nombre, "rol": rol}
-        guardar_sesion(sesion)
         self.usuario_autenticado = sesion
         self.destroy()
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: CALCULADOR DE MEDIAS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -202,10 +156,10 @@ class ModuloCalculador(ctk.CTkFrame):
         self.porcentajes    = []
         self.canvas_grafico = None
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=1)
-
+ 
         frame_titulo = ctk.CTkFrame(self, fg_color="transparent")
         frame_titulo.pack(fill="x", padx=20, pady=(20, 15))
         ctk.CTkLabel(frame_titulo, text="Calculadora de Medias",
@@ -214,24 +168,24 @@ class ModuloCalculador(ctk.CTkFrame):
         ctk.CTkLabel(frame_titulo, text="Organiza y calcula el promedio de tus calificaciones",
                      font=("Segoe UI", 12),
                      text_color=["#424242", "#bdbdbd"]).pack(pady=(3, 0))
-
+ 
         self.frame_entrada = ctk.CTkFrame(self, corner_radius=12, border_width=1,
                                           border_color=["#e0e0e0", "#333333"])
         self.frame_entrada.pack(padx=25, pady=15, fill="both", expand=False)
         self.frame_entrada.grid_columnconfigure((0, 1), weight=1)
-
+ 
         ctk.CTkLabel(self.frame_entrada, text="Materia o Asignatura",
                      font=("Segoe UI", 13, "bold")).grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
         self.entrada_nombre = ctk.CTkEntry(self.frame_entrada, placeholder_text="Ej: Matemáticas, Física...",
                                            height=40, font=("Segoe UI", 12))
         self.entrada_nombre.grid(row=1, column=0, padx=15, pady=(0, 12), sticky="ew")
-
+ 
         ctk.CTkLabel(self.frame_entrada, text="Nota Directa",
                      font=("Segoe UI", 13, "bold")).grid(row=0, column=1, padx=15, pady=(15, 5), sticky="w")
         self.entrada_nota_directa = ctk.CTkEntry(self.frame_entrada, placeholder_text="Ej: 9.5",
                                                   height=40, font=("Segoe UI", 12))
         self.entrada_nota_directa.grid(row=1, column=1, padx=15, pady=(0, 12), sticky="ew")
-
+ 
         ctk.CTkLabel(self.frame_entrada,
                      text="% del Total (según criterios: 60% Pruebas / 30% Proyectos / 10% Observación)",
                      font=("Segoe UI", 13, "bold")).grid(row=2, column=0, padx=15, pady=(0, 5), sticky="w")
@@ -239,11 +193,11 @@ class ModuloCalculador(ctk.CTkFrame):
                                                placeholder_text="Ej: 60 (Pruebas) / 30 (Proyectos) / 10 (Observación)",
                                                height=40, font=("Segoe UI", 12))
         self.entrada_porcentaje.grid(row=3, column=0, columnspan=2, padx=15, pady=(0, 15), sticky="ew")
-
+ 
         frame_botones = ctk.CTkFrame(self, fg_color="transparent")
         frame_botones.pack(fill="x", padx=25, pady=12)
         frame_botones.grid_columnconfigure((0, 1), weight=1)
-
+ 
         ctk.CTkButton(frame_botones, text="Guardar Nota",
                       command=self.agregar_nota_principal,
                       fg_color="#4caf50", hover_color="#388e3c",
@@ -253,28 +207,28 @@ class ModuloCalculador(ctk.CTkFrame):
                       fg_color="transparent", border_width=2,
                       border_color=["#0288d1", "#4dd0e1"],
                       height=40, font=("Segoe UI", 12, "bold")).grid(row=0, column=1, padx=(6, 0), sticky="ew")
-
+ 
         frame_principal = ctk.CTkFrame(self, fg_color="transparent")
         frame_principal.pack(padx=25, pady=15, fill="both", expand=True)
         frame_principal.grid_columnconfigure((0, 1), weight=1)
         frame_principal.grid_rowconfigure(1, weight=1)
-
+ 
         ctk.CTkLabel(frame_principal, text="Registro de Notas",
                      font=("Segoe UI", 16, "bold")).grid(row=0, column=0, pady=(0, 8), padx=(0, 10), sticky="w")
         self.salida_texto = ctk.CTkTextbox(frame_principal, width=500, height=350,
                                            font=("Courier New", 11), corner_radius=10,
                                            border_width=1, state="disabled")
         self.salida_texto.grid(row=1, column=0, padx=(0, 10), sticky="nsew")
-
+ 
         ctk.CTkLabel(frame_principal, text="Visualización de Notas",
                      font=("Segoe UI", 16, "bold")).grid(row=0, column=1, pady=(0, 8), padx=(10, 0), sticky="w")
         self.frame_grafico = ctk.CTkFrame(frame_principal, corner_radius=10, border_width=1)
         self.frame_grafico.grid(row=1, column=1, padx=(10, 0), sticky="nsew")
-
+ 
         frame_acciones = ctk.CTkFrame(self, fg_color="transparent")
         frame_acciones.pack(padx=25, pady=15, fill="x")
         frame_acciones.grid_columnconfigure((0, 1, 2), weight=1)
-
+ 
         ctk.CTkButton(frame_acciones, text="Calcular Promedio Final",
                       command=self.calcular_total_final,
                       height=45, font=("Segoe UI", 12, "bold"),
@@ -287,12 +241,12 @@ class ModuloCalculador(ctk.CTkFrame):
                       command=self.exportar_a_word,
                       fg_color="#7c3aed", hover_color="#5b21b6",
                       height=45, font=("Segoe UI", 12, "bold")).grid(row=0, column=2, padx=(6, 0), sticky="ew")
-
+ 
     def calcular_media(self, lista):
         if not lista:
             return 0
         return sum(lista) / len(lista)
-
+ 
     def actualizar_grafico(self):
         if not self.notas_finales:
             return
@@ -322,7 +276,7 @@ class ModuloCalculador(ctk.CTkFrame):
         self.canvas_grafico = FigureCanvasTkAgg(fig, master=self.frame_grafico)
         self.canvas_grafico.draw()
         self.canvas_grafico.get_tk_widget().pack(fill="both", expand=True)
-
+ 
     def gestionar_subnotas(self):
         nombre_principal = self.entrada_nombre.get().strip()
         if not nombre_principal:
@@ -391,7 +345,7 @@ class ModuloCalculador(ctk.CTkFrame):
         self.salida_texto.configure(state="disabled")
         self.entrada_nombre.delete(0, "end")
         self.actualizar_grafico()
-
+ 
     def agregar_nota_principal(self):
         nombre = self.entrada_nombre.get().strip()
         nota_str = self.entrada_nota_directa.get().strip()
@@ -418,7 +372,7 @@ class ModuloCalculador(ctk.CTkFrame):
                 messagebox.showerror("Error", "La calificación y el porcentaje deben ser números válidos.")
         else:
             messagebox.showwarning("Campos incompletos", "Por favor completa materia y calificación.")
-
+ 
     def calcular_total_final(self):
         if not self.notas_finales:
             messagebox.showinfo("Sin datos", "No hay calificaciones guardadas para calcular.")
@@ -433,7 +387,7 @@ class ModuloCalculador(ctk.CTkFrame):
         self.salida_texto.insert("end", f"  Promedio Ponderado: {media_total:.2f}\n{'═'*60}\n\n")
         self.salida_texto.configure(state="disabled")
         self.salida_texto.see("end")
-
+ 
     def limpiar_datos(self):
         if messagebox.askyesno("Confirmar", "¿Deseas limpiar todas las notas?"):
             self.notas_finales.clear(); self.nombres_notas.clear(); self.porcentajes.clear()
@@ -446,7 +400,7 @@ class ModuloCalculador(ctk.CTkFrame):
             if self.canvas_grafico:
                 self.canvas_grafico.get_tk_widget().destroy()
                 self.canvas_grafico = None
-
+ 
     def exportar_a_word(self):
         if not self.notas_finales:
             messagebox.showwarning("Sin datos", "No hay calificaciones para exportar.")
@@ -472,8 +426,8 @@ class ModuloCalculador(ctk.CTkFrame):
                             f"Reporte_Calificaciones_{datetime.now().strftime('%d%m%Y_%H%M%S')}.docx")
         doc.save(ruta)
         messagebox.showinfo("Éxito", f"Documento exportado a:\n{ruta}")
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: APUNTADOR DE NOTAS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -484,11 +438,11 @@ class ModuloApuntador(ctk.CTkFrame):
         self.notas_guardadas = {}
         self._cargar_notas()
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
+ 
         # Panel lateral
         self.frame_lateral = ctk.CTkFrame(self, width=250, corner_radius=0)
         self.frame_lateral.grid(row=0, column=0, sticky="nsew")
@@ -501,7 +455,7 @@ class ModuloApuntador(ctk.CTkFrame):
                       fg_color="#28a745", hover_color="#218838").pack(fill="x", padx=10, pady=5)
         self.lista_notas_frame = ctk.CTkScrollableFrame(self.frame_lateral, label_text="Notas Guardadas")
         self.lista_notas_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
+ 
         # Área de edición
         self.frame_editor = ctk.CTkFrame(self, fg_color="transparent")
         self.frame_editor.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
@@ -520,7 +474,7 @@ class ModuloApuntador(ctk.CTkFrame):
         ctk.CTkButton(frame_btns, text="Exportar Word",
                       command=self.exportar_nota_word).pack(side="right", padx=5)
         self.actualizar_listbox()
-
+ 
     def crear_nueva_nota(self):
         nombre = self.entrada_nombre_nota.get().strip()
         if nombre:
@@ -532,13 +486,13 @@ class ModuloApuntador(ctk.CTkFrame):
                 self.entrada_nombre_nota.delete(0, "end")
             else:
                 messagebox.showwarning("Error", "La nota ya existe.")
-
+ 
     def abrir_nota(self, nombre):
         self.archivo_actual = nombre
         self.label_nota_abierta.configure(text=f"Editando: {nombre}", font=("Segoe UI", 16, "bold"))
         self.editor_texto.delete("1.0", "end")
         self.editor_texto.insert("1.0", self.notas_guardadas[nombre])
-
+ 
     def actualizar_listbox(self):
         for w in self.lista_notas_frame.winfo_children():
             w.destroy()
@@ -547,13 +501,13 @@ class ModuloApuntador(ctk.CTkFrame):
                           fg_color="transparent", text_color=("black", "white"),
                           hover_color=("#dbdbdb", "#2b2b2b"),
                           command=lambda n=nombre: self.abrir_nota(n)).pack(fill="x", pady=2)
-
+ 
     def guardar_nota(self):
         if self.archivo_actual:
             self.notas_guardadas[self.archivo_actual] = self.editor_texto.get("1.0", "end-1c")
             self._guardar_notas()
             messagebox.showinfo("Guardado", "Nota guardada correctamente.")
-
+ 
     def eliminar_nota(self):
         if self.archivo_actual and messagebox.askyesno("Confirmar", f"¿Eliminar '{self.archivo_actual}'?"):
             del self.notas_guardadas[self.archivo_actual]
@@ -562,7 +516,7 @@ class ModuloApuntador(ctk.CTkFrame):
             self.editor_texto.delete("1.0", "end")
             self.label_nota_abierta.configure(text="Seleccione una nota")
             self.actualizar_listbox()
-
+ 
     def exportar_nota_word(self):
         if not self.archivo_actual:
             return
@@ -574,19 +528,19 @@ class ModuloApuntador(ctk.CTkFrame):
         if path:
             doc.save(path)
             messagebox.showinfo("Éxito", "Exportado correctamente.")
-
+ 
     def _guardar_notas(self):
         ruta = os.path.expanduser("~/.apuntador_notas.json")
         with open(ruta, 'w', encoding='utf-8') as f:
             json.dump(self.notas_guardadas, f, ensure_ascii=False, indent=2)
-
+ 
     def _cargar_notas(self):
         ruta = os.path.expanduser("~/.apuntador_notas.json")
         if os.path.exists(ruta):
             with open(ruta, 'r', encoding='utf-8') as f:
                 self.notas_guardadas = json.load(f)
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: RESUMIDOR DE TEXTOS AI
 # ══════════════════════════════════════════════════════════════════════════════
@@ -603,35 +557,35 @@ class ModuloResumidor(ctk.CTkFrame):
             "explicando el contexto, las causas y las consecuencias. No inventes datos bajo ninguna circunstancia."
         )
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
-
+ 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.grid(row=0, column=0, padx=20, pady=20, sticky="ew")
         ctk.CTkLabel(header, text="🎓 Resumidor De Textos AI",
                      font=("Segoe UI", 28, "bold")).pack(side="left")
         self.entry_nombre = ctk.CTkEntry(header, placeholder_text="Tu nombre...", width=200)
         self.entry_nombre.pack(side="right", padx=10)
-
+ 
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.grid(row=1, column=0, padx=20, sticky="nsew")
         main.grid_columnconfigure((0, 1), weight=1)
         main.grid_rowconfigure(0, weight=1)
-
+ 
         input_f = ctk.CTkFrame(main)
         input_f.grid(row=0, column=0, padx=(0, 10), sticky="nsew")
         ctk.CTkLabel(input_f, text="Pega tus apuntes o tema aquí:", font=("Segoe UI", 13, "bold")).pack(pady=10)
         self.txt_input = ctk.CTkTextbox(input_f, font=("Segoe UI", 12))
         self.txt_input.pack(fill="both", expand=True, padx=15, pady=(0, 15))
-
+ 
         output_f = ctk.CTkFrame(main)
         output_f.grid(row=0, column=1, padx=(10, 0), sticky="nsew")
         ctk.CTkLabel(output_f, text="Resumen generado por IA:", font=("Segoe UI", 13, "bold")).pack(pady=10)
         self.txt_output = ctk.CTkTextbox(output_f, font=("Segoe UI", 13), fg_color=("#ebebeb", "#1a1a1a"))
         self.txt_output.pack(fill="both", expand=True, padx=15, pady=(0, 15))
-
+ 
         footer = ctk.CTkFrame(self, fg_color="transparent")
         footer.grid(row=2, column=0, padx=20, pady=20, sticky="ew")
         self.progress_bar = ctk.CTkProgressBar(footer)
@@ -644,7 +598,7 @@ class ModuloResumidor(ctk.CTkFrame):
         ctk.CTkButton(footer, text="Guardar en Word", height=45, width=200,
                       fg_color="#27ae60", hover_color="#219150",
                       command=self.exportar_word).pack(side="right")
-
+ 
     def iniciar_proceso(self):
         texto = self.txt_input.get("1.0", "end-1c").strip()
         if not texto:
@@ -655,7 +609,7 @@ class ModuloResumidor(ctk.CTkFrame):
         self.progress_bar.configure(mode="indeterminate")
         self.progress_bar.start()
         threading.Thread(target=self._ejecutar_ia, args=(texto,), daemon=True).start()
-
+ 
     def _ejecutar_ia(self, texto):
         try:
             resultado = llamar_groq(
@@ -666,16 +620,16 @@ class ModuloResumidor(ctk.CTkFrame):
             self.after(0, lambda: messagebox.showerror("Error Cloud", f"Fallo al conectar con IA: {e}"))
         finally:
             self.after(0, self._finalizar)
-
+ 
     def _escribir_output(self, char):
         self.txt_output.insert("end", char)
         self.txt_output.see("end")
-
+ 
     def _finalizar(self):
         self.progress_bar.stop()
         self.progress_bar.set(1)
         self.btn_procesar.configure(state="normal")
-
+ 
     def exportar_word(self):
         contenido = self.txt_output.get("1.0", "end-1c").strip()
         if not contenido or "ERROR:" in contenido:
@@ -693,8 +647,8 @@ class ModuloResumidor(ctk.CTkFrame):
                 messagebox.showinfo("Éxito", f"Archivo guardado en:\n{ruta}")
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo guardar: {e}")
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: GENERADOR DE EXÁMENES AI
 # ══════════════════════════════════════════════════════════════════════════════
@@ -712,11 +666,11 @@ class ModuloExamen(ctk.CTkFrame):
             "No pongas las respuestas correctas en el examen."
         )
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
+ 
         sidebar = ctk.CTkFrame(self, width=280, corner_radius=0)
         sidebar.grid(row=0, column=0, sticky="nsew")
         ctk.CTkLabel(sidebar, text="Configuración", font=("Segoe UI", 20, "bold")).pack(pady=20)
@@ -734,7 +688,7 @@ class ModuloExamen(ctk.CTkFrame):
         self.status_label = ctk.CTkLabel(sidebar, text="🟢 Groq Cloud Listo",
                                          text_color="green", font=("Segoe UI", 11))
         self.status_label.pack(side="bottom", pady=10)
-
+ 
         main_f = ctk.CTkFrame(self, fg_color="transparent")
         main_f.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         main_f.grid_rowconfigure(0, weight=1)
@@ -748,7 +702,7 @@ class ModuloExamen(ctk.CTkFrame):
         self.entry_respuesta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_respuesta.bind("<Return>", lambda e: self.enviar_respuesta())
         ctk.CTkButton(input_f, text="Enviar", width=100, command=self.enviar_respuesta).grid(row=0, column=1)
-
+ 
     def iniciar_generacion(self):
         tema = self.txt_tema.get("1.0", "end-1c").strip()
         if not tema:
@@ -759,7 +713,7 @@ class ModuloExamen(ctk.CTkFrame):
         self.btn_generar.configure(state="disabled")
         self.status_label.configure(text="🟡 Elaborando Examen...", text_color="orange")
         threading.Thread(target=self._proceso_groq, args=(tema,), daemon=True).start()
-
+ 
     def _proceso_groq(self, tema):
         try:
             prompt = (
@@ -778,7 +732,7 @@ class ModuloExamen(ctk.CTkFrame):
             self.after(0, lambda: messagebox.showerror("Error Cloud", str(e)))
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
             self.after(0, lambda: self.status_label.configure(text="🔴 Error de red", text_color="red"))
-
+ 
     def enviar_respuesta(self):
         msg = self.entry_respuesta.get().strip()
         if not msg:
@@ -788,7 +742,7 @@ class ModuloExamen(ctk.CTkFrame):
         self.status_label.configure(text="🟡 Corrigiendo...", text_color="orange")
         self.historial_conversacion.append({'role': 'user', 'content': msg})
         threading.Thread(target=self._proceso_respuesta, daemon=True).start()
-
+ 
     def _proceso_respuesta(self):
         try:
             full = llamar_groq(construir_prompt(self.instrucciones_base, self.historial_conversacion))
@@ -797,11 +751,11 @@ class ModuloExamen(ctk.CTkFrame):
             self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error", str(e)))
-
+ 
     def _update_output(self, texto):
         self.output_text.insert("end", texto)
         self.output_text.see("end")
-
+ 
     def exportar_word(self):
         texto = self.output_text.get("1.0", "end-1c")
         if not texto.strip():
@@ -816,8 +770,8 @@ class ModuloExamen(ctk.CTkFrame):
             doc.add_paragraph(texto)
             doc.save(path)
             messagebox.showinfo("Éxito", f"Archivo guardado en:\n{path}")
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: AYUDANTE DE PROBLEMAS AI
 # ══════════════════════════════════════════════════════════════════════════════
@@ -843,11 +797,11 @@ class ModuloAyudador(ctk.CTkFrame):
         self.chat_actual_id = None
         self.todo_el_historial = self._cargar_historial()
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
+ 
         sidebar = ctk.CTkFrame(self, width=280, corner_radius=0, fg_color="#0f0f1a")
         sidebar.grid(row=0, column=0, sticky="nsew")
         ctk.CTkLabel(sidebar, text="🛠️ Solver IA", font=("Segoe UI", 22, "bold")).pack(pady=(20, 5))
@@ -855,13 +809,13 @@ class ModuloAyudador(ctk.CTkFrame):
         self.entry_nombre.pack(fill="x", padx=15, pady=8)
         if self.sesion.get("nombre"):
             self.entry_nombre.insert(0, self.sesion["nombre"])
-
+ 
         ctk.CTkLabel(sidebar, text="⚙️ Instrucciones del Sistema",
                      font=("Segoe UI", 12, "bold")).pack(pady=(10, 2))
         self.txt_instrucciones = ctk.CTkTextbox(sidebar, height=120, wrap="word", font=("Segoe UI", 11))
         self.txt_instrucciones.pack(fill="x", padx=15, pady=5)
         self.txt_instrucciones.insert("1.0", self.instrucciones_groq)
-
+ 
         ctk.CTkLabel(sidebar, text="Modelo de IA", font=("Segoe UI", 12, "bold")).pack(pady=(10, 2))
         frame_modelo = ctk.CTkFrame(sidebar, fg_color="#1a1a2e", corner_radius=10)
         frame_modelo.pack(fill="x", padx=15, pady=5)
@@ -889,7 +843,7 @@ class ModuloAyudador(ctk.CTkFrame):
                                           text_color="green", font=("Segoe UI", 11))
         self.status_label.pack(side="bottom", pady=(0, 15))
         self._actualizar_historial_ui()
-
+ 
         chat_frame = ctk.CTkFrame(self, fg_color="transparent")
         chat_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         chat_frame.grid_rowconfigure(1, weight=1)
@@ -908,7 +862,7 @@ class ModuloAyudador(ctk.CTkFrame):
         self.entry_pregunta.bind("<Return>", lambda e: self._enviar())
         ctk.CTkButton(input_frame, text="Analizar", width=120, height=42,
                       command=self._enviar).grid(row=0, column=1)
-
+ 
     def _cambiar_modelo(self, modelo):
         texto_actual = self.txt_instrucciones.get("1.0", "end-1c").strip()
         if self.modelo_actual == "groq":
@@ -931,7 +885,7 @@ class ModuloAyudador(ctk.CTkFrame):
             self.lbl_banner.configure(text="Modelo activo: Gemini  •  Límite: 5 mensajes / minuto")
             self.status_label.configure(text="🟣 Gemini Listo", text_color="#bb86fc")
             self.txt_instrucciones.insert("1.0", self.instrucciones_gemini)
-
+ 
     def _agregar_texto(self, emisor, texto):
         self.txt_chat.configure(state="normal")
         if emisor == "IA":
@@ -940,7 +894,7 @@ class ModuloAyudador(ctk.CTkFrame):
             self.txt_chat.insert("end", f"\n\n {emisor}:\n{texto}\n")
         self.txt_chat.configure(state="disabled")
         self.txt_chat.see("end")
-
+ 
     def _enviar(self):
         pregunta = self.entry_pregunta.get().strip()
         nombre   = self.entry_nombre.get().strip() or "Tú"
@@ -951,7 +905,7 @@ class ModuloAyudador(ctk.CTkFrame):
         self.status_label.configure(text="🟡 Pensando...", text_color="orange")
         self.historial_conversacion.append({"role": "user", "content": pregunta})
         threading.Thread(target=self._proceso_ia, daemon=True).start()
-
+ 
     def _proceso_ia(self):
         try:
             self.after(0, lambda: self._stream_update("\n IA:\n"))
@@ -972,20 +926,20 @@ class ModuloAyudador(ctk.CTkFrame):
             self.after(0, lambda: self.status_label.configure(text="🔴 Error", text_color="red"))
         finally:
             self.after(0, lambda: self.txt_chat.configure(state="disabled"))
-
+ 
     def _stream_update(self, contenido):
         self.txt_chat.configure(state="normal")
         self.txt_chat.insert("end", contenido)
         self.txt_chat.see("end")
         self.txt_chat.configure(state="disabled")
-
+ 
     def _limpiar_chat(self):
         self.txt_chat.configure(state="normal")
         self.txt_chat.delete("1.0", "end")
         self.txt_chat.configure(state="disabled")
         self.historial_conversacion = []
         self.chat_actual_id = None
-
+ 
     def _exportar_word(self):
         if not self.historial_conversacion:
             messagebox.showwarning("Vacío", "No hay nada que exportar.")
@@ -1003,7 +957,7 @@ class ModuloAyudador(ctk.CTkFrame):
                 p.add_run(msg["content"])
             doc.save(path)
             messagebox.showinfo("Éxito", f"Guardado en:\n{path}")
-
+ 
     def _cargar_historial(self):
         if os.path.exists(self.ruta_historial):
             try:
@@ -1012,7 +966,7 @@ class ModuloAyudador(ctk.CTkFrame):
             except Exception:
                 return {}
         return {}
-
+ 
     def _guardar_historial(self):
         if not self.historial_conversacion:
             return
@@ -1027,7 +981,7 @@ class ModuloAyudador(ctk.CTkFrame):
             self.after(0, self._actualizar_historial_ui)
         except Exception as e:
             print(f"Error guardando historial: {e}")
-
+ 
     def _actualizar_historial_ui(self):
         for w in self.frame_historial.winfo_children():
             w.destroy()
@@ -1040,7 +994,7 @@ class ModuloAyudador(ctk.CTkFrame):
             ctk.CTkButton(fila, text="❌", width=32, height=32,
                           fg_color="#7a0000", hover_color="#500000",
                           command=lambda cid=chat_id: self._borrar_chat(cid)).pack(side="right")
-
+ 
     def _cargar_chat(self, chat_id):
         self.chat_actual_id = chat_id
         self.historial_conversacion = self.todo_el_historial[chat_id]
@@ -1054,7 +1008,7 @@ class ModuloAyudador(ctk.CTkFrame):
                 self.txt_chat.insert("end", f"\n IA:\n{msg['content']}")
         self.txt_chat.configure(state="disabled")
         self.txt_chat.see("end")
-
+ 
     def _borrar_chat(self, chat_id):
         if messagebox.askyesno("Confirmar", f"¿Borrar este chat?\n'{chat_id}'"):
             del self.todo_el_historial[chat_id]
@@ -1066,8 +1020,8 @@ class ModuloAyudador(ctk.CTkFrame):
             if self.chat_actual_id == chat_id:
                 self._limpiar_chat()
             self._actualizar_historial_ui()
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: AGENDA Y CALENDARIO
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1086,16 +1040,16 @@ class ModuloCalendario(ctk.CTkFrame):
         self._build_ui()
         self._actualizar_calendario()
         self._cargar_evento_en_editor()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=2)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
+ 
         # Panel izquierdo: calendario
         frame_izq = ctk.CTkFrame(self, fg_color="transparent")
         frame_izq.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
-
+ 
         self.frame_nav = ctk.CTkFrame(frame_izq, fg_color="#1a1a1a", height=60, corner_radius=10)
         self.frame_nav.pack(fill="x", pady=(0, 15))
         self.frame_nav.pack_propagate(False)
@@ -1106,7 +1060,7 @@ class ModuloCalendario(ctk.CTkFrame):
         self.lbl_mes_año.pack(side="left", expand=True)
         ctk.CTkButton(self.frame_nav, text="▶", width=40, font=("Segoe UI", 16),
                       command=self._mes_siguiente).pack(side="right", padx=15, pady=10)
-
+ 
         self.frame_dias = ctk.CTkFrame(frame_izq, fg_color="#242424", corner_radius=15,
                                         border_width=1, border_color="#2d2d2d")
         self.frame_dias.pack(fill="both", expand=True)
@@ -1117,7 +1071,7 @@ class ModuloCalendario(ctk.CTkFrame):
         for col, dia in enumerate(["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]):
             ctk.CTkLabel(self.frame_dias, text=dia, font=("Segoe UI", 13, "bold"),
                          text_color="gray").grid(row=0, column=col, pady=5, sticky="nsew")
-
+ 
         # Panel derecho: editor
         frame_der = ctk.CTkFrame(self, fg_color="#1a1a1a", corner_radius=0)
         frame_der.grid(row=0, column=1, sticky="nsew")
@@ -1133,7 +1087,7 @@ class ModuloCalendario(ctk.CTkFrame):
         ctk.CTkButton(frame_der, text="Borrar Todo", font=("Segoe UI", 13),
                       fg_color="#c62828", hover_color="#b71c1c",
                       command=self._borrar_evento).pack(fill="x", padx=20, pady=(5, 25))
-
+ 
     def _actualizar_calendario(self):
         for btn in self.botones_dias:
             btn.destroy()
@@ -1162,24 +1116,24 @@ class ModuloCalendario(ctk.CTkFrame):
             columna += 1
             if columna > 6:
                 columna = 0; fila += 1
-
+ 
     def _seleccionar_dia(self, dia):
         self.dia_seleccionado = f"{self.año_actual}-{self.mes_actual:02d}-{dia:02d}"
         self._actualizar_calendario()
         self._cargar_evento_en_editor()
-
+ 
     def _mes_anterior(self):
         self.mes_actual -= 1
         if self.mes_actual < 1:
             self.mes_actual = 12; self.año_actual -= 1
         self._actualizar_calendario()
-
+ 
     def _mes_siguiente(self):
         self.mes_actual += 1
         if self.mes_actual > 12:
             self.mes_actual = 1; self.año_actual += 1
         self._actualizar_calendario()
-
+ 
     def _cargar_eventos(self):
         if os.path.exists(self.ruta_datos):
             try:
@@ -1188,7 +1142,7 @@ class ModuloCalendario(ctk.CTkFrame):
             except Exception:
                 return {}
         return {}
-
+ 
     def _cargar_evento_en_editor(self):
         partes = self.dia_seleccionado.split("-")
         fecha_objeto = datetime(int(partes[0]), int(partes[1]), int(partes[2]))
@@ -1196,7 +1150,7 @@ class ModuloCalendario(ctk.CTkFrame):
         self.txt_tareas.delete("1.0", "end")
         if self.dia_seleccionado in self.eventos:
             self.txt_tareas.insert("1.0", self.eventos[self.dia_seleccionado])
-
+ 
     def _guardar_evento(self):
         contenido = self.txt_tareas.get("1.0", "end-1c").strip()
         if contenido:
@@ -1210,7 +1164,7 @@ class ModuloCalendario(ctk.CTkFrame):
             messagebox.showinfo("Guardado", "Agenda actualizada correctamente.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo guardar:\n{e}")
-
+ 
     def _borrar_evento(self):
         if self.dia_seleccionado in self.eventos:
             if messagebox.askyesno("Confirmar", "¿Seguro que quieres borrar todas las tareas de este día?"):
@@ -1219,8 +1173,8 @@ class ModuloCalendario(ctk.CTkFrame):
                 with open(self.ruta_datos, 'w', encoding='utf-8') as f:
                     json.dump(self.eventos, f, ensure_ascii=False, indent=2)
                 self._actualizar_calendario()
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: CREADOR DE EJERCICIOS (PROFESOR)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1233,11 +1187,11 @@ Crea ejercicios bien estructurados con:
 5. Tiempo estimado.
 NO incluyas las soluciones a menos que se te pida explícitamente.
 El formato debe ser limpio y listo para imprimir o enviar a alumnos."""
-
+ 
 INSTRUCCIONES_SOLUCIONES = """Eres un profesor. Genera el solucionario completo y detallado
 del ejercicio que te proporcionan. Explica cada paso y por qué es correcto."""
-
-
+ 
+ 
 class ModuloCreadorEjercicios(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
@@ -1245,11 +1199,11 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.ejercicio_actual = ""
         self.solucionario_actual = ""
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
+ 
         sidebar = ctk.CTkFrame(self, width=290, corner_radius=0)
         sidebar.grid(row=0, column=0, sticky="nsew")
         sidebar.grid_propagate(False)
@@ -1257,7 +1211,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                      font=("Segoe UI", 20, "bold"), text_color="#e53935").pack(pady=(20, 5))
         ctk.CTkLabel(sidebar, text="Modo Profesor",
                      font=("Segoe UI", 11), text_color="#888").pack(pady=(0, 15))
-
+ 
         ctk.CTkLabel(sidebar, text="Motor de IA:", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
         fm = ctk.CTkFrame(sidebar, fg_color="transparent")
         fm.pack(fill="x", padx=15, pady=5)
@@ -1275,7 +1229,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                                         font=("Segoe UI", 9), text_color="#666")
         self.lbl_limite.pack(pady=(2, 10))
         ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
-
+ 
         ctk.CTkLabel(sidebar, text="Tema / Materia", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15, pady=(5, 2))
         self.entry_tema = ctk.CTkEntry(sidebar, placeholder_text="Ej: Ecuaciones de 2º grado")
         self.entry_tema.pack(fill="x", padx=15, pady=(0, 8))
@@ -1301,7 +1255,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.check_soluciones = ctk.CTkCheckBox(sidebar, text="Incluir solucionario al final")
         self.check_soluciones.pack(padx=15, pady=8, anchor="w")
         ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
-
+ 
         self.btn_generar = ctk.CTkButton(sidebar, text="Generar Ejercicio", height=45,
                                           font=("Segoe UI", 13, "bold"),
                                           fg_color="#7b1fa2", hover_color="#4a0072",
@@ -1329,7 +1283,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.btn_exportar_sin.pack(fill="x", padx=15, pady=(1, 3))
         self.status = ctk.CTkLabel(sidebar, text="Listo", text_color="gray", font=("Segoe UI", 10))
         self.status.pack(side="bottom", pady=10)
-
+ 
         panel = ctk.CTkFrame(self, fg_color="transparent")
         panel.grid(row=0, column=1, sticky="nsew", padx=15, pady=15)
         panel.grid_rowconfigure(1, weight=1)
@@ -1350,7 +1304,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         btn_row.grid(row=3, column=0, sticky="ew", pady=(8, 0))
         ctk.CTkButton(btn_row, text="Aplicar cambio con IA", fg_color="#e65100", hover_color="#bf360c",
                       height=38, command=self.aplicar_cambio_ia).pack(side="left", padx=(0, 8))
-
+ 
     def _set_modelo(self, m):
         self.modelo_actual = m
         if m == "groq":
@@ -1359,13 +1313,13 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         else:
             self.btn_groq.configure(fg_color="#333"); self.btn_gemini.configure(fg_color="#6a1b9a")
             self.lbl_limite.configure(text="Gemini: 15 msgs/minuto")
-
+ 
     def _llamar_ia(self, prompt):
         full_prompt = f"{INSTRUCCIONES_EJERCICIO}\n\n{prompt}"
         if self.modelo_actual == "groq":
             return llamar_groq(full_prompt)
         return llamar_gemini(full_prompt)
-
+ 
     def _construir_prompt(self):
         tema  = self.entry_tema.get().strip() or "tema libre"
         nivel = self.combo_nivel.get()
@@ -1376,7 +1330,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                 f"Debe tener exactamente {n} preguntas/apartados. "
                 f"{'Incluye el solucionario completo al final.' if inc else 'NO incluyas las soluciones.'} "
                 f"Formato limpio y listo para entregar a los alumnos.")
-
+ 
     def generar_ejercicio(self):
         if not self.entry_tema.get().strip():
             messagebox.showwarning("Tema vacío", "Introduce el tema del ejercicio.")
@@ -1384,7 +1338,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.btn_generar.configure(state="disabled")
         self.status.configure(text="Generando...", text_color="orange")
         threading.Thread(target=self._thread_generar, daemon=True).start()
-
+ 
     def _thread_generar(self):
         try:
             resultado = self._llamar_ia(self._construir_prompt())
@@ -1395,7 +1349,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         finally:
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
-
+ 
     def _mostrar_ejercicio(self, texto):
         self.txt_ejercicio.configure(state="normal")
         self.txt_ejercicio.delete("1.0", "end")
@@ -1404,18 +1358,18 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         for btn in [self.btn_regenerar, self.btn_editar, self.btn_solucionario,
                     self.btn_exportar, self.btn_exportar_sin]:
             btn.configure(state="normal")
-
+ 
     def activar_edicion(self):
         self.txt_ejercicio.configure(state="normal")
         self.lbl_modo_edicion.configure(text="✏️ Modo edición manual activo")
         self.btn_editar.configure(text="Bloquear edición", command=self.desactivar_edicion)
-
+ 
     def desactivar_edicion(self):
         self.ejercicio_actual = self.txt_ejercicio.get("1.0", "end-1c")
         self.txt_ejercicio.configure(state="disabled")
         self.lbl_modo_edicion.configure(text="")
         self.btn_editar.configure(text="Editar manualmente", command=self.activar_edicion)
-
+ 
     def aplicar_cambio_ia(self):
         cambio = self.entry_cambio.get().strip()
         if not cambio:
@@ -1429,7 +1383,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                   f"Aplica el siguiente cambio y devuelve el ejercicio completo actualizado: {cambio}")
         self.entry_cambio.delete(0, "end")
         threading.Thread(target=lambda: self._thread_cambio(prompt), daemon=True).start()
-
+ 
     def _thread_cambio(self, prompt):
         try:
             resultado = self._llamar_ia(prompt)
@@ -1439,7 +1393,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
         finally:
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
-
+ 
     def generar_solucionario(self):
         if not self.ejercicio_actual:
             messagebox.showwarning("Atención", "Primero genera un ejercicio.")
@@ -1466,7 +1420,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             finally:
                 self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
         threading.Thread(target=_thread, daemon=True).start()
-
+ 
     def exportar_word(self, con_solucion=True):
         texto = self.txt_ejercicio.get("1.0", "end-1c")
         if not texto.strip():
@@ -1490,7 +1444,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             doc.add_paragraph(self.solucionario_actual)
         doc.save(path)
         messagebox.showinfo("Exportado", f"Guardado en:\n{path}")
-
+ 
     def _exportar_solucionario(self, sol):
         tema = self.entry_tema.get().strip() or "Ejercicio"
         path = filedialog.asksaveasfilename(
@@ -1504,8 +1458,8 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             doc.add_paragraph(""); doc.add_paragraph(sol)
             doc.save(path)
             messagebox.showinfo("Exportado", f"Solucionario guardado en:\n{path}")
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: CORRECTOR DE EXÁMENES (PROFESOR)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1516,15 +1470,15 @@ Para cada pregunta debes:
 2. Puntuación obtenida sobre la puntuación máxima de esa pregunta.
 3. Comentario breve explicando el acierto o el error.
 4. Sugerencia de mejora si aplica.
-
+ 
 Al final incluye:
 - NOTA TOTAL (sobre 10).
 - Resumen general de puntos fuertes y débiles del alumno.
 - Recomendaciones de estudio personalizadas.
-
+ 
 Sé justo, constructivo y motivador en el tono."""
-
-
+ 
+ 
 class ModuloCorrectorExamenes(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
@@ -1532,12 +1486,12 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.correccion_actual = ""
         self.alumnos = {}
         self._build_ui()
-
+ 
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
+ 
         sidebar = ctk.CTkFrame(self, width=270, corner_radius=0)
         sidebar.grid(row=0, column=0, sticky="nsew")
         sidebar.grid_propagate(False)
@@ -1545,7 +1499,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
                      font=("Segoe UI", 20, "bold"), text_color="#1e88e5").pack(pady=(20, 5))
         ctk.CTkLabel(sidebar, text="Modo Profesor",
                      font=("Segoe UI", 11), text_color="#888").pack(pady=(0, 15))
-
+ 
         ctk.CTkLabel(sidebar, text="Motor de IA:", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
         fm = ctk.CTkFrame(sidebar, fg_color="transparent")
         fm.pack(fill="x", padx=15, pady=5)
@@ -1563,7 +1517,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
                                         font=("Segoe UI", 9), text_color="#666")
         self.lbl_limite.pack(pady=(2, 8))
         ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
-
+ 
         ctk.CTkLabel(sidebar, text="Materia / Examen", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15, pady=(5, 2))
         self.entry_materia = ctk.CTkEntry(sidebar, placeholder_text="Ej: Matemáticas — Tema 3")
         self.entry_materia.pack(fill="x", padx=15, pady=(0, 8))
@@ -1580,7 +1534,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.entry_criterios = ctk.CTkEntry(sidebar, placeholder_text="Ej: P1=2pts, P2=3pts, P3=5pts")
         self.entry_criterios.pack(fill="x", padx=15, pady=(0, 8))
         ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
-
+ 
         self.btn_corregir = ctk.CTkButton(sidebar, text="✅ Corregir Examen",
                                            height=45, font=("Segoe UI", 13, "bold"),
                                            fg_color="#1b5e20", hover_color="#003300",
@@ -1601,14 +1555,14 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         ctk.CTkButton(sidebar, text="🧹 Nuevo examen", height=35,
                       fg_color="transparent", border_width=1,
                       command=self.limpiar_todo).pack(fill="x", padx=15, pady=3)
-
+ 
         ctk.CTkLabel(sidebar, text="Alumnos corregidos",
                      font=("Segoe UI", 11, "bold"), text_color="#aaa").pack(pady=(10, 3))
         self.frame_alumnos = ctk.CTkScrollableFrame(sidebar, fg_color="transparent", height=120)
         self.frame_alumnos.pack(fill="x", padx=10, pady=3)
         self.status = ctk.CTkLabel(sidebar, text="Listo", text_color="gray", font=("Segoe UI", 10))
         self.status.pack(side="bottom", pady=10)
-
+ 
         # Panel central — Enunciado
         panel_izq = ctk.CTkFrame(self, fg_color="transparent")
         panel_izq.grid(row=0, column=1, sticky="nsew", padx=(15, 7), pady=15)
@@ -1623,7 +1577,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
             "Ejemplo:\n"
             "Pregunta 1 (2 pts): ¿Qué es la fotosíntesis? Explícala.\n"
             "Pregunta 2 (3 pts): Nombra 3 diferencias entre células animales y vegetales.")
-
+ 
         # Panel derecho — Respuestas y corrección
         panel_der = ctk.CTkFrame(self, fg_color="transparent")
         panel_der.grid(row=0, column=2, sticky="nsew", padx=(7, 15), pady=15)
@@ -1643,7 +1597,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.lbl_nota.pack(side="right")
         self.txt_correccion = ctk.CTkTextbox(panel_der, font=("Consolas", 12), state="disabled")
         self.txt_correccion.grid(row=3, column=0, sticky="nsew")
-
+ 
     def _set_modelo(self, m):
         self.modelo_actual = m
         if m == "groq":
@@ -1652,13 +1606,13 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         else:
             self.btn_groq.configure(fg_color="#333"); self.btn_gemini.configure(fg_color="#6a1b9a")
             self.lbl_limite.configure(text="Gemini: 15 msgs/minuto")
-
+ 
     def _llamar_ia(self, prompt):
         full_prompt = f"{INSTRUCCIONES_CORRECTOR}\n\n{prompt}"
         if self.modelo_actual == "groq":
             return llamar_groq(full_prompt)
         return llamar_gemini(full_prompt)
-
+ 
     def corregir_examen(self):
         enunciado = self.txt_enunciado.get("1.0", "end-1c").strip()
         respuestas = self.txt_respuestas.get("1.0", "end-1c").strip()
@@ -1678,7 +1632,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
                   + (f"CRITERIOS DE PUNTUACIÓN: {criterios}\n" if criterios else "")
                   + f"\nENUNCIADO DEL EXAMEN:\n{enunciado}\n\nRESPUESTAS DEL ALUMNO:\n{respuestas}")
         threading.Thread(target=self._thread_corregir, args=(prompt, alumno, respuestas), daemon=True).start()
-
+ 
     def _thread_corregir(self, prompt, alumno, respuestas):
         try:
             resultado = self._llamar_ia(prompt)
@@ -1705,7 +1659,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         finally:
             self.after(0, lambda: self.btn_corregir.configure(state="normal"))
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
-
+ 
     def guardar_alumno(self):
         alumno = self.entry_alumno.get().strip() or "Alumno sin nombre"
         if not self.correccion_actual:
@@ -1718,7 +1672,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self._actualizar_lista_alumnos()
         self.btn_exportar_clase.configure(state="normal")
         messagebox.showinfo("Guardado", f"Resultado de '{alumno}' guardado.\nTotal alumnos: {len(self.alumnos)}")
-
+ 
     def _actualizar_lista_alumnos(self):
         for w in self.frame_alumnos.winfo_children():
             w.destroy()
@@ -1731,7 +1685,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
             ctk.CTkButton(fila, text="❌", width=28, height=28,
                           fg_color="#7a0000", hover_color="#500000",
                           command=lambda n=nombre: self._borrar_alumno(n)).pack(side="right")
-
+ 
     def _cargar_alumno(self, nombre):
         datos = self.alumnos[nombre]
         self.entry_alumno.delete(0, "end"); self.entry_alumno.insert(0, nombre)
@@ -1742,14 +1696,14 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.correccion_actual = datos["correccion"]
         for btn in [self.btn_guardar_alumno, self.btn_exportar_uno]:
             btn.configure(state="normal")
-
+ 
     def _borrar_alumno(self, nombre):
         if messagebox.askyesno("Confirmar", f"¿Borrar resultado de '{nombre}'?"):
             del self.alumnos[nombre]
             self._actualizar_lista_alumnos()
             if not self.alumnos:
                 self.btn_exportar_clase.configure(state="disabled")
-
+ 
     def limpiar_todo(self):
         self.txt_respuestas.delete("1.0", "end")
         self.txt_correccion.configure(state="normal")
@@ -1760,7 +1714,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.lbl_nota.configure(text="")
         for btn in [self.btn_guardar_alumno, self.btn_exportar_uno]:
             btn.configure(state="disabled")
-
+ 
     def exportar_correccion(self):
         if not self.correccion_actual:
             messagebox.showwarning("Vacío", "No hay corrección que exportar.")
@@ -1785,7 +1739,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         doc.add_paragraph(self.correccion_actual)
         doc.save(path)
         messagebox.showinfo("Exportado", f"Corrección guardada en:\n{path}")
-
+ 
     def exportar_informe_clase(self):
         if not self.alumnos:
             messagebox.showwarning("Sin datos", "No hay alumnos guardados todavía.")
@@ -1811,8 +1765,8 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
             doc.add_page_break()
         doc.save(path)
         messagebox.showinfo("Exportado", f"Informe de clase guardado en:\n{path}")
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  DASHBOARD PRINCIPAL  (integra todos los módulos como frames)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1823,29 +1777,29 @@ class DashboardEstudios(ctk.CTk):
         self.rol     = sesion.get("rol", "Alumno")
         self.nombre  = sesion.get("nombre", "Usuario")
         self.email   = sesion.get("email", "")
-
+ 
         self.title(f"Kernosss AI – {self.rol}: {self.nombre}")
         self.geometry("1400x820")
         self.resizable(True, True)
-
+ 
         # Módulos instanciados pero inicialmente ocultos
         self._modulos: dict[str, ctk.CTkFrame] = {}
         self._modulo_activo = None
-
+ 
         self._build_ui()
         self._mostrar_bienvenida()
-
+ 
     def _build_ui(self):
         # ── SIDEBAR ──
         self.sidebar = ctk.CTkFrame(self, width=290, corner_radius=0, fg_color="#0f0f1a")
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
-
+ 
         ctk.CTkLabel(self.sidebar, text="\nKernosss AI",
                      font=("Segoe UI", 24, "bold"), text_color="#1f6aa5").pack(pady=(30, 5))
         ctk.CTkLabel(self.sidebar, text="2026 Edition",
                      font=("Segoe UI", 11), text_color="#555").pack()
-
+ 
         frame_user = ctk.CTkFrame(self.sidebar, fg_color="#1a1a2e", corner_radius=10)
         frame_user.pack(fill="x", padx=15, pady=(20, 5))
         icono = "🎓" if self.rol == "Alumno" else "👨‍🏫"
@@ -1857,11 +1811,11 @@ class DashboardEstudios(ctk.CTk):
         ctk.CTkLabel(frame_user, text=f"  {self.rol}  ",
                      font=("Segoe UI", 10, "bold"), fg_color=badge_color,
                      corner_radius=8, text_color="white").pack(anchor="w", padx=12, pady=(4, 10))
-
+ 
         ctk.CTkLabel(self.sidebar, text="🟢 Servidores IA Conectados",
                      font=("Segoe UI", 11, "italic"), text_color="#2ecc71").pack(pady=(5, 10))
         ctk.CTkFrame(self.sidebar, height=1, fg_color="#2a2a3a").pack(fill="x", padx=15, pady=5)
-
+ 
         # ── BOTONES DE MÓDULOS ──
         ctk.CTkLabel(self.sidebar, text="MÓDULOS ALUMNO",
                      font=("Segoe UI", 10, "bold"), text_color="#888").pack(anchor="w", padx=20, pady=(10, 2))
@@ -1871,25 +1825,25 @@ class DashboardEstudios(ctk.CTk):
         self._btn("🎯  Generador de Exámenes",  "examen")
         self._btn("🤖  Ayudante de Problemas",  "ayudador")
         self._btn("📅  Agenda de Estudios",     "calendario")
-
+ 
         if self.rol == "Profesor":
             ctk.CTkFrame(self.sidebar, height=1, fg_color="#2a2a3a").pack(fill="x", padx=15, pady=8)
             ctk.CTkLabel(self.sidebar, text="MÓDULOS PROFESOR",
                          font=("Segoe UI", 10, "bold"), text_color="#9c6fe0").pack(anchor="w", padx=20, pady=(2, 2))
             self._btn("✏️  Creador de Ejercicios",  "creador",  color="#4a1a7a")
             self._btn("📋  Corrector de Exámenes",  "corrector", color="#4a1a7a")
-
+ 
         ctk.CTkButton(self.sidebar, text="🚪 Cerrar Sesión", height=36,
                       fg_color="transparent", border_width=1, border_color="#444",
                       text_color="#aaa", hover_color="#1a1a2e",
                       command=self._cerrar_sesion).pack(fill="x", padx=15, pady=(15, 20), side="bottom")
-
+ 
         # ── CONTENEDOR PRINCIPAL ──
         self.contenedor = ctk.CTkFrame(self, corner_radius=0, fg_color="#0d0d1a")
         self.contenedor.pack(side="right", fill="both", expand=True)
         self.contenedor.grid_rowconfigure(0, weight=1)
         self.contenedor.grid_columnconfigure(0, weight=1)
-
+ 
         # Frame de bienvenida
         self.frame_bienvenida = ctk.CTkFrame(self.contenedor, fg_color="transparent")
         saludo = "¡Bienvenido de vuelta!" if self.rol == "Alumno" else "¡Panel de Profesor!"
@@ -1906,7 +1860,7 @@ class DashboardEstudios(ctk.CTk):
                                      font=("Segoe UI", 11), text_color="#444")
         self.lbl_hora.pack(pady=(30, 0))
         self._actualizar_hora()
-
+ 
     def _btn(self, texto, modulo_id, color="#1f3a5f"):
         ctk.CTkButton(
             self.sidebar, text=texto,
@@ -1914,24 +1868,24 @@ class DashboardEstudios(ctk.CTk):
             fg_color=color, hover_color="#2a2a4a",
             command=lambda mid=modulo_id: self._abrir_modulo(mid)
         ).pack(fill="x", padx=15, pady=3)
-
+ 
     def _actualizar_hora(self):
         ahora = datetime.now().strftime("%A, %d de %B de %Y  •  %H:%M:%S")
         self.lbl_hora.configure(text=ahora)
         self.after(1000, self._actualizar_hora)
-
+ 
     def _mostrar_bienvenida(self):
         if self._modulo_activo:
             self._modulo_activo.grid_forget()
             self._modulo_activo = None
         self.frame_bienvenida.grid(row=0, column=0, sticky="nsew")
-
+ 
     def _abrir_modulo(self, modulo_id):
         # Ocultar lo que hay visible
         if self._modulo_activo:
             self._modulo_activo.grid_forget()
         self.frame_bienvenida.grid_forget()
-
+ 
         # Crear el módulo si no existe todavía (lazy init para mejorar arranque)
         if modulo_id not in self._modulos:
             if modulo_id == "calculador":
@@ -1950,38 +1904,40 @@ class DashboardEstudios(ctk.CTk):
                 self._modulos[modulo_id] = ModuloCreadorEjercicios(self.contenedor)
             elif modulo_id == "corrector":
                 self._modulos[modulo_id] = ModuloCorrectorExamenes(self.contenedor)
-
+ 
         modulo = self._modulos[modulo_id]
         modulo.grid(row=0, column=0, sticky="nsew")
         self._modulo_activo = modulo
-
+ 
     def _cerrar_sesion(self):
         if messagebox.askyesno("Cerrar Sesión", "¿Seguro que quieres cerrar sesión?"):
-            cerrar_sesion()
+            borrar_token()   # borra el JWT guardado
             self.quit()
             self.destroy()
             os._exit(0)
-
+ 
     def _al_cerrar(self):
         self.quit()
         self.destroy()
         os._exit(0)
-
-
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PUNTO DE ENTRADA
 # ══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     __spec__ = None
-
-    sesion = cargar_sesion()
-
-    if sesion is None:
-        login = PantallaLogin()
-        login.mainloop()
-        sesion = login.usuario_autenticado
-
+ 
+    # Intentar recuperar sesión desde token JWT guardado
+    _, sesion = token_guardado()
+ 
+    if not sesion:
+        pantalla = PantallaLogin()
+        pantalla.mainloop()
+        sesion = pantalla.usuario_autenticado
+ 
     if sesion:
         app = DashboardEstudios(sesion)
         app.protocol("WM_DELETE_WINDOW", app._al_cerrar)
         app.mainloop()
+ 
