@@ -3,296 +3,435 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Descargas – KernossIA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <title>Descargas Oficiales – KernossIA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    
     :root {
-      --bg:      #0a0a0f;
-      --bg2:     #12121a;
-      --surface: #1a1a28;
-      --border:  rgba(255,255,255,0.08);
-      --text:    #f0f0f5;
-      --muted:   #6b6b80;
-      --accent:  #da755b;
-      --glow:    rgba(218,117,91,0.13);
+      --bg-main: #050811;
+      --bg-surface-1: #0a1124;
+      --bg-surface-2: #0f1a35;
+      --bg-surface-3: #152449;
+      --border-subtle: rgba(59, 130, 246, 0.15);
+      
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-sky: #38bdf8;
+      
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
 
-    .orb { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
-    @keyframes driftC { 0%,100%{transform:translateX(-50%) translateY(0)}  50%{transform:translateX(-50%) translateY(-26px)} }
-    @keyframes driftR { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
-    @keyframes driftL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(22px)} }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes pulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ambient-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-1 {
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .glow-2 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+      bottom: 50px;
+      right: -50px;
+    }
+
+    .nav-simple {
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(5, 8, 17, 0.85);
+      backdrop-filter: blur(16px);
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav-brand {
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: var(--font-title);
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-brand span {
+      background: linear-gradient(135deg, #38bdf8, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .back-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+    .back-link:hover {
+      color: var(--accent-sky);
+    }
 
     .downloads-wrap {
-      position: relative; overflow: hidden;
-      padding: 110px 24px 120px;
-      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+      padding: 60px 24px 100px;
+      max-width: 1100px;
+      margin: 0 auto;
+      flex: 1;
+      width: 100%;
     }
-    .orb-d1 { width: 500px; height: 500px; background: rgba(218,117,91,0.09); top: -120px; left: 50%; animation: driftC 10s ease-in-out infinite; }
-    .orb-d2 { width: 280px; height: 280px; background: rgba(90,90,220,0.06);  bottom: -60px; right: -80px; animation: driftR 13s ease-in-out infinite; }
-    .orb-d3 { width: 220px; height: 220px; background: rgba(201,96,106,0.06); bottom: 40px;  left: -60px;  animation: driftL 11s ease-in-out infinite; }
 
-    .dl-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 12px;
+    }
 
-    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; text-align: center; }
-    .dl-title { font-size: clamp(30px, 5vw, 52px); font-weight: 300; letter-spacing: -1.5px; text-align: center; margin-bottom: 14px; }
-    .dl-title strong { font-weight: 600; }
-    .dl-sub { font-size: 16px; color: var(--muted); text-align: center; line-height: 1.65; margin-bottom: 56px; }
+    .dl-title {
+      font-family: var(--font-title);
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 14px;
+      letter-spacing: -0.025em;
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #ffffff 15%, #93c5fd 55%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .dl-sub {
+      font-size: 16px;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.6;
+      max-width: 580px;
+      margin: 0 auto 40px;
+    }
 
     .detected-banner {
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 40px; animation: fadeUp .6s ease both;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 40px;
     }
+
     .detected-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(218,117,91,0.12); border: 1px solid rgba(218,117,91,0.25);
-      border-radius: 999px; padding: 7px 18px; font-size: 13px; color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: var(--accent-sky);
+      font-weight: 500;
     }
-    .detected-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s ease infinite; }
+
+    .detected-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-cyan);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
 
     .os-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
       margin-bottom: 48px;
     }
 
     .os-card {
-      position: relative; overflow: hidden;
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 22px; padding: 32px 24px 28px;
-      transition: border-color .3s, transform .3s;
-      animation: fadeUp .6s ease both;
+      position: relative;
+      background: rgba(10, 18, 38, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(16px);
+      transition: var(--transition);
     }
-    .os-card::before {
-      content: ''; position: absolute; inset: 0; border-radius: 22px;
-      background: radial-gradient(circle at top left, var(--glow), transparent 65%);
-      opacity: 0; transition: opacity .4s;
-      pointer-events: none;
+
+    .os-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(96, 165, 250, 0.4);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     }
-    .os-card:hover { border-color: rgba(218,117,91,.3); transform: translateY(-5px); }
-    .os-card:hover::before { opacity: 1; }
 
     .os-card.active {
-      border-color: rgba(218,117,91,.45);
-      background: linear-gradient(135deg, rgba(218,117,91,.07) 0%, var(--bg2) 60%);
-    }
-    .os-card.active::before { opacity: 1; }
-    .os-card.active::after {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(218,117,91,.5), transparent);
-      background-size: 400px 1px;
-      animation: shimmer 2.5s ease-in-out infinite;
-      pointer-events: none;
+      border-color: rgba(59, 130, 246, 0.5);
+      background: linear-gradient(145deg, rgba(20, 35, 75, 0.6) 0%, rgba(10, 18, 38, 0.85) 100%);
+      box-shadow: 0 15px 40px rgba(37, 99, 235, 0.25);
     }
 
     .active-badge {
-      position: absolute; top: 16px; right: 16px;
-      background: var(--accent); color: #fff;
-      font-size: 10px; font-weight: 600; letter-spacing: 1px;
-      padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
-      display: none; pointer-events: none;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      display: none;
     }
     .os-card.active .active-badge { display: block; }
 
-    .os-icon { font-size: 38px; margin-bottom: 18px; display: block; }
-    .os-name { font-size: 19px; font-weight: 500; margin-bottom: 6px; }
-    .os-detail { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 16px; }
+    .os-icon { font-size: 38px; margin-bottom: 16px; display: block; }
+    .os-name { font-size: 20px; font-weight: 600; color: #ffffff; margin-bottom: 6px; }
+    .os-detail { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px; }
+    
     .os-ext {
-      display: inline-block; font-size: 11px; font-weight: 600;
-      letter-spacing: 1px; color: var(--accent);
-      background: rgba(218,117,91,.1); border-radius: 6px;
-      padding: 3px 10px; margin-bottom: 22px; font-family: monospace;
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: 6px;
+      padding: 3px 10px;
+      margin-bottom: 24px;
+      align-self: flex-start;
+      font-family: monospace;
     }
 
     .btn-download {
-      display: flex; align-items: center; justify-content: center; gap: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       width: 100%;
-      background: var(--accent); color: #fff; border: none;
-      padding: 13px 16px; border-radius: 12px;
-      font-size: 13px; font-weight: 500; cursor: pointer;
-      transition: all .2s; text-decoration: none;
-    }
-    .btn-download:hover { opacity: .88; transform: scale(1.02); box-shadow: 0 0 24px rgba(218,117,91,.3); }
-    .btn-download svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-    .os-card:not(.active) .btn-download {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-    .os-card:not(.active) .btn-download:hover {
-      background: var(--surface);
-      border-color: rgba(255,255,255,.18);
-      box-shadow: none;
-      opacity: 1;
-      transform: none;
+      background: var(--bg-surface-3);
+      color: #fff;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 13px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
     }
 
-    .checksum-note {
-      text-align: center; font-size: 13px; color: var(--muted);
-      padding: 28px 0 0;
-      border-top: 1px solid var(--border);
+    .os-card.active .btn-download {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.35);
     }
-    .checksum-note a { color: var(--accent); text-decoration: none; }
-    .checksum-note a:hover { text-decoration: underline; }
 
-    @media (max-width: 992px) {
-      .os-grid { grid-template-columns: repeat(2, 1fr); }
+    .btn-download:hover {
+      background: linear-gradient(135deg, #60a5fa 0%, var(--accent-blue) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
     }
-    @media (max-width: 600px) {
+
+    .footer-note {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 32px 0 0;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .footer-note a {
+      color: var(--accent-sky);
+      text-decoration: none;
+    }
+    .footer-note a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
       .os-grid { grid-template-columns: 1fr; }
-      .downloads-wrap { padding: 80px 20px 90px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .orb-d1, .orb-d2, .orb-d3, .detected-dot { animation: none; }
-      .os-card.active::after { animation: none; }
     }
   </style>
 </head>
 <body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
 
-<section class="downloads-wrap" id="download">
-  <div class="orb orb-d1"></div>
-  <div class="orb orb-d2"></div>
-  <div class="orb orb-d3"></div>
+  <nav class="nav-simple">
+    <a href="index.html" class="nav-brand">
+      <span>Kernoss</span>IA
+    </a>
+    <a href="index.html" class="back-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Volver al Inicio
+    </a>
+  </nav>
 
-  <div class="dl-inner">
-    <p class="section-label">Descargas</p>
-    <h2 class="dl-title">Elige tu <strong>sistema</strong></h2>
-    <p class="dl-sub">Gratuito, sin cuenta de pago, sin telemetría.<br>Descarga el instalador para tu plataforma.</p>
+  <main class="downloads-wrap">
+    <p class="section-label">Centro de Descargas</p>
+    <h1 class="dl-title">Elige tu <span class="text-gradient">Plataforma</span></h1>
+    <p class="dl-sub">Versión 1.1 disponible. Gratuito, sin cuenta de pago y 100% privado.</p>
 
     <div class="detected-banner">
       <div class="detected-pill">
         <span class="detected-dot"></span>
-        <span id="detected-text">Detectando tu sistema...</span>
+        <span id="detected-text">Detectando tu sistema operativo...</span>
       </div>
     </div>
 
     <div class="os-grid">
-
+      <!-- Windows -->
       <div class="os-card" id="card-windows">
         <span class="active-badge">Tu sistema</span>
-        <div class="os-name">Windows</div>
-        <div class="os-detail">Compatible con Windows 10 y Windows 11. Archivo .exe sin necesidad de instalación </div>
-        <div class="os-ext">.exe</div>
-        <a class="btn-download" id="btn-windows"
-           href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe"
-           target="_blank">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
-          </svg>
-          Descargar para Windows
-        </a>
+        <div>
+          <span class="os-icon">🪟</span>
+          <div class="os-name">Windows</div>
+          <div class="os-detail">Compatible con Windows 10 y Windows 11 (64 bits). Binario ejecutable autónomo.</div>
+        </div>
+        <div>
+          <div class="os-ext">.exe (Portable)</div>
+          <a class="btn-download" id="btn-windows"
+             href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe"
+             target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+            </svg>
+            Descargar para Windows
+          </a>
+        </div>
       </div>
 
-      <div class="os-card" id="card-mac-intel">
+      <!-- macOS -->
+      <div class="os-card" id="card-mac">
         <span class="active-badge">Tu sistema</span>
-        <div class="os-name">macOS</div>
-        <div class="os-detail">Compatible con Mac. Requiere macOS 12 o superior.</div>
-        <div class="os-ext">.zip</div>
-        <a class="btn-download" id="btn-mac"
-           href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip"
-           target="_blank">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
-          </svg>
-          Descargar para Mac
-        </a>
+        <div>
+          <span class="os-icon">🍎</span>
+          <div class="os-name">macOS</div>
+          <div class="os-detail">Compatible con macOS 12+ (Intel y Apple Silicon M1/M2/M3).</div>
+        </div>
+        <div>
+          <div class="os-ext">.zip</div>
+          <a class="btn-download" id="btn-mac"
+             href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip"
+             target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+            </svg>
+            Descargar para macOS
+          </a>
+        </div>
       </div>
 
+      <!-- Linux -->
       <div class="os-card" id="card-linux">
         <span class="active-badge">Tu sistema</span>
-        <div class="os-name">Linux</div>
-        <div class="os-detail">Archivo portable x86_64. Compatible con Arch, Ubuntu, Fedora y derivados. ACTUALMENTE NO DISPONIBLE/FUERA DE SERVICIO</div>
-        <div class="os-ext">.tar.xz</div>
-        <a class="btn-download" id="btn-linux"
-           href=""
-           target="_blank">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
-          </svg>
-          Descargar para Linux
-        </a>
+        <div>
+          <span class="os-icon">🐧</span>
+          <div class="os-name">Linux</div>
+          <div class="os-detail">Paquete x86_64 para distribuciones basadas en Ubuntu, Debian, Arch y Fedora.</div>
+        </div>
+        <div>
+          <div class="os-ext">.tar.xz / Releases</div>
+          <a class="btn-download" id="btn-linux"
+             href="https://github.com/LDPCICNM2012/KernossAI/releases"
+             target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+            </svg>
+            Ver Releases en GitHub
+          </a>
+        </div>
       </div>
-
     </div>
 
-    <div class="checksum-note">
-      ¿No ves tu plataforma? Consulta el
-      <a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank">historial completo de releases →</a>
+    <div class="footer-note">
+      ¿Buscas versiones anteriores o el código fuente? Consulta el
+      <a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank" rel="noopener">repositorio oficial de KernossIA en GitHub →</a>
     </div>
-  </div>
-</section>
+  </main>
 
-<script>
-  const OS_LABELS = {
-    windows:     'Windows detectado — descarga recomendada resaltada',
-    mac:         'macOS detectado — descarga recomendada resaltada',
-    linux:       'Linux detectado — descarga recomendada resaltada',
-    other:       'Sistema no identificado — elige tu plataforma'
-  };
+  <script>
+    const OS_LABELS = {
+      windows: 'Windows detectado — Descarga recomendada resaltada',
+      mac: 'macOS detectado — Descarga recomendada resaltada',
+      linux: 'Linux detectado — Descarga recomendada resaltada',
+      other: 'Elige tu sistema operativo de la lista'
+    };
 
-  function detectMacArch() {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (gl) {
-        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-        if (debugInfo) {
-          const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
-          if (renderer.includes('intel') || renderer.includes('amd') || renderer.includes('radeon') || renderer.includes('nvidia')) {
-            return 'mac-intel';
-          }
-          if (renderer.includes('apple')) {
-            return 'mac-arm';
-          }
-        }
-      }
-    } catch (e) {}
-    return 'mac-arm';
-  }
+    function detectOS() {
+      const modernPlatform = (navigator.userAgentData?.platform || '').toLowerCase();
+      const ua = navigator.userAgent.toLowerCase();
+      const plat = (navigator.platform || '').toLowerCase();
 
-  function detectOS() {
-    const modernPlatform = (navigator.userAgentData?.platform || '').toLowerCase();
-    const ua   = navigator.userAgent.toLowerCase();
-    const plat = (navigator.platform || '').toLowerCase();
-
-    let isMac = false;
-    if (modernPlatform) {
-      if (modernPlatform.includes('win'))   return 'windows';
-      if (modernPlatform.includes('mac'))   isMac = true;
-      if (modernPlatform.includes('linux')) return 'linux';
-    }
-    if (!isMac) {
-      if (plat.includes('win')   || ua.includes('windows'))                          return 'windows';
-      if (plat.includes('mac')   || ua.includes('macintosh') || ua.includes('mac os x')) isMac = true;
-      if (plat.includes('linux') || ua.includes('linux'))                            return 'linux';
+      if (modernPlatform.includes('win') || plat.includes('win') || ua.includes('windows')) return 'windows';
+      if (modernPlatform.includes('mac') || plat.includes('mac') || ua.includes('macintosh') || ua.includes('mac os x')) return 'mac';
+      if (modernPlatform.includes('linux') || plat.includes('linux') || ua.includes('linux')) return 'linux';
+      return 'other';
     }
 
-    if (isMac) {
-      return detectMacArch();
+    function applyDetection() {
+      const os = detectOS();
+      const detectedText = document.getElementById('detected-text');
+      if (detectedText) detectedText.textContent = OS_LABELS[os] || OS_LABELS.other;
+
+      ['windows', 'mac', 'linux'].forEach(id => {
+        const el = document.getElementById('card-' + id);
+        if (el) el.classList.toggle('active', id === os);
+      });
     }
 
-    return 'other';
-  }
-
-  function applyDetection() {
-    const os = detectOS();
-    document.getElementById('detected-text').textContent = OS_LABELS[os] || OS_LABELS.other;
-    ['windows', 'mac-arm', 'mac-intel', 'linux'].forEach(id => {
-      const el = document.getElementById('card-' + id);
-      if (el) el.classList.toggle('active', id === os);
-    });
-  }
-
-  applyDetection();
-</script>
+    document.addEventListener('DOMContentLoaded', applyDetection);
+  </script>
 </body>
 </html>

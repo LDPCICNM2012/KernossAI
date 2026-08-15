@@ -1,8 +1,6 @@
-
- 
 import matplotlib
 matplotlib.use("TkAgg")
- 
+
 import sys
 import os
 import json
@@ -10,25 +8,51 @@ import re
 import threading
 import calendar
 from datetime import datetime
- 
+
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
- 
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
- 
+
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
- 
+
 from auth_backend import login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token
- 
+
 # ─────────────────────────────────────────────
-#  CONFIGURACIÓN GLOBAL
+#  CONFIGURACIÓN GLOBAL Y PALETA DE COLORES (AZUL CÓSMICO / ELÉCTRICO)
 # ─────────────────────────────────────────────
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
- 
+
+# Constantes de diseño armonizadas con la web
+COLOR_BG_DARK       = "#050811"  # Fondo base de la ventana
+COLOR_BG_SIDEBAR    = "#070c18"  # Fondo sidebar lateral
+COLOR_BG_CARD       = "#0a1124"  # Paneles y tarjetas base
+COLOR_BG_CARD_LIGHT = "#0f1a35"  # Entradas de texto y visores
+COLOR_BG_SURFACE    = "#152449"  # Superficies activas
+COLOR_BORDER        = "#1e3a6a"  # Bordes azulados sutiles
+COLOR_BORDER_GLOW   = "#3b82f6"  # Borde con resplandor activo
+
+COLOR_ACCENT_PRIMARY = "#2563eb" # Azul Eléctrico principal
+COLOR_ACCENT_HOVER   = "#3b82f6" # Azul hover brillante
+COLOR_ACCENT_CYAN    = "#06b6d4" # Cian brillante
+COLOR_ACCENT_CYAN_HOVER = "#0891b2"
+COLOR_ACCENT_SKY     = "#38bdf8" # Celeste
+COLOR_ACCENT_PURPLE  = "#6366f1" # Indigo (Docentes)
+COLOR_ACCENT_PURPLE_HOVER = "#4f46e5"
+
+COLOR_TEXT_MAIN      = "#f8fafc" # Blanco nítido
+COLOR_TEXT_MUTED     = "#94a3b8" # Gris azulado secundario
+COLOR_TEXT_DIM       = "#64748b" # Gris tenue
+COLOR_SUCCESS        = "#10b981" # Verde esmeralda
+COLOR_SUCCESS_HOVER  = "#059669"
+COLOR_WARNING        = "#f59e0b" # Ámbar
+COLOR_DANGER         = "#ef4444" # Rojo coral
+COLOR_DANGER_HOVER   = "#dc2626"
+
 def construir_prompt(instrucciones, historial=None):
     partes = [instrucciones.strip()]
     if historial:
@@ -36,91 +60,120 @@ def construir_prompt(instrucciones, historial=None):
             rol = "IA" if msg.get("role") == "assistant" else msg.get("role", "Usuario").capitalize()
             partes.append(f"{rol}: {msg.get('content', '')}")
     return "\n\n".join(partes)
- 
-# ─────────────────────────────────────────────
-#  UTILIDADES DE SESIÓN  (gestionadas por auth_backend)
-# ─────────────────────────────────────────────
-# Login, registro y token JWT → auth_backend.py
-# No hay secrets ni passwords locales aquí.
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  PANTALLA DE LOGIN / REGISTRO
 # ══════════════════════════════════════════════════════════════════════════════
 class PantallaLogin(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Kernosss AI – Acceso")
-        self.geometry("520x640")
+        self.title("KernossIA – Acceso")
+        self.geometry("520x660")
         self.resizable(False, False)
+        self.configure(fg_color=COLOR_BG_DARK)
         self.usuario_autenticado = None
         self._build_ui()
- 
+
     def _build_ui(self):
-        ctk.CTkLabel(self, text="Kernosss\nAI",
-                     font=("Segoe UI", 36, "bold"), text_color="#1f6aa5").pack(pady=(50, 5))
-        ctk.CTkLabel(self, text="2026 Edition",
-                     font=("Segoe UI", 14), text_color="#888").pack(pady=(0, 40))
- 
-        self.frame = ctk.CTkFrame(self, corner_radius=16, fg_color="#1a1a2e")
-        self.frame.pack(padx=50, fill="x")
- 
-        self.tab = ctk.CTkTabview(self.frame, height=320)
-        self.tab.pack(fill="x", padx=20, pady=20)
+        # Header con logo
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        header_frame.pack(pady=(40, 15))
+
+        ctk.CTkLabel(header_frame, text="⚡ KernossIA",
+                     font=("Segoe UI", 36, "bold"), text_color=COLOR_ACCENT_SKY).pack()
+        ctk.CTkLabel(header_frame, text="Suite de Estudio & Educación con Inteligencia Artificial",
+                     font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(pady=(2, 0))
+
+        # Tarjeta contenedora de Login
+        self.frame = ctk.CTkFrame(self, corner_radius=18, fg_color=COLOR_BG_CARD,
+                                  border_width=1, border_color=COLOR_BORDER)
+        self.frame.pack(padx=45, fill="x")
+
+        self.tab = ctk.CTkTabview(self.frame, height=340, fg_color=COLOR_BG_CARD_LIGHT,
+                                  segmented_button_selected_color=COLOR_ACCENT_PRIMARY,
+                                  segmented_button_selected_hover_color=COLOR_ACCENT_HOVER,
+                                  segmented_button_unselected_color=COLOR_BG_CARD,
+                                  segmented_button_unselected_hover_color=COLOR_BG_SURFACE)
+        self.tab.pack(fill="x", padx=16, pady=16)
         self.tab.add("Iniciar Sesión")
         self.tab.add("Registrarse")
- 
+
         # ── LOGIN ──
         login = self.tab.tab("Iniciar Sesión")
-        ctk.CTkLabel(login, text="Correo electrónico", anchor="w").pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_email = ctk.CTkEntry(login, placeholder_text="tu@correo.com", height=38)
+        ctk.CTkLabel(login, text="Correo electrónico", anchor="w", font=("Segoe UI", 12, "bold"),
+                     text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
+        self.entry_login_email = ctk.CTkEntry(login, placeholder_text="tu@correo.com", height=38,
+                                              fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_login_email.pack(fill="x", padx=10)
-        ctk.CTkLabel(login, text="Contraseña", anchor="w").pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_pass = ctk.CTkEntry(login, placeholder_text="••••••••", show="•", height=38)
+
+        ctk.CTkLabel(login, text="Contraseña", anchor="w", font=("Segoe UI", 12, "bold"),
+                     text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
+        self.entry_login_pass = ctk.CTkEntry(login, placeholder_text="••••••••", show="•", height=38,
+                                             fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_login_pass.pack(fill="x", padx=10)
         self.entry_login_pass.bind("<Return>", lambda e: self._login())
-        ctk.CTkButton(login, text="Iniciar Sesión", height=40,
+
+        ctk.CTkButton(login, text="Iniciar Sesión", height=42,
+                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      font=("Segoe UI", 13, "bold"),
                       command=self._login).pack(fill="x", padx=10, pady=(20, 5))
-        self.lbl_login_error = ctk.CTkLabel(login, text="", text_color="red", font=("Segoe UI", 11))
+        self.lbl_login_error = ctk.CTkLabel(login, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
         self.lbl_login_error.pack()
- 
+
         # ── REGISTRO ──
         reg = self.tab.tab("Registrarse")
-        ctk.CTkLabel(reg, text="Nombre completo", anchor="w").pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_reg_nombre = ctk.CTkEntry(reg, placeholder_text="Tu nombre", height=38)
+        ctk.CTkLabel(reg, text="Nombre completo", anchor="w", font=("Segoe UI", 12, "bold"),
+                     text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
+        self.entry_reg_nombre = ctk.CTkEntry(reg, placeholder_text="Tu nombre", height=36,
+                                             fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_reg_nombre.pack(fill="x", padx=10)
-        ctk.CTkLabel(reg, text="Correo electrónico", anchor="w").pack(fill="x", padx=10, pady=(8, 2))
-        self.entry_reg_email = ctk.CTkEntry(reg, placeholder_text="tu@correo.com", height=38)
+
+        ctk.CTkLabel(reg, text="Correo electrónico", anchor="w", font=("Segoe UI", 12, "bold"),
+                     text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
+        self.entry_reg_email = ctk.CTkEntry(reg, placeholder_text="tu@correo.com", height=36,
+                                            fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_reg_email.pack(fill="x", padx=10)
-        ctk.CTkLabel(reg, text="Contraseña", anchor="w").pack(fill="x", padx=10, pady=(8, 2))
-        self.entry_reg_pass = ctk.CTkEntry(reg, placeholder_text="Mínimo 6 caracteres", show="•", height=38)
+
+        ctk.CTkLabel(reg, text="Contraseña", anchor="w", font=("Segoe UI", 12, "bold"),
+                     text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
+        self.entry_reg_pass = ctk.CTkEntry(reg, placeholder_text="Mínimo 6 caracteres", show="•", height=36,
+                                           fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_reg_pass.pack(fill="x", padx=10)
-        ctk.CTkLabel(reg, text="Rol", anchor="w").pack(fill="x", padx=10, pady=(8, 2))
-        self.combo_rol = ctk.CTkOptionMenu(reg, values=["Alumno", "Profesor"], height=38)
+
+        ctk.CTkLabel(reg, text="Rol", anchor="w", font=("Segoe UI", 12, "bold"),
+                     text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
+        self.combo_rol = ctk.CTkOptionMenu(reg, values=["Alumno", "Profesor"], height=36,
+                                           fg_color=COLOR_ACCENT_PRIMARY,
+                                           button_color=COLOR_ACCENT_HOVER,
+                                           dropdown_fg_color=COLOR_BG_CARD)
         self.combo_rol.pack(fill="x", padx=10)
+
         ctk.CTkButton(reg, text="Crear Cuenta", height=40,
-                      command=self._registrar).pack(fill="x", padx=10, pady=(15, 5))
-        self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color="red", font=("Segoe UI", 11))
+                      fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
+                      font=("Segoe UI", 13, "bold"),
+                      command=self._registrar).pack(fill="x", padx=10, pady=(12, 4))
+        self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
         self.lbl_reg_error.pack()
- 
-        ctk.CTkLabel(self, text="Tus datos se guardan localmente en tu dispositivo.",
-                     font=("Segoe UI", 10), text_color="#555").pack(pady=(20, 0))
- 
+
+        ctk.CTkLabel(self, text="🔒 100% Gratuito y Privado • Tus datos se guardan en tu equipo.",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(pady=(18, 0))
+
     def _login(self):
         email    = self.entry_login_email.get().strip().lower()
         password = self.entry_login_pass.get()
         if not email or not password:
             self.lbl_login_error.configure(text="Completa todos los campos.")
             return
-        self.lbl_login_error.configure(text="Conectando...", text_color="#888")
+        self.lbl_login_error.configure(text="Conectando...", text_color=COLOR_ACCENT_SKY)
         self.update()
         exito, error, sesion = login(email, password)
         if not exito:
-            self.lbl_login_error.configure(text=error, text_color="red")
+            self.lbl_login_error.configure(text=error, text_color=COLOR_DANGER)
             return
         self.usuario_autenticado = sesion
         self.destroy()
- 
+
     def _registrar(self):
         nombre   = self.entry_reg_nombre.get().strip()
         email    = self.entry_reg_email.get().strip().lower()
@@ -135,16 +188,16 @@ class PantallaLogin(ctk.CTk):
         if len(password) < 6:
             self.lbl_reg_error.configure(text="La contraseña debe tener al menos 6 caracteres.")
             return
-        self.lbl_reg_error.configure(text="Creando cuenta...", text_color="#888")
+        self.lbl_reg_error.configure(text="Creando cuenta...", text_color=COLOR_ACCENT_SKY)
         self.update()
         exito, error, sesion = registro(nombre, email, password, rol)
         if not exito:
-            self.lbl_reg_error.configure(text=error, text_color="red")
+            self.lbl_reg_error.configure(text=error, text_color=COLOR_DANGER)
             return
         self.usuario_autenticado = sesion
         self.destroy()
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: CALCULADOR DE MEDIAS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -156,133 +209,143 @@ class ModuloCalculador(ctk.CTkFrame):
         self.porcentajes    = []
         self.canvas_grafico = None
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=1)
- 
+
         frame_titulo = ctk.CTkFrame(self, fg_color="transparent")
         frame_titulo.pack(fill="x", padx=20, pady=(20, 15))
-        ctk.CTkLabel(frame_titulo, text="Calculadora de Medias",
-                     font=("Segoe UI", 32, "bold"),
-                     text_color=["#0d47a1", "#64b5f6"]).pack()
-        ctk.CTkLabel(frame_titulo, text="Organiza y calcula el promedio de tus calificaciones",
-                     font=("Segoe UI", 12),
-                     text_color=["#424242", "#bdbdbd"]).pack(pady=(3, 0))
- 
-        self.frame_entrada = ctk.CTkFrame(self, corner_radius=12, border_width=1,
-                                          border_color=["#e0e0e0", "#333333"])
+        ctk.CTkLabel(frame_titulo, text="📊 Calculadora de Medias Ponderadas",
+                     font=("Segoe UI", 28, "bold"),
+                     text_color=COLOR_ACCENT_SKY).pack()
+        ctk.CTkLabel(frame_titulo, text="Organiza, pondera y visualiza el progreso de tus calificaciones",
+                     font=("Segoe UI", 13),
+                     text_color=COLOR_TEXT_MUTED).pack(pady=(3, 0))
+
+        self.frame_entrada = ctk.CTkFrame(self, corner_radius=14, border_width=1,
+                                          fg_color=COLOR_BG_CARD,
+                                          border_color=COLOR_BORDER)
         self.frame_entrada.pack(padx=25, pady=15, fill="both", expand=False)
         self.frame_entrada.grid_columnconfigure((0, 1), weight=1)
- 
+
         ctk.CTkLabel(self.frame_entrada, text="Materia o Asignatura",
-                     font=("Segoe UI", 13, "bold")).grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
         self.entrada_nombre = ctk.CTkEntry(self.frame_entrada, placeholder_text="Ej: Matemáticas, Física...",
-                                           height=40, font=("Segoe UI", 12))
+                                           height=40, font=("Segoe UI", 12),
+                                           fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entrada_nombre.grid(row=1, column=0, padx=15, pady=(0, 12), sticky="ew")
- 
-        ctk.CTkLabel(self.frame_entrada, text="Nota Directa",
-                     font=("Segoe UI", 13, "bold")).grid(row=0, column=1, padx=15, pady=(15, 5), sticky="w")
+
+        ctk.CTkLabel(self.frame_entrada, text="Nota Directa (0-10)",
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=1, padx=15, pady=(15, 5), sticky="w")
         self.entrada_nota_directa = ctk.CTkEntry(self.frame_entrada, placeholder_text="Ej: 9.5",
-                                                  height=40, font=("Segoe UI", 12))
+                                                  height=40, font=("Segoe UI", 12),
+                                                  fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entrada_nota_directa.grid(row=1, column=1, padx=15, pady=(0, 12), sticky="ew")
- 
+
         ctk.CTkLabel(self.frame_entrada,
-                     text="% del Total (según criterios: 60% Pruebas / 30% Proyectos / 10% Observación)",
-                     font=("Segoe UI", 13, "bold")).grid(row=2, column=0, padx=15, pady=(0, 5), sticky="w")
+                     text="% del Total (Ej: 60% Pruebas / 30% Proyectos / 10% Actitud)",
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=2, column=0, padx=15, pady=(0, 5), sticky="w")
         self.entrada_porcentaje = ctk.CTkEntry(self.frame_entrada,
-                                               placeholder_text="Ej: 60 (Pruebas) / 30 (Proyectos) / 10 (Observación)",
-                                               height=40, font=("Segoe UI", 12))
+                                               placeholder_text="Ej: 40",
+                                               height=40, font=("Segoe UI", 12),
+                                               fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entrada_porcentaje.grid(row=3, column=0, columnspan=2, padx=15, pady=(0, 15), sticky="ew")
- 
+
         frame_botones = ctk.CTkFrame(self, fg_color="transparent")
-        frame_botones.pack(fill="x", padx=25, pady=12)
+        frame_botones.pack(fill="x", padx=25, pady=8)
         frame_botones.grid_columnconfigure((0, 1), weight=1)
- 
-        ctk.CTkButton(frame_botones, text="Guardar Nota",
+
+        ctk.CTkButton(frame_botones, text="➕ Guardar Nota Directa",
                       command=self.agregar_nota_principal,
-                      fg_color="#4caf50", hover_color="#388e3c",
+                      fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                       height=40, font=("Segoe UI", 12, "bold")).grid(row=0, column=0, padx=(0, 6), sticky="ew")
-        ctk.CTkButton(frame_botones, text="Agregar Subnotas",
+        ctk.CTkButton(frame_botones, text="📂 Agregar Bloques / Subnotas",
                       command=self.gestionar_subnotas,
-                      fg_color="transparent", border_width=2,
-                      border_color=["#0288d1", "#4dd0e1"],
+                      fg_color=COLOR_BG_SURFACE, border_width=1,
+                      border_color=COLOR_ACCENT_CYAN,
+                      hover_color=COLOR_ACCENT_PRIMARY,
                       height=40, font=("Segoe UI", 12, "bold")).grid(row=0, column=1, padx=(6, 0), sticky="ew")
- 
+
         frame_principal = ctk.CTkFrame(self, fg_color="transparent")
-        frame_principal.pack(padx=25, pady=15, fill="both", expand=True)
+        frame_principal.pack(padx=25, pady=12, fill="both", expand=True)
         frame_principal.grid_columnconfigure((0, 1), weight=1)
         frame_principal.grid_rowconfigure(1, weight=1)
- 
-        ctk.CTkLabel(frame_principal, text="Registro de Notas",
-                     font=("Segoe UI", 16, "bold")).grid(row=0, column=0, pady=(0, 8), padx=(0, 10), sticky="w")
-        self.salida_texto = ctk.CTkTextbox(frame_principal, width=500, height=350,
-                                           font=("Courier New", 11), corner_radius=10,
-                                           border_width=1, state="disabled")
+
+        ctk.CTkLabel(frame_principal, text="Registro Detallado",
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, pady=(0, 8), padx=(0, 10), sticky="w")
+        self.salida_texto = ctk.CTkTextbox(frame_principal, width=500, height=320,
+                                           font=("Consolas", 12), corner_radius=12,
+                                           fg_color=COLOR_BG_CARD, border_width=1,
+                                           border_color=COLOR_BORDER, state="disabled")
         self.salida_texto.grid(row=1, column=0, padx=(0, 10), sticky="nsew")
- 
-        ctk.CTkLabel(frame_principal, text="Visualización de Notas",
-                     font=("Segoe UI", 16, "bold")).grid(row=0, column=1, pady=(0, 8), padx=(10, 0), sticky="w")
-        self.frame_grafico = ctk.CTkFrame(frame_principal, corner_radius=10, border_width=1)
+
+        ctk.CTkLabel(frame_principal, text="Gráfica de Rendimiento",
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=1, pady=(0, 8), padx=(10, 0), sticky="w")
+        self.frame_grafico = ctk.CTkFrame(frame_principal, corner_radius=12, border_width=1,
+                                          fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.frame_grafico.grid(row=1, column=1, padx=(10, 0), sticky="nsew")
- 
+
         frame_acciones = ctk.CTkFrame(self, fg_color="transparent")
         frame_acciones.pack(padx=25, pady=15, fill="x")
         frame_acciones.grid_columnconfigure((0, 1, 2), weight=1)
- 
-        ctk.CTkButton(frame_acciones, text="Calcular Promedio Final",
+
+        ctk.CTkButton(frame_acciones, text="📊 Calcular Promedio Final",
                       command=self.calcular_total_final,
-                      height=45, font=("Segoe UI", 12, "bold"),
-                      fg_color="#0277bd", hover_color="#01579b").grid(row=0, column=0, padx=(0, 6), sticky="ew")
-        ctk.CTkButton(frame_acciones, text="Limpiar Todo",
+                      height=44, font=("Segoe UI", 13, "bold"),
+                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER).grid(row=0, column=0, padx=(0, 6), sticky="ew")
+        ctk.CTkButton(frame_acciones, text="🧹 Limpiar Todo",
                       command=self.limpiar_datos,
-                      fg_color="#ff9800", hover_color="#f57c00",
-                      height=45, font=("Segoe UI", 12, "bold")).grid(row=0, column=1, padx=3, sticky="ew")
-        ctk.CTkButton(frame_acciones, text="Exportar a Word",
+                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_DANGER_HOVER,
+                      border_width=1, border_color=COLOR_BORDER,
+                      height=44, font=("Segoe UI", 13, "bold")).grid(row=0, column=1, padx=3, sticky="ew")
+        ctk.CTkButton(frame_acciones, text="📄 Exportar a Word (.docx)",
                       command=self.exportar_a_word,
-                      fg_color="#7c3aed", hover_color="#5b21b6",
-                      height=45, font=("Segoe UI", 12, "bold")).grid(row=0, column=2, padx=(6, 0), sticky="ew")
- 
+                      fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                      height=44, font=("Segoe UI", 13, "bold")).grid(row=0, column=2, padx=(6, 0), sticky="ew")
+
     def calcular_media(self, lista):
         if not lista:
             return 0
         return sum(lista) / len(lista)
- 
+
     def actualizar_grafico(self):
         if not self.notas_finales:
             return
         if self.canvas_grafico:
             self.canvas_grafico.get_tk_widget().destroy()
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
-        fig.patch.set_facecolor('#1a1a1a')
-        colores = ['#4caf50' if n >= 7 else '#ff9800' if n >= 5 else '#f44336' for n in self.notas_finales]
-        ax1.bar(range(len(self.nombres_notas)), self.notas_finales, color=colores, alpha=0.8, edgecolor='white')
+        fig.patch.set_facecolor('#0a1124')
+        colores = ['#10b981' if n >= 7 else '#f59e0b' if n >= 5 else '#ef4444' for n in self.notas_finales]
+        ax1.bar(range(len(self.nombres_notas)), self.notas_finales, color=colores, alpha=0.85, edgecolor='#3b82f6')
         ax1.set_xticks(range(len(self.nombres_notas)))
-        ax1.set_xticklabels(self.nombres_notas, rotation=45, ha='right', fontsize=9)
-        ax1.set_ylabel('Calificación', color='white', fontsize=10)
-        ax1.set_title('Notas por Asignatura', color='white', fontsize=12, fontweight='bold')
+        ax1.set_xticklabels(self.nombres_notas, rotation=35, ha='right', fontsize=9, color='#cbd5e1')
+        ax1.set_ylabel('Calificación', color='#94a3b8', fontsize=10)
+        ax1.set_title('Notas por Asignatura', color='#f8fafc', fontsize=12, fontweight='bold')
         ax1.set_ylim(0, 10)
-        ax1.set_facecolor('#2a2a2a')
-        ax1.tick_params(colors='white')
-        ax1.grid(axis='y', alpha=0.3, color='white')
+        ax1.set_facecolor('#0f1a35')
+        ax1.tick_params(colors='#94a3b8')
+        ax1.grid(axis='y', alpha=0.2, color='#3b82f6')
+
         promedio = self.calcular_media(self.notas_finales)
         por_encima = sum(1 for n in self.notas_finales if n >= promedio)
         por_debajo = sum(1 for n in self.notas_finales if n < promedio)
         ax2.pie([max(por_encima, 0.001), max(por_debajo, 0.001)],
-                labels=[f'Arriba del promedio\n({por_encima})', f'Debajo del promedio\n({por_debajo})'],
-                colors=['#4caf50', '#f44336'], autopct='%1.1f%%', startangle=90,
-                textprops={'color': 'white', 'fontsize': 10})
-        ax2.set_title(f'Distribución (Promedio: {promedio:.2f})', color='white', fontsize=12, fontweight='bold')
+                labels=[f'Arriba media\n({por_encima})', f'Debajo media\n({por_debajo})'],
+                colors=['#10b981', '#ef4444'], autopct='%1.1f%%', startangle=90,
+                textprops={'color': '#f8fafc', 'fontsize': 10})
+        ax2.set_facecolor('#0a1124')
+        ax2.set_title(f'Distribución (Promedio: {promedio:.2f})', color='#38bdf8', fontsize=12, fontweight='bold')
         plt.tight_layout()
         self.canvas_grafico = FigureCanvasTkAgg(fig, master=self.frame_grafico)
         self.canvas_grafico.draw()
         self.canvas_grafico.get_tk_widget().pack(fill="both", expand=True)
- 
+
     def gestionar_subnotas(self):
         nombre_principal = self.entrada_nombre.get().strip()
         if not nombre_principal:
             messagebox.showwarning("Atención", "Escribe el nombre de la asignatura primero.")
             return
-        d = ctk.CTkInputDialog(text=f"¿Cuántos bloques tiene {nombre_principal}?\n(Ej: 3 → Exámenes, Clase, Deberes)",
+        d = ctk.CTkInputDialog(text=f"¿Cuántos bloques tiene {nombre_principal}?\n(Ej: 3 → Exámenes, Prácticas, Trabajo)",
                                title="Bloques de calificación")
         res = d.get_input()
         self.focus_force(); self.lift()
@@ -290,7 +353,7 @@ class ModuloCalculador(ctk.CTkFrame):
             return
         num_bloques = int(res)
         self.salida_texto.configure(state="normal")
-        self.salida_texto.insert("end", f"\n{'─'*60}\n  📚 {nombre_principal.upper()}\n{'─'*60}\n")
+        self.salida_texto.insert("end", f"\n{'─'*55}\n  📚 {nombre_principal.upper()}\n{'─'*55}\n")
         nota_final_asignatura = 0.0
         suma_pesos_bloques = 0.0
         for i in range(num_bloques):
@@ -333,7 +396,7 @@ class ModuloCalculador(ctk.CTkFrame):
                 self.salida_texto.insert("end", f"      • {nombre_sub:20} {peso_sub:.0f}% → {valor_sub:.2f}\n")
             if suma_pesos_sub > 0 and suma_pesos_sub != 100:
                 nota_bloque_ponderada = nota_bloque_ponderada / (suma_pesos_sub / 100)
-            self.salida_texto.insert("end", f"    ✓ Nota del bloque '{nombre_bloque}': {nota_bloque_ponderada:.2f}\n")
+            self.salida_texto.insert("end", f"    ✓ Nota bloque '{nombre_bloque}': {nota_bloque_ponderada:.2f}\n")
             nota_final_asignatura += nota_bloque_ponderada * (peso_bloque / 100)
             suma_pesos_bloques += peso_bloque
         if suma_pesos_bloques > 0 and suma_pesos_bloques != 100:
@@ -345,7 +408,7 @@ class ModuloCalculador(ctk.CTkFrame):
         self.salida_texto.configure(state="disabled")
         self.entrada_nombre.delete(0, "end")
         self.actualizar_grafico()
- 
+
     def agregar_nota_principal(self):
         nombre = self.entrada_nombre.get().strip()
         nota_str = self.entrada_nota_directa.get().strip()
@@ -372,7 +435,7 @@ class ModuloCalculador(ctk.CTkFrame):
                 messagebox.showerror("Error", "La calificación y el porcentaje deben ser números válidos.")
         else:
             messagebox.showwarning("Campos incompletos", "Por favor completa materia y calificación.")
- 
+
     def calcular_total_final(self):
         if not self.notas_finales:
             messagebox.showinfo("Sin datos", "No hay calificaciones guardadas para calcular.")
@@ -381,13 +444,13 @@ class ModuloCalculador(ctk.CTkFrame):
         total_porcentaje = sum(self.porcentajes)
         media_total = suma_ponderada / (total_porcentaje / 100) if total_porcentaje != 100 else suma_ponderada
         self.salida_texto.configure(state="normal")
-        self.salida_texto.insert("end", f"\n{'═'*60}\n  📊 RESULTADO FINAL\n")
+        self.salida_texto.insert("end", f"\n{'═'*55}\n  📊 RESULTADO FINAL\n")
         self.salida_texto.insert("end", f"  Asignaturas: {len(self.nombres_notas)}\n")
         self.salida_texto.insert("end", f"  Peso total asignado: {total_porcentaje:.1f}%\n")
-        self.salida_texto.insert("end", f"  Promedio Ponderado: {media_total:.2f}\n{'═'*60}\n\n")
+        self.salida_texto.insert("end", f"  Promedio Ponderado General: {media_total:.2f}\n{'═'*55}\n\n")
         self.salida_texto.configure(state="disabled")
         self.salida_texto.see("end")
- 
+
     def limpiar_datos(self):
         if messagebox.askyesno("Confirmar", "¿Deseas limpiar todas las notas?"):
             self.notas_finales.clear(); self.nombres_notas.clear(); self.porcentajes.clear()
@@ -400,13 +463,13 @@ class ModuloCalculador(ctk.CTkFrame):
             if self.canvas_grafico:
                 self.canvas_grafico.get_tk_widget().destroy()
                 self.canvas_grafico = None
- 
+
     def exportar_a_word(self):
         if not self.notas_finales:
             messagebox.showwarning("Sin datos", "No hay calificaciones para exportar.")
             return
         doc = Document()
-        titulo = doc.add_heading('Reporte de Calificaciones', 0)
+        titulo = doc.add_heading('Reporte de Calificaciones – KernossIA', 0)
         titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         fecha = doc.add_paragraph(f'Generado el: {datetime.now().strftime("%d/%m/%Y %H:%M")}')
         fecha.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -426,8 +489,8 @@ class ModuloCalculador(ctk.CTkFrame):
                             f"Reporte_Calificaciones_{datetime.now().strftime('%d%m%Y_%H%M%S')}.docx")
         doc.save(ruta)
         messagebox.showinfo("Éxito", f"Documento exportado a:\n{ruta}")
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: APUNTADOR DE NOTAS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -438,76 +501,90 @@ class ModuloApuntador(ctk.CTkFrame):
         self.notas_guardadas = {}
         self._cargar_notas()
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
- 
+
         # Panel lateral
-        self.frame_lateral = ctk.CTkFrame(self, width=250, corner_radius=0)
+        self.frame_lateral = ctk.CTkFrame(self, width=270, corner_radius=0,
+                                          fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         self.frame_lateral.grid(row=0, column=0, sticky="nsew")
-        ctk.CTkLabel(self.frame_lateral, text="Mis Notas",
-                     font=("Segoe UI", 20, "bold")).pack(pady=20, padx=10)
-        self.entrada_nombre_nota = ctk.CTkEntry(self.frame_lateral, placeholder_text="Nueva nota...")
-        self.entrada_nombre_nota.pack(fill="x", padx=10, pady=5)
-        ctk.CTkButton(self.frame_lateral, text="Crear Nota",
-                      command=self.crear_nueva_nota,
-                      fg_color="#28a745", hover_color="#218838").pack(fill="x", padx=10, pady=5)
-        self.lista_notas_frame = ctk.CTkScrollableFrame(self.frame_lateral, label_text="Notas Guardadas")
-        self.lista_notas_frame.pack(fill="both", expand=True, padx=10, pady=10)
- 
-        # Área de edición
+        ctk.CTkLabel(self.frame_lateral, text="📝 Mis Notas",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=20, padx=10)
+
+        self.btn_nueva_nota = ctk.CTkButton(self.frame_lateral, text="➕ Nueva Nota",
+                                            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                            height=38, font=("Segoe UI", 12, "bold"),
+                                            command=self.nueva_nota)
+        self.btn_nueva_nota.pack(fill="x", padx=15, pady=(0, 10))
+
+        self.lista_notas_frame = ctk.CTkScrollableFrame(self.frame_lateral, fg_color="transparent")
+        self.lista_notas_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self.actualizar_listbox()
+
+        # Panel principal de edición
         self.frame_editor = ctk.CTkFrame(self, fg_color="transparent")
         self.frame_editor.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         self.frame_editor.grid_rowconfigure(1, weight=1)
         self.frame_editor.grid_columnconfigure(0, weight=1)
-        self.label_nota_abierta = ctk.CTkLabel(self.frame_editor, text="Seleccione una nota",
-                                               font=("Segoe UI", 16, "italic"))
-        self.label_nota_abierta.grid(row=0, column=0, pady=(0, 10), sticky="w")
-        self.editor_texto = ctk.CTkTextbox(self.frame_editor, font=("Consolas", 13), border_width=1)
+
+        frame_top = ctk.CTkFrame(self.frame_editor, fg_color="transparent")
+        frame_top.grid(row=0, column=0, sticky="ew", pady=(0, 12))
+        self.label_nota_abierta = ctk.CTkLabel(frame_top, text="Selecciona o crea una nota",
+                                               font=("Segoe UI", 18, "bold"), text_color=COLOR_TEXT_MAIN)
+        self.label_nota_abierta.pack(side="left")
+
+        btn_bar = ctk.CTkFrame(frame_top, fg_color="transparent")
+        btn_bar.pack(side="right")
+
+        ctk.CTkButton(btn_bar, text="💾 Guardar", width=95, height=36,
+                      fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                      command=self.guardar_nota).pack(side="left", padx=4)
+        ctk.CTkButton(btn_bar, text="📄 Word", width=95, height=36,
+                      fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                      command=self.exportar_nota_word).pack(side="left", padx=4)
+        ctk.CTkButton(btn_bar, text="🗑️ Borrar", width=95, height=36,
+                      fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER,
+                      command=self.eliminar_nota).pack(side="left", padx=4)
+
+        self.editor_texto = ctk.CTkTextbox(self.frame_editor, font=("Segoe UI", 14),
+                                           fg_color=COLOR_BG_CARD_LIGHT, border_width=1,
+                                           border_color=COLOR_BORDER, wrap="word")
         self.editor_texto.grid(row=1, column=0, sticky="nsew")
-        frame_btns = ctk.CTkFrame(self.frame_editor, fg_color="transparent")
-        frame_btns.grid(row=2, column=0, pady=(15, 0), sticky="ew")
-        ctk.CTkButton(frame_btns, text="Guardar", command=self.guardar_nota).pack(side="left", padx=5)
-        ctk.CTkButton(frame_btns, text="Eliminar", fg_color="#dc3545", hover_color="#c82333",
-                      command=self.eliminar_nota).pack(side="left", padx=5)
-        ctk.CTkButton(frame_btns, text="Exportar Word",
-                      command=self.exportar_nota_word).pack(side="right", padx=5)
-        self.actualizar_listbox()
- 
-    def crear_nueva_nota(self):
-        nombre = self.entrada_nombre_nota.get().strip()
-        if nombre:
-            if nombre not in self.notas_guardadas:
-                self.notas_guardadas[nombre] = ""
-                self._guardar_notas()
-                self.abrir_nota(nombre)
-                self.actualizar_listbox()
-                self.entrada_nombre_nota.delete(0, "end")
-            else:
-                messagebox.showwarning("Error", "La nota ya existe.")
- 
+
+    def nueva_nota(self):
+        d = ctk.CTkInputDialog(text="Nombre de la nueva nota:", title="Nueva Nota")
+        nombre = d.get_input()
+        if nombre and nombre.strip():
+            nombre = nombre.strip()
+            self.archivo_actual = nombre
+            self.notas_guardadas[nombre] = ""
+            self._guardar_notas()
+            self.actualizar_listbox()
+            self.abrir_nota(nombre)
+
     def abrir_nota(self, nombre):
         self.archivo_actual = nombre
-        self.label_nota_abierta.configure(text=f"Editando: {nombre}", font=("Segoe UI", 16, "bold"))
+        self.label_nota_abierta.configure(text=nombre)
         self.editor_texto.delete("1.0", "end")
-        self.editor_texto.insert("1.0", self.notas_guardadas[nombre])
- 
+        self.editor_texto.insert("1.0", self.notas_guardadas.get(nombre, ""))
+
     def actualizar_listbox(self):
         for w in self.lista_notas_frame.winfo_children():
             w.destroy()
         for nombre in self.notas_guardadas:
             ctk.CTkButton(self.lista_notas_frame, text=f"• {nombre}", anchor="w",
-                          fg_color="transparent", text_color=("black", "white"),
-                          hover_color=("#dbdbdb", "#2b2b2b"),
+                          fg_color="transparent", text_color=COLOR_TEXT_MAIN,
+                          hover_color=COLOR_BG_SURFACE, height=32,
                           command=lambda n=nombre: self.abrir_nota(n)).pack(fill="x", pady=2)
- 
+
     def guardar_nota(self):
         if self.archivo_actual:
             self.notas_guardadas[self.archivo_actual] = self.editor_texto.get("1.0", "end-1c")
             self._guardar_notas()
             messagebox.showinfo("Guardado", "Nota guardada correctamente.")
- 
+
     def eliminar_nota(self):
         if self.archivo_actual and messagebox.askyesno("Confirmar", f"¿Eliminar '{self.archivo_actual}'?"):
             del self.notas_guardadas[self.archivo_actual]
@@ -516,7 +593,7 @@ class ModuloApuntador(ctk.CTkFrame):
             self.editor_texto.delete("1.0", "end")
             self.label_nota_abierta.configure(text="Seleccione una nota")
             self.actualizar_listbox()
- 
+
     def exportar_nota_word(self):
         if not self.archivo_actual:
             return
@@ -528,19 +605,19 @@ class ModuloApuntador(ctk.CTkFrame):
         if path:
             doc.save(path)
             messagebox.showinfo("Éxito", "Exportado correctamente.")
- 
+
     def _guardar_notas(self):
         ruta = os.path.expanduser("~/.apuntador_notas.json")
         with open(ruta, 'w', encoding='utf-8') as f:
             json.dump(self.notas_guardadas, f, ensure_ascii=False, indent=2)
- 
+
     def _cargar_notas(self):
         ruta = os.path.expanduser("~/.apuntador_notas.json")
         if os.path.exists(ruta):
             with open(ruta, 'r', encoding='utf-8') as f:
                 self.notas_guardadas = json.load(f)
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: RESUMIDOR DE TEXTOS AI
 # ══════════════════════════════════════════════════════════════════════════════
@@ -557,48 +634,52 @@ class ModuloResumidor(ctk.CTkFrame):
             "explicando el contexto, las causas y las consecuencias. No inventes datos bajo ninguna circunstancia."
         )
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
- 
+
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.grid(row=0, column=0, padx=20, pady=20, sticky="ew")
-        ctk.CTkLabel(header, text="🎓 Resumidor De Textos AI",
-                     font=("Segoe UI", 28, "bold")).pack(side="left")
-        self.entry_nombre = ctk.CTkEntry(header, placeholder_text="Tu nombre...", width=200)
+        ctk.CTkLabel(header, text="🔍 Resumidor de Textos con IA",
+                     font=("Segoe UI", 28, "bold"), text_color=COLOR_ACCENT_SKY).pack(side="left")
+        self.entry_nombre = ctk.CTkEntry(header, placeholder_text="Tu nombre...", width=200,
+                                         fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_nombre.pack(side="right", padx=10)
- 
+
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.grid(row=1, column=0, padx=20, sticky="nsew")
         main.grid_columnconfigure((0, 1), weight=1)
         main.grid_rowconfigure(0, weight=1)
- 
-        input_f = ctk.CTkFrame(main)
+
+        input_f = ctk.CTkFrame(main, fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER, corner_radius=14)
         input_f.grid(row=0, column=0, padx=(0, 10), sticky="nsew")
-        ctk.CTkLabel(input_f, text="Pega tus apuntes o tema aquí:", font=("Segoe UI", 13, "bold")).pack(pady=10)
-        self.txt_input = ctk.CTkTextbox(input_f, font=("Segoe UI", 12))
+        ctk.CTkLabel(input_f, text="Pega tus apuntes o tema aquí:", font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=10)
+        self.txt_input = ctk.CTkTextbox(input_f, font=("Segoe UI", 13), fg_color=COLOR_BG_CARD_LIGHT, wrap="word")
         self.txt_input.pack(fill="both", expand=True, padx=15, pady=(0, 15))
- 
-        output_f = ctk.CTkFrame(main)
+
+        output_f = ctk.CTkFrame(main, fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER, corner_radius=14)
         output_f.grid(row=0, column=1, padx=(10, 0), sticky="nsew")
-        ctk.CTkLabel(output_f, text="Resumen generado por IA:", font=("Segoe UI", 13, "bold")).pack(pady=10)
-        self.txt_output = ctk.CTkTextbox(output_f, font=("Segoe UI", 13), fg_color=("#ebebeb", "#1a1a1a"))
+        ctk.CTkLabel(output_f, text="Resumen Riguroso Generado por IA:", font=("Segoe UI", 13, "bold"), text_color=COLOR_ACCENT_CYAN).pack(pady=10)
+        self.txt_output = ctk.CTkTextbox(output_f, font=("Segoe UI", 13), fg_color=COLOR_BG_CARD_LIGHT, wrap="word")
         self.txt_output.pack(fill="both", expand=True, padx=15, pady=(0, 15))
- 
+
         footer = ctk.CTkFrame(self, fg_color="transparent")
         footer.grid(row=2, column=0, padx=20, pady=20, sticky="ew")
-        self.progress_bar = ctk.CTkProgressBar(footer)
+        self.progress_bar = ctk.CTkProgressBar(footer, progress_color=COLOR_ACCENT_CYAN)
         self.progress_bar.pack(fill="x", pady=(0, 15))
         self.progress_bar.set(0)
-        self.btn_procesar = ctk.CTkButton(footer, text="Generar Resumen Riguroso",
+
+        self.btn_procesar = ctk.CTkButton(footer, text="⚡ Generar Resumen Riguroso",
                                           height=45, font=("Segoe UI", 14, "bold"),
+                                          fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                           command=self.iniciar_proceso)
         self.btn_procesar.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        ctk.CTkButton(footer, text="Guardar en Word", height=45, width=200,
-                      fg_color="#27ae60", hover_color="#219150",
+        ctk.CTkButton(footer, text="📄 Guardar en Word", height=45, width=200,
+                      fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                      font=("Segoe UI", 13, "bold"),
                       command=self.exportar_word).pack(side="right")
- 
+
     def iniciar_proceso(self):
         texto = self.txt_input.get("1.0", "end-1c").strip()
         if not texto:
@@ -609,7 +690,7 @@ class ModuloResumidor(ctk.CTkFrame):
         self.progress_bar.configure(mode="indeterminate")
         self.progress_bar.start()
         threading.Thread(target=self._ejecutar_ia, args=(texto,), daemon=True).start()
- 
+
     def _ejecutar_ia(self, texto):
         try:
             resultado = llamar_groq(
@@ -620,16 +701,16 @@ class ModuloResumidor(ctk.CTkFrame):
             self.after(0, lambda: messagebox.showerror("Error Cloud", f"Fallo al conectar con IA: {e}"))
         finally:
             self.after(0, self._finalizar)
- 
+
     def _escribir_output(self, char):
         self.txt_output.insert("end", char)
         self.txt_output.see("end")
- 
+
     def _finalizar(self):
         self.progress_bar.stop()
         self.progress_bar.set(1)
         self.btn_procesar.configure(state="normal")
- 
+
     def exportar_word(self):
         contenido = self.txt_output.get("1.0", "end-1c").strip()
         if not contenido or "ERROR:" in contenido:
@@ -647,8 +728,8 @@ class ModuloResumidor(ctk.CTkFrame):
                 messagebox.showinfo("Éxito", f"Archivo guardado en:\n{ruta}")
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo guardar: {e}")
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: GENERADOR DE EXÁMENES AI
 # ══════════════════════════════════════════════════════════════════════════════
@@ -666,43 +747,60 @@ class ModuloExamen(ctk.CTkFrame):
             "No pongas las respuestas correctas en el examen."
         )
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
- 
-        sidebar = ctk.CTkFrame(self, width=280, corner_radius=0)
+
+        sidebar = ctk.CTkFrame(self, width=280, corner_radius=0,
+                               fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         sidebar.grid(row=0, column=0, sticky="nsew")
-        ctk.CTkLabel(sidebar, text="Configuración", font=("Segoe UI", 20, "bold")).pack(pady=20)
-        self.entry_nombre = ctk.CTkEntry(sidebar, placeholder_text="Tu nombre...")
-        self.entry_nombre.pack(fill="x", padx=20, pady=10)
-        ctk.CTkLabel(sidebar, text="🟢 Groq Cloud Listo", text_color="green",
+        ctk.CTkLabel(sidebar, text="🎯 Configurar Examen", font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=20)
+        self.entry_nombre = ctk.CTkEntry(sidebar, placeholder_text="Tu nombre...",
+                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_nombre.pack(fill="x", padx=20, pady=8)
+
+        ctk.CTkLabel(sidebar, text="🟢 Servidor IA Listo", text_color=COLOR_SUCCESS,
                      font=("Segoe UI", 12, "bold")).pack(fill="x", padx=20, pady=5)
-        ctk.CTkLabel(sidebar, text="Tema del examen:", font=("Segoe UI", 12)).pack(pady=(20, 0))
-        self.txt_tema = ctk.CTkTextbox(sidebar, height=150)
-        self.txt_tema.pack(fill="x", padx=20, pady=10)
-        self.btn_generar = ctk.CTkButton(sidebar, text="Generar Examen", command=self.iniciar_generacion)
-        self.btn_generar.pack(fill="x", padx=20, pady=10)
-        ctk.CTkButton(sidebar, text="Exportar Word", fg_color="transparent", border_width=2,
-                      command=self.exportar_word).pack(fill="x", padx=20, pady=10)
-        self.status_label = ctk.CTkLabel(sidebar, text="🟢 Groq Cloud Listo",
-                                         text_color="green", font=("Segoe UI", 11))
-        self.status_label.pack(side="bottom", pady=10)
- 
+        ctk.CTkLabel(sidebar, text="Tema del examen:", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(15, 0), anchor="w", padx=20)
+        self.txt_tema = ctk.CTkTextbox(sidebar, height=130, fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.txt_tema.pack(fill="x", padx=20, pady=8)
+
+        self.btn_generar = ctk.CTkButton(sidebar, text="✨ Generar Examen",
+                                         fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                         height=40, font=("Segoe UI", 12, "bold"),
+                                         command=self.iniciar_generacion)
+        self.btn_generar.pack(fill="x", padx=20, pady=8)
+
+        ctk.CTkButton(sidebar, text="📄 Exportar Word", fg_color=COLOR_BG_SURFACE, border_width=1,
+                      border_color=COLOR_BORDER, hover_color=COLOR_ACCENT_HOVER,
+                      height=36, command=self.exportar_word).pack(fill="x", padx=20, pady=6)
+
+        self.status_label = ctk.CTkLabel(sidebar, text="🟢 Listo para crear",
+                                         text_color=COLOR_SUCCESS, font=("Segoe UI", 11))
+        self.status_label.pack(side="bottom", pady=15)
+
         main_f = ctk.CTkFrame(self, fg_color="transparent")
         main_f.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         main_f.grid_rowconfigure(0, weight=1)
         main_f.grid_columnconfigure(0, weight=1)
-        self.output_text = ctk.CTkTextbox(main_f, font=("Consolas", 13))
+
+        self.output_text = ctk.CTkTextbox(main_f, font=("Consolas", 13),
+                                          fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
         self.output_text.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
+
         input_f = ctk.CTkFrame(main_f, fg_color="transparent")
         input_f.grid(row=1, column=0, sticky="ew")
         input_f.grid_columnconfigure(0, weight=1)
-        self.entry_respuesta = ctk.CTkEntry(input_f, placeholder_text="Escribe tus respuestas aquí...")
+        self.entry_respuesta = ctk.CTkEntry(input_f, placeholder_text="Escribe tus respuestas aquí...", height=42,
+                                            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_respuesta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_respuesta.bind("<Return>", lambda e: self.enviar_respuesta())
-        ctk.CTkButton(input_f, text="Enviar", width=100, command=self.enviar_respuesta).grid(row=0, column=1)
- 
+        ctk.CTkButton(input_f, text="Enviar Respuestas", width=140, height=42,
+                      fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
+                      font=("Segoe UI", 12, "bold"),
+                      command=self.enviar_respuesta).grid(row=0, column=1)
+
     def iniciar_generacion(self):
         tema = self.txt_tema.get("1.0", "end-1c").strip()
         if not tema:
@@ -713,7 +811,7 @@ class ModuloExamen(ctk.CTkFrame):
         self.btn_generar.configure(state="disabled")
         self.status_label.configure(text="🟡 Elaborando Examen...", text_color="orange")
         threading.Thread(target=self._proceso_groq, args=(tema,), daemon=True).start()
- 
+
     def _proceso_groq(self, tema):
         try:
             prompt = (
@@ -727,35 +825,35 @@ class ModuloExamen(ctk.CTkFrame):
             ]
             self.after(0, self._update_output, full)
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
-            self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
+            self.after(0, lambda: self.status_label.configure(text="🟢 Examen Listo", text_color=COLOR_SUCCESS))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error Cloud", str(e)))
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
-            self.after(0, lambda: self.status_label.configure(text="🔴 Error de red", text_color="red"))
- 
+            self.after(0, lambda: self.status_label.configure(text="🔴 Error de red", text_color=COLOR_DANGER))
+
     def enviar_respuesta(self):
         msg = self.entry_respuesta.get().strip()
         if not msg:
             return
-        self.output_text.insert("end", f"\n\n👤 TÚ: {msg}\n\n🤖 IA: ")
+        self.output_text.insert("end", f"\n\n👤 TÚ: {msg}\n\n🤖 CORRECCIÓN IA: ")
         self.entry_respuesta.delete(0, "end")
         self.status_label.configure(text="🟡 Corrigiendo...", text_color="orange")
         self.historial_conversacion.append({'role': 'user', 'content': msg})
         threading.Thread(target=self._proceso_respuesta, daemon=True).start()
- 
+
     def _proceso_respuesta(self):
         try:
             full = llamar_groq(construir_prompt(self.instrucciones_base, self.historial_conversacion))
             self.historial_conversacion.append({'role': 'assistant', 'content': full})
             self.after(0, self._update_output, full)
-            self.after(0, lambda: self.status_label.configure(text="🟢 Groq Cloud Listo", text_color="green"))
+            self.after(0, lambda: self.status_label.configure(text="🟢 Corrección Completada", text_color=COLOR_SUCCESS))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error", str(e)))
- 
+
     def _update_output(self, texto):
         self.output_text.insert("end", texto)
         self.output_text.see("end")
- 
+
     def exportar_word(self):
         texto = self.output_text.get("1.0", "end-1c")
         if not texto.strip():
@@ -766,14 +864,14 @@ class ModuloExamen(ctk.CTkFrame):
                                             initialfile=f"Examen_{nombre}.docx")
         if path:
             doc = Document()
-            doc.add_heading(f"Examen de {nombre}", 0)
+            doc.add_heading(f"Examen de {nombre} – KernossIA", 0)
             doc.add_paragraph(texto)
             doc.save(path)
             messagebox.showinfo("Éxito", f"Archivo guardado en:\n{path}")
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
-#  MÓDULO: AYUDANTE DE PROBLEMAS AI
+#  MÓDULO: AYUDANTE DE PROBLEMAS AI (CHAT DE RESOLUCIÓN)
 # ══════════════════════════════════════════════════════════════════════════════
 class ModuloAyudador(ctk.CTkFrame):
     def __init__(self, master, sesion=None):
@@ -797,72 +895,88 @@ class ModuloAyudador(ctk.CTkFrame):
         self.chat_actual_id = None
         self.todo_el_historial = self._cargar_historial()
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
- 
-        sidebar = ctk.CTkFrame(self, width=280, corner_radius=0, fg_color="#0f0f1a")
+
+        sidebar = ctk.CTkFrame(self, width=280, corner_radius=0,
+                               fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         sidebar.grid(row=0, column=0, sticky="nsew")
-        ctk.CTkLabel(sidebar, text="🛠️ Solver IA", font=("Segoe UI", 22, "bold")).pack(pady=(20, 5))
-        self.entry_nombre = ctk.CTkEntry(sidebar, placeholder_text="¿Cuál es tu nombre?")
+        ctk.CTkLabel(sidebar, text="🤖 Solver IA", font=("Segoe UI", 22, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(20, 5))
+        self.entry_nombre = ctk.CTkEntry(sidebar, placeholder_text="¿Cuál es tu nombre?",
+                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_nombre.pack(fill="x", padx=15, pady=8)
         if self.sesion.get("nombre"):
             self.entry_nombre.insert(0, self.sesion["nombre"])
- 
+
         ctk.CTkLabel(sidebar, text="⚙️ Instrucciones del Sistema",
-                     font=("Segoe UI", 12, "bold")).pack(pady=(10, 2))
-        self.txt_instrucciones = ctk.CTkTextbox(sidebar, height=120, wrap="word", font=("Segoe UI", 11))
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(10, 2))
+        self.txt_instrucciones = ctk.CTkTextbox(sidebar, height=110, wrap="word", font=("Segoe UI", 11),
+                                                fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.txt_instrucciones.pack(fill="x", padx=15, pady=5)
         self.txt_instrucciones.insert("1.0", self.instrucciones_groq)
- 
-        ctk.CTkLabel(sidebar, text="Modelo de IA", font=("Segoe UI", 12, "bold")).pack(pady=(10, 2))
-        frame_modelo = ctk.CTkFrame(sidebar, fg_color="#1a1a2e", corner_radius=10)
+
+        ctk.CTkLabel(sidebar, text="Motor de IA", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(10, 2))
+        frame_modelo = ctk.CTkFrame(sidebar, fg_color=COLOR_BG_CARD_LIGHT, corner_radius=10, border_width=1, border_color=COLOR_BORDER)
         frame_modelo.pack(fill="x", padx=15, pady=5)
-        self.btn_basico = ctk.CTkButton(frame_modelo, text="🔵 Básico (Groq)", height=36,
-                                         fg_color="#1565c0", hover_color="#0d47a1",
+        self.btn_basico = ctk.CTkButton(frame_modelo, text="⚡ Básico (Groq)", height=36,
+                                         fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                          command=lambda: self._cambiar_modelo("groq"))
         self.btn_basico.pack(fill="x", padx=8, pady=(8, 4))
-        self.btn_avanzado = ctk.CTkButton(frame_modelo, text="🟣 Avanzado (Gemini)", height=36,
-                                           fg_color="transparent", border_width=1, border_color="#7b1fa2",
-                                           hover_color="#4a1a7a",
+        self.btn_avanzado = ctk.CTkButton(frame_modelo, text="🧠 Avanzado (Gemini)", height=36,
+                                           fg_color="transparent", border_width=1, border_color=COLOR_ACCENT_PURPLE,
+                                           hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                            command=lambda: self._cambiar_modelo("gemini"))
         self.btn_avanzado.pack(fill="x", padx=8, pady=(4, 8))
         self.lbl_limite = ctk.CTkLabel(sidebar, text="ℹ️ Groq: ~1.000 msgs/día",
-                                        font=("Segoe UI", 10), text_color="#888")
+                                        font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED)
         self.lbl_limite.pack(pady=(0, 5))
-        ctk.CTkFrame(sidebar, height=1, fg_color="#2a2a3a").pack(fill="x", padx=10, pady=8)
-        ctk.CTkButton(sidebar, text="📄 Exportar a Word", fg_color="#2c3e50", hover_color="#34495e",
+        ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=10, pady=8)
+
+        ctk.CTkButton(sidebar, text="📄 Exportar a Word", fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_PRIMARY,
+                      border_width=1, border_color=COLOR_BORDER,
                       command=self._exportar_word).pack(fill="x", padx=15, pady=4)
         ctk.CTkButton(sidebar, text="🧹 Nuevo Chat", fg_color="transparent", border_width=1,
+                      border_color=COLOR_BORDER, hover_color=COLOR_BG_SURFACE,
                       command=self._limpiar_chat).pack(fill="x", padx=15, pady=4)
-        ctk.CTkLabel(sidebar, text="🕒 Historial", font=("Segoe UI", 12, "bold")).pack(pady=(12, 3))
+
+        ctk.CTkLabel(sidebar, text="🕒 Historial de Consultas", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(12, 3))
         self.frame_historial = ctk.CTkScrollableFrame(sidebar, fg_color="transparent")
         self.frame_historial.pack(fill="both", expand=True, padx=10, pady=5)
         self.status_label = ctk.CTkLabel(sidebar, text="🟢 Groq Listo",
-                                          text_color="green", font=("Segoe UI", 11))
+                                          text_color=COLOR_SUCCESS, font=("Segoe UI", 11))
         self.status_label.pack(side="bottom", pady=(0, 15))
         self._actualizar_historial_ui()
- 
+
         chat_frame = ctk.CTkFrame(self, fg_color="transparent")
         chat_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         chat_frame.grid_rowconfigure(1, weight=1)
         chat_frame.grid_columnconfigure(0, weight=1)
+
         self.lbl_banner = ctk.CTkLabel(chat_frame,
                                         text="Modelo activo: Groq  •  Límite aprox: 1.000 mensajes / día",
-                                        font=("Segoe UI", 10), text_color="#555")
+                                        font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED)
         self.lbl_banner.grid(row=0, column=0, sticky="w", pady=(0, 6))
-        self.txt_chat = ctk.CTkTextbox(chat_frame, font=("Segoe UI", 14), state="disabled", wrap="word")
+
+        self.txt_chat = ctk.CTkTextbox(chat_frame, font=("Segoe UI", 14), state="disabled", wrap="word",
+                                       fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
         self.txt_chat.grid(row=1, column=0, sticky="nsew", pady=(0, 12))
+
         input_frame = ctk.CTkFrame(chat_frame, fg_color="transparent")
         input_frame.grid(row=2, column=0, sticky="ew")
         input_frame.grid_columnconfigure(0, weight=1)
-        self.entry_pregunta = ctk.CTkEntry(input_frame, placeholder_text="Describe el problema aquí...", height=42)
+
+        self.entry_pregunta = ctk.CTkEntry(input_frame, placeholder_text="Describe tu duda o problema aquí...", height=44,
+                                           fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_pregunta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_pregunta.bind("<Return>", lambda e: self._enviar())
-        ctk.CTkButton(input_frame, text="Analizar", width=120, height=42,
+
+        ctk.CTkButton(input_frame, text="⚡ Analizar con IA", width=140, height=44,
+                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      font=("Segoe UI", 12, "bold"),
                       command=self._enviar).grid(row=0, column=1)
- 
+
     def _cambiar_modelo(self, modelo):
         texto_actual = self.txt_instrucciones.get("1.0", "end-1c").strip()
         if self.modelo_actual == "groq":
@@ -872,29 +986,29 @@ class ModuloAyudador(ctk.CTkFrame):
         self.modelo_actual = modelo
         self.txt_instrucciones.delete("1.0", "end")
         if modelo == "groq":
-            self.btn_basico.configure(fg_color="#1565c0")
+            self.btn_basico.configure(fg_color=COLOR_ACCENT_PRIMARY)
             self.btn_avanzado.configure(fg_color="transparent")
             self.lbl_limite.configure(text="ℹ️ Groq: ~1.000 msgs/día")
             self.lbl_banner.configure(text="Modelo activo: Groq (Básico)  •  Límite aprox: 1.000 mensajes / día")
-            self.status_label.configure(text="🟢 Groq Listo", text_color="green")
+            self.status_label.configure(text="🟢 Groq Listo", text_color=COLOR_SUCCESS)
             self.txt_instrucciones.insert("1.0", self.instrucciones_groq)
         else:
-            self.btn_avanzado.configure(fg_color="#7b1fa2")
+            self.btn_avanzado.configure(fg_color=COLOR_ACCENT_PURPLE)
             self.btn_basico.configure(fg_color="transparent")
             self.lbl_limite.configure(text="ℹ️ Gemini: 5 msgs/minuto")
             self.lbl_banner.configure(text="Modelo activo: Gemini  •  Límite: 5 mensajes / minuto")
-            self.status_label.configure(text="🟣 Gemini Listo", text_color="#bb86fc")
+            self.status_label.configure(text="🟣 Gemini Listo", text_color="#a5b4fc")
             self.txt_instrucciones.insert("1.0", self.instrucciones_gemini)
- 
+
     def _agregar_texto(self, emisor, texto):
         self.txt_chat.configure(state="normal")
         if emisor == "IA":
-            self.txt_chat.insert("end", f"\n IA:\n{texto}")
+            self.txt_chat.insert("end", f"\n 🤖 IA ({self.modelo_actual.upper()}):\n{texto}\n")
         else:
-            self.txt_chat.insert("end", f"\n\n {emisor}:\n{texto}\n")
+            self.txt_chat.insert("end", f"\n\n 👤 {emisor}:\n{texto}\n")
         self.txt_chat.configure(state="disabled")
         self.txt_chat.see("end")
- 
+
     def _enviar(self):
         pregunta = self.entry_pregunta.get().strip()
         nombre   = self.entry_nombre.get().strip() or "Tú"
@@ -905,10 +1019,10 @@ class ModuloAyudador(ctk.CTkFrame):
         self.status_label.configure(text="🟡 Pensando...", text_color="orange")
         self.historial_conversacion.append({"role": "user", "content": pregunta})
         threading.Thread(target=self._proceso_ia, daemon=True).start()
- 
+
     def _proceso_ia(self):
         try:
-            self.after(0, lambda: self._stream_update("\n IA:\n"))
+            self.after(0, lambda: self._stream_update(f"\n 🤖 IA ({self.modelo_actual.upper()}):\n"))
             instrucciones = self.txt_instrucciones.get("1.0", "end-1c").strip()
             prompt = construir_prompt(instrucciones, self.historial_conversacion)
             if self.modelo_actual == "groq":
@@ -918,28 +1032,28 @@ class ModuloAyudador(ctk.CTkFrame):
             self.historial_conversacion.append({"role": "assistant", "content": respuesta_completa})
             self.after(0, self._stream_update, respuesta_completa)
             self._guardar_historial()
-            color = "green" if self.modelo_actual == "groq" else "#bb86fc"
+            color = COLOR_SUCCESS if self.modelo_actual == "groq" else "#a5b4fc"
             texto = "🟢 Groq Listo" if self.modelo_actual == "groq" else "🟣 Gemini Listo"
             self.after(0, lambda: self.status_label.configure(text=texto, text_color=color))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
-            self.after(0, lambda: self.status_label.configure(text="🔴 Error", text_color="red"))
+            self.after(0, lambda: self.status_label.configure(text="🔴 Error", text_color=COLOR_DANGER))
         finally:
             self.after(0, lambda: self.txt_chat.configure(state="disabled"))
- 
+
     def _stream_update(self, contenido):
         self.txt_chat.configure(state="normal")
         self.txt_chat.insert("end", contenido)
         self.txt_chat.see("end")
         self.txt_chat.configure(state="disabled")
- 
+
     def _limpiar_chat(self):
         self.txt_chat.configure(state="normal")
         self.txt_chat.delete("1.0", "end")
         self.txt_chat.configure(state="disabled")
         self.historial_conversacion = []
         self.chat_actual_id = None
- 
+
     def _exportar_word(self):
         if not self.historial_conversacion:
             messagebox.showwarning("Vacío", "No hay nada que exportar.")
@@ -949,7 +1063,7 @@ class ModuloAyudador(ctk.CTkFrame):
                                              initialfile=f"Solucion_{nombre}.docx")
         if path:
             doc = Document()
-            doc.add_heading(f"Informe de Solución – {nombre}", 0)
+            doc.add_heading(f"Informe de Solución – {nombre} (KernossIA)", 0)
             for msg in self.historial_conversacion:
                 rol = "Tú" if msg["role"] == "user" else "IA"
                 p = doc.add_paragraph()
@@ -957,7 +1071,7 @@ class ModuloAyudador(ctk.CTkFrame):
                 p.add_run(msg["content"])
             doc.save(path)
             messagebox.showinfo("Éxito", f"Guardado en:\n{path}")
- 
+
     def _cargar_historial(self):
         if os.path.exists(self.ruta_historial):
             try:
@@ -966,7 +1080,7 @@ class ModuloAyudador(ctk.CTkFrame):
             except Exception:
                 return {}
         return {}
- 
+
     def _guardar_historial(self):
         if not self.historial_conversacion:
             return
@@ -981,7 +1095,7 @@ class ModuloAyudador(ctk.CTkFrame):
             self.after(0, self._actualizar_historial_ui)
         except Exception as e:
             print(f"Error guardando historial: {e}")
- 
+
     def _actualizar_historial_ui(self):
         for w in self.frame_historial.winfo_children():
             w.destroy()
@@ -989,12 +1103,12 @@ class ModuloAyudador(ctk.CTkFrame):
             fila = ctk.CTkFrame(self.frame_historial, fg_color="transparent")
             fila.pack(fill="x", pady=3)
             ctk.CTkButton(fila, text=chat_id, fg_color="transparent",
-                          text_color="#ddd", anchor="w", hover_color="#2a2a4a", height=32,
+                          text_color=COLOR_TEXT_MAIN, anchor="w", hover_color=COLOR_BG_SURFACE, height=32,
                           command=lambda cid=chat_id: self._cargar_chat(cid)).pack(side="left", fill="x", expand=True, padx=(0, 4))
             ctk.CTkButton(fila, text="❌", width=32, height=32,
-                          fg_color="#7a0000", hover_color="#500000",
+                          fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER,
                           command=lambda cid=chat_id: self._borrar_chat(cid)).pack(side="right")
- 
+
     def _cargar_chat(self, chat_id):
         self.chat_actual_id = chat_id
         self.historial_conversacion = self.todo_el_historial[chat_id]
@@ -1003,12 +1117,12 @@ class ModuloAyudador(ctk.CTkFrame):
         nombre = self.entry_nombre.get().strip() or "Tú"
         for msg in self.historial_conversacion:
             if msg["role"] == "user":
-                self.txt_chat.insert("end", f"\n\n {nombre}:\n{msg['content']}\n")
+                self.txt_chat.insert("end", f"\n\n 👤 {nombre}:\n{msg['content']}\n")
             else:
-                self.txt_chat.insert("end", f"\n IA:\n{msg['content']}")
+                self.txt_chat.insert("end", f"\n 🤖 IA:\n{msg['content']}\n")
         self.txt_chat.configure(state="disabled")
         self.txt_chat.see("end")
- 
+
     def _borrar_chat(self, chat_id):
         if messagebox.askyesno("Confirmar", f"¿Borrar este chat?\n'{chat_id}'"):
             del self.todo_el_historial[chat_id]
@@ -1020,8 +1134,8 @@ class ModuloAyudador(ctk.CTkFrame):
             if self.chat_actual_id == chat_id:
                 self._limpiar_chat()
             self._actualizar_historial_ui()
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: AGENDA Y CALENDARIO
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1040,29 +1154,32 @@ class ModuloCalendario(ctk.CTkFrame):
         self._build_ui()
         self._actualizar_calendario()
         self._cargar_evento_en_editor()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=2)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
- 
+
         # Panel izquierdo: calendario
         frame_izq = ctk.CTkFrame(self, fg_color="transparent")
         frame_izq.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
- 
-        self.frame_nav = ctk.CTkFrame(frame_izq, fg_color="#1a1a1a", height=60, corner_radius=10)
+
+        self.frame_nav = ctk.CTkFrame(frame_izq, fg_color=COLOR_BG_CARD, height=60, corner_radius=12,
+                                      border_width=1, border_color=COLOR_BORDER)
         self.frame_nav.pack(fill="x", pady=(0, 15))
         self.frame_nav.pack_propagate(False)
         ctk.CTkButton(self.frame_nav, text="◀", width=40, font=("Segoe UI", 16),
+                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
                       command=self._mes_anterior).pack(side="left", padx=15, pady=10)
         self.lbl_mes_año = ctk.CTkLabel(self.frame_nav, text="", font=("Segoe UI", 20, "bold"),
-                                         text_color="#64b5f6")
+                                         text_color=COLOR_ACCENT_SKY)
         self.lbl_mes_año.pack(side="left", expand=True)
         ctk.CTkButton(self.frame_nav, text="▶", width=40, font=("Segoe UI", 16),
+                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
                       command=self._mes_siguiente).pack(side="right", padx=15, pady=10)
- 
-        self.frame_dias = ctk.CTkFrame(frame_izq, fg_color="#242424", corner_radius=15,
-                                        border_width=1, border_color="#2d2d2d")
+
+        self.frame_dias = ctk.CTkFrame(frame_izq, fg_color=COLOR_BG_CARD, corner_radius=15,
+                                        border_width=1, border_color=COLOR_BORDER)
         self.frame_dias.pack(fill="both", expand=True)
         for i in range(7):
             self.frame_dias.grid_columnconfigure(i, weight=1, uniform="dias")
@@ -1070,24 +1187,26 @@ class ModuloCalendario(ctk.CTkFrame):
             self.frame_dias.grid_rowconfigure(i, weight=1, uniform="semanas")
         for col, dia in enumerate(["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]):
             ctk.CTkLabel(self.frame_dias, text=dia, font=("Segoe UI", 13, "bold"),
-                         text_color="gray").grid(row=0, column=col, pady=5, sticky="nsew")
- 
+                         text_color=COLOR_ACCENT_CYAN).grid(row=0, column=col, pady=8, sticky="nsew")
+
         # Panel derecho: editor
-        frame_der = ctk.CTkFrame(self, fg_color="#1a1a1a", corner_radius=0)
-        frame_der.grid(row=0, column=1, sticky="nsew")
-        ctk.CTkLabel(frame_der, text="Tareas del día", font=("Segoe UI", 18, "bold"),
-                     text_color="#64b5f6").pack(pady=(25, 5), padx=20, anchor="w")
-        self.lbl_fecha_actual = ctk.CTkLabel(frame_der, text="", font=("Segoe UI", 14), text_color="gray")
+        frame_der = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=15,
+                                 border_width=1, border_color=COLOR_BORDER)
+        frame_der.grid(row=0, column=1, sticky="nsew", padx=(0, 20), pady=20)
+        ctk.CTkLabel(frame_der, text="📅 Tareas del día", font=("Segoe UI", 18, "bold"),
+                     text_color=COLOR_ACCENT_SKY).pack(pady=(25, 5), padx=20, anchor="w")
+        self.lbl_fecha_actual = ctk.CTkLabel(frame_der, text="", font=("Segoe UI", 13), text_color=COLOR_TEXT_MUTED)
         self.lbl_fecha_actual.pack(pady=(0, 15), padx=20, anchor="w")
-        self.txt_tareas = ctk.CTkTextbox(frame_der, font=("Segoe UI", 13), border_width=1, border_color="#3d3d3d")
+        self.txt_tareas = ctk.CTkTextbox(frame_der, font=("Segoe UI", 13), border_width=1,
+                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.txt_tareas.pack(fill="both", expand=True, padx=20, pady=10)
-        ctk.CTkButton(frame_der, text="Guardar Cambios", font=("Segoe UI", 13, "bold"),
-                      fg_color="#2e7d32", hover_color="#1b5e20",
+        ctk.CTkButton(frame_der, text="💾 Guardar Tareas", font=("Segoe UI", 13, "bold"),
+                      fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                       command=self._guardar_evento).pack(fill="x", padx=20, pady=(10, 5))
-        ctk.CTkButton(frame_der, text="Borrar Todo", font=("Segoe UI", 13),
-                      fg_color="#c62828", hover_color="#b71c1c",
+        ctk.CTkButton(frame_der, text="🗑️ Borrar Tareas", font=("Segoe UI", 13),
+                      fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER,
                       command=self._borrar_evento).pack(fill="x", padx=20, pady=(5, 25))
- 
+
     def _actualizar_calendario(self):
         for btn in self.botones_dias:
             btn.destroy()
@@ -1101,39 +1220,39 @@ class ModuloCalendario(ctk.CTkFrame):
             es_hoy = (self.hoy.year == self.año_actual and self.hoy.month == self.mes_actual and self.hoy.day == dia)
             tiene_tareas = fecha_clave in self.eventos and self.eventos[fecha_clave].strip()
             if esta_sel:
-                fg = "#1565c0"; tc = "white"
+                fg = COLOR_ACCENT_PRIMARY; tc = "white"
             elif es_hoy:
-                fg = "#0d47a1"; tc = "#64b5f6"
+                fg = COLOR_ACCENT_CYAN; tc = "white"
             elif tiene_tareas:
-                fg = "#1e4620"; tc = "#81c784"
+                fg = "#064e3b"; tc = "#6ee7b7"
             else:
-                fg = "#333333"; tc = "white"
+                fg = COLOR_BG_CARD_LIGHT; tc = COLOR_TEXT_MAIN
             btn = ctk.CTkButton(self.frame_dias, text=str(dia), font=("Segoe UI", 12, "bold" if (es_hoy or tiene_tareas) else "normal"),
-                                fg_color=fg, hover_color="#444444", text_color=tc,
+                                fg_color=fg, hover_color=COLOR_ACCENT_HOVER, text_color=tc,
                                 corner_radius=8, command=lambda d=dia: self._seleccionar_dia(d))
             btn.grid(row=fila, column=columna, padx=4, pady=4, sticky="nsew")
             self.botones_dias.append(btn)
             columna += 1
             if columna > 6:
                 columna = 0; fila += 1
- 
+
     def _seleccionar_dia(self, dia):
         self.dia_seleccionado = f"{self.año_actual}-{self.mes_actual:02d}-{dia:02d}"
         self._actualizar_calendario()
         self._cargar_evento_en_editor()
- 
+
     def _mes_anterior(self):
         self.mes_actual -= 1
         if self.mes_actual < 1:
             self.mes_actual = 12; self.año_actual -= 1
         self._actualizar_calendario()
- 
+
     def _mes_siguiente(self):
         self.mes_actual += 1
         if self.mes_actual > 12:
             self.mes_actual = 1; self.año_actual += 1
         self._actualizar_calendario()
- 
+
     def _cargar_eventos(self):
         if os.path.exists(self.ruta_datos):
             try:
@@ -1142,7 +1261,7 @@ class ModuloCalendario(ctk.CTkFrame):
             except Exception:
                 return {}
         return {}
- 
+
     def _cargar_evento_en_editor(self):
         partes = self.dia_seleccionado.split("-")
         fecha_objeto = datetime(int(partes[0]), int(partes[1]), int(partes[2]))
@@ -1150,7 +1269,7 @@ class ModuloCalendario(ctk.CTkFrame):
         self.txt_tareas.delete("1.0", "end")
         if self.dia_seleccionado in self.eventos:
             self.txt_tareas.insert("1.0", self.eventos[self.dia_seleccionado])
- 
+
     def _guardar_evento(self):
         contenido = self.txt_tareas.get("1.0", "end-1c").strip()
         if contenido:
@@ -1164,7 +1283,7 @@ class ModuloCalendario(ctk.CTkFrame):
             messagebox.showinfo("Guardado", "Agenda actualizada correctamente.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo guardar:\n{e}")
- 
+
     def _borrar_evento(self):
         if self.dia_seleccionado in self.eventos:
             if messagebox.askyesno("Confirmar", "¿Seguro que quieres borrar todas las tareas de este día?"):
@@ -1173,8 +1292,8 @@ class ModuloCalendario(ctk.CTkFrame):
                 with open(self.ruta_datos, 'w', encoding='utf-8') as f:
                     json.dump(self.eventos, f, ensure_ascii=False, indent=2)
                 self._actualizar_calendario()
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: CREADOR DE EJERCICIOS (PROFESOR)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1187,11 +1306,11 @@ Crea ejercicios bien estructurados con:
 5. Tiempo estimado.
 NO incluyas las soluciones a menos que se te pida explícitamente.
 El formato debe ser limpio y listo para imprimir o enviar a alumnos."""
- 
+
 INSTRUCCIONES_SOLUCIONES = """Eres un profesor. Genera el solucionario completo y detallado
 del ejercicio que te proporcionan. Explica cada paso y por qué es correcto."""
- 
- 
+
+
 class ModuloCreadorEjercicios(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
@@ -1199,127 +1318,143 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.ejercicio_actual = ""
         self.solucionario_actual = ""
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
- 
-        sidebar = ctk.CTkFrame(self, width=290, corner_radius=0)
+
+        sidebar = ctk.CTkFrame(self, width=290, corner_radius=0,
+                               fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         sidebar.grid(row=0, column=0, sticky="nsew")
         sidebar.grid_propagate(False)
-        ctk.CTkLabel(sidebar, text="Creador de\nEjercicios",
-                     font=("Segoe UI", 20, "bold"), text_color="#e53935").pack(pady=(20, 5))
-        ctk.CTkLabel(sidebar, text="Modo Profesor",
-                     font=("Segoe UI", 11), text_color="#888").pack(pady=(0, 15))
- 
-        ctk.CTkLabel(sidebar, text="Motor de IA:", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
+        ctk.CTkLabel(sidebar, text="✏️ Creador de\nEjercicios",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_PURPLE).pack(pady=(20, 5))
+        ctk.CTkLabel(sidebar, text="Herramienta Docente Exclusiva",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(pady=(0, 15))
+
+        ctk.CTkLabel(sidebar, text="Motor de IA:", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
         fm = ctk.CTkFrame(sidebar, fg_color="transparent")
         fm.pack(fill="x", padx=15, pady=5)
-        self.btn_groq = ctk.CTkButton(fm, text="Básico\n(Groq)", height=50,
-                                       fg_color="#1565c0", hover_color="#0d47a1",
+        self.btn_groq = ctk.CTkButton(fm, text="⚡ Básico\n(Groq)", height=45,
+                                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                        font=("Segoe UI", 10, "bold"),
                                        command=lambda: self._set_modelo("groq"))
         self.btn_groq.pack(side="left", expand=True, fill="x", padx=(0, 3))
-        self.btn_gemini = ctk.CTkButton(fm, text="Avanzado\n(Gemini)", height=50,
-                                         fg_color="#333", hover_color="#444",
+        self.btn_gemini = ctk.CTkButton(fm, text="🧠 Avanzado\n(Gemini)", height=45,
+                                         fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                          font=("Segoe UI", 10, "bold"),
                                          command=lambda: self._set_modelo("gemini"))
         self.btn_gemini.pack(side="left", expand=True, fill="x", padx=(3, 0))
         self.lbl_limite = ctk.CTkLabel(sidebar, text="Groq: ~1.000 msgs/día",
-                                        font=("Segoe UI", 9), text_color="#666")
+                                        font=("Segoe UI", 9), text_color=COLOR_TEXT_MUTED)
         self.lbl_limite.pack(pady=(2, 10))
-        ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
- 
-        ctk.CTkLabel(sidebar, text="Tema / Materia", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15, pady=(5, 2))
-        self.entry_tema = ctk.CTkEntry(sidebar, placeholder_text="Ej: Ecuaciones de 2º grado")
+        ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
+
+        ctk.CTkLabel(sidebar, text="Tema / Materia", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15, pady=(5, 2))
+        self.entry_tema = ctk.CTkEntry(sidebar, placeholder_text="Ej: Ecuaciones de 2º grado",
+                                       fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_tema.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(sidebar, text="Nivel educativo", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
+
+        ctk.CTkLabel(sidebar, text="Nivel educativo", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
         self.combo_nivel = ctk.CTkComboBox(sidebar, values=[
             "Primaria", "1º ESO", "2º ESO", "3º ESO", "4º ESO",
-            "1º Bachillerato", "2º Bachillerato", "Universidad"])
+            "1º Bachillerato", "2º Bachillerato", "Universidad"],
+            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.combo_nivel.set("2º ESO")
         self.combo_nivel.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(sidebar, text="Tipo de ejercicio", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
+
+        ctk.CTkLabel(sidebar, text="Tipo de ejercicio", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
         self.combo_tipo = ctk.CTkComboBox(sidebar, values=[
             "Problemas paso a paso", "Preguntas teóricas", "Opción múltiple (A-D)",
-            "Completar huecos", "Verdadero / Falso", "Ejercicio práctico", "Mixto (teoría + práctica)"])
+            "Completar huecos", "Verdadero / Falso", "Ejercicio práctico", "Mixto (teoría + práctica)"],
+            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.combo_tipo.set("Mixto (teoría + práctica)")
         self.combo_tipo.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(sidebar, text="Nº de preguntas", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
-        self.spin_preguntas = ctk.CTkSlider(sidebar, from_=3, to=20, number_of_steps=17)
+
+        ctk.CTkLabel(sidebar, text="Nº de preguntas", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
+        self.spin_preguntas = ctk.CTkSlider(sidebar, from_=3, to=20, number_of_steps=17, progress_color=COLOR_ACCENT_PURPLE)
         self.spin_preguntas.set(8)
         self.spin_preguntas.pack(fill="x", padx=15, pady=(0, 2))
-        self.lbl_n_preguntas = ctk.CTkLabel(sidebar, text="8 preguntas", font=("Segoe UI", 11))
+        self.lbl_n_preguntas = ctk.CTkLabel(sidebar, text="8 preguntas", font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED)
         self.lbl_n_preguntas.pack()
         self.spin_preguntas.configure(command=lambda v: self.lbl_n_preguntas.configure(text=f"{int(v)} preguntas"))
-        self.check_soluciones = ctk.CTkCheckBox(sidebar, text="Incluir solucionario al final")
+
+        self.check_soluciones = ctk.CTkCheckBox(sidebar, text="Incluir solucionario al final",
+                                                fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER)
         self.check_soluciones.pack(padx=15, pady=8, anchor="w")
-        ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
- 
-        self.btn_generar = ctk.CTkButton(sidebar, text="Generar Ejercicio", height=45,
+        ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
+
+        self.btn_generar = ctk.CTkButton(sidebar, text="✨ Generar Ejercicio", height=42,
                                           font=("Segoe UI", 13, "bold"),
-                                          fg_color="#7b1fa2", hover_color="#4a0072",
+                                          fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                           command=self.generar_ejercicio)
         self.btn_generar.pack(fill="x", padx=15, pady=5)
-        self.btn_regenerar = ctk.CTkButton(sidebar, text="Regenerar (nueva versión)", height=38,
-                                            fg_color="#1565c0", hover_color="#0d47a1",
+
+        self.btn_regenerar = ctk.CTkButton(sidebar, text="🔄 Regenerar", height=36,
+                                            fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
                                             command=self.generar_ejercicio, state="disabled")
-        self.btn_regenerar.pack(fill="x", padx=15, pady=3)
-        self.btn_editar = ctk.CTkButton(sidebar, text="Editar manualmente", height=38,
-                                         fg_color="transparent", border_width=1,
+        self.btn_regenerar.pack(fill="x", padx=15, pady=2)
+
+        self.btn_editar = ctk.CTkButton(sidebar, text="✏️ Editar manualmente", height=36,
+                                         fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
                                          command=self.activar_edicion, state="disabled")
-        self.btn_editar.pack(fill="x", padx=15, pady=3)
-        self.btn_solucionario = ctk.CTkButton(sidebar, text="Generar Solucionario", height=38,
-                                               fg_color="#2e7d32", hover_color="#1b5e20",
+        self.btn_editar.pack(fill="x", padx=15, pady=2)
+
+        self.btn_solucionario = ctk.CTkButton(sidebar, text="💡 Generar Solucionario", height=36,
+                                               fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                                                command=self.generar_solucionario, state="disabled")
-        self.btn_solucionario.pack(fill="x", padx=15, pady=3)
-        self.btn_exportar = ctk.CTkButton(sidebar, text="📄 Exportar con solución", height=38,
-                                           fg_color="#37474f", hover_color="#263238",
+        self.btn_solucionario.pack(fill="x", padx=15, pady=2)
+
+        self.btn_exportar = ctk.CTkButton(sidebar, text="📄 Exportar con solución", height=36,
+                                           fg_color=COLOR_BG_CARD_LIGHT, hover_color=COLOR_BG_SURFACE,
                                            command=lambda: self.exportar_word(True), state="disabled")
-        self.btn_exportar.pack(fill="x", padx=15, pady=(3, 1))
-        self.btn_exportar_sin = ctk.CTkButton(sidebar, text="📋 Exportar sin solución", height=38,
-                                               fg_color="#455a64", hover_color="#37474f",
-                                               command=lambda: self.exportar_word(False), state="disabled")
-        self.btn_exportar_sin.pack(fill="x", padx=15, pady=(1, 3))
-        self.status = ctk.CTkLabel(sidebar, text="Listo", text_color="gray", font=("Segoe UI", 10))
-        self.status.pack(side="bottom", pady=10)
- 
+        self.btn_exportar.pack(fill="x", padx=15, pady=2)
+
+        self.status = ctk.CTkLabel(sidebar, text="Listo", text_color=COLOR_TEXT_MUTED, font=("Segoe UI", 10))
+        self.status.pack(side="bottom", pady=8)
+
         panel = ctk.CTkFrame(self, fg_color="transparent")
         panel.grid(row=0, column=1, sticky="nsew", padx=15, pady=15)
         panel.grid_rowconfigure(1, weight=1)
         panel.grid_columnconfigure(0, weight=1)
+
         cab = ctk.CTkFrame(panel, fg_color="transparent")
         cab.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-        ctk.CTkLabel(cab, text="Ejercicio Generado", font=("Segoe UI", 18, "bold")).pack(side="left")
-        self.lbl_modo_edicion = ctk.CTkLabel(cab, text="", font=("Segoe UI", 11), text_color="#fb8c00")
+        ctk.CTkLabel(cab, text="Ejercicio Pedagógico Generado", font=("Segoe UI", 18, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left")
+        self.lbl_modo_edicion = ctk.CTkLabel(cab, text="", font=("Segoe UI", 11), text_color=COLOR_WARNING)
         self.lbl_modo_edicion.pack(side="right")
-        self.txt_ejercicio = ctk.CTkTextbox(panel, font=("Consolas", 13))
+
+        self.txt_ejercicio = ctk.CTkTextbox(panel, font=("Consolas", 13), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
         self.txt_ejercicio.grid(row=1, column=0, sticky="nsew")
         self.txt_ejercicio.insert("end", "Configura los parámetros en el panel izquierdo y pulsa 'Generar Ejercicio'.")
         self.txt_ejercicio.configure(state="disabled")
-        self.entry_cambio = ctk.CTkEntry(panel, placeholder_text="Ej: 'Hazlo más difícil' / 'Añade 2 preguntas'", height=40)
+
+        self.entry_cambio = ctk.CTkEntry(panel, placeholder_text="Ajustes con IA: Ej: 'Hazlo más difícil' / 'Añade 2 preguntas teóricas'", height=42,
+                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_cambio.grid(row=2, column=0, sticky="ew", pady=(10, 0))
         self.entry_cambio.bind("<Return>", lambda e: self.aplicar_cambio_ia())
+
         btn_row = ctk.CTkFrame(panel, fg_color="transparent")
         btn_row.grid(row=3, column=0, sticky="ew", pady=(8, 0))
-        ctk.CTkButton(btn_row, text="Aplicar cambio con IA", fg_color="#e65100", hover_color="#bf360c",
-                      height=38, command=self.aplicar_cambio_ia).pack(side="left", padx=(0, 8))
- 
+        ctk.CTkButton(btn_row, text="⚡ Aplicar cambio con IA", fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      height=38, font=("Segoe UI", 12, "bold"),
+                      command=self.aplicar_cambio_ia).pack(side="left", padx=(0, 8))
+
     def _set_modelo(self, m):
         self.modelo_actual = m
         if m == "groq":
-            self.btn_groq.configure(fg_color="#1565c0"); self.btn_gemini.configure(fg_color="#333")
+            self.btn_groq.configure(fg_color=COLOR_ACCENT_PRIMARY); self.btn_gemini.configure(fg_color=COLOR_BG_SURFACE)
             self.lbl_limite.configure(text="Groq: ~1.000 msgs/día")
         else:
-            self.btn_groq.configure(fg_color="#333"); self.btn_gemini.configure(fg_color="#6a1b9a")
+            self.btn_groq.configure(fg_color=COLOR_BG_SURFACE); self.btn_gemini.configure(fg_color=COLOR_ACCENT_PURPLE)
             self.lbl_limite.configure(text="Gemini: 15 msgs/minuto")
- 
+
     def _llamar_ia(self, prompt):
         full_prompt = f"{INSTRUCCIONES_EJERCICIO}\n\n{prompt}"
         if self.modelo_actual == "groq":
             return llamar_groq(full_prompt)
         return llamar_gemini(full_prompt)
- 
+
     def _construir_prompt(self):
         tema  = self.entry_tema.get().strip() or "tema libre"
         nivel = self.combo_nivel.get()
@@ -1330,7 +1465,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                 f"Debe tener exactamente {n} preguntas/apartados. "
                 f"{'Incluye el solucionario completo al final.' if inc else 'NO incluyas las soluciones.'} "
                 f"Formato limpio y listo para entregar a los alumnos.")
- 
+
     def generar_ejercicio(self):
         if not self.entry_tema.get().strip():
             messagebox.showwarning("Tema vacío", "Introduce el tema del ejercicio.")
@@ -1338,7 +1473,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.btn_generar.configure(state="disabled")
         self.status.configure(text="Generando...", text_color="orange")
         threading.Thread(target=self._thread_generar, daemon=True).start()
- 
+
     def _thread_generar(self):
         try:
             resultado = self._llamar_ia(self._construir_prompt())
@@ -1349,27 +1484,27 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         finally:
             self.after(0, lambda: self.btn_generar.configure(state="normal"))
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
- 
+
     def _mostrar_ejercicio(self, texto):
         self.txt_ejercicio.configure(state="normal")
         self.txt_ejercicio.delete("1.0", "end")
         self.txt_ejercicio.insert("end", texto)
         self.txt_ejercicio.configure(state="disabled")
         for btn in [self.btn_regenerar, self.btn_editar, self.btn_solucionario,
-                    self.btn_exportar, self.btn_exportar_sin]:
+                    self.btn_exportar]:
             btn.configure(state="normal")
- 
+
     def activar_edicion(self):
         self.txt_ejercicio.configure(state="normal")
         self.lbl_modo_edicion.configure(text="✏️ Modo edición manual activo")
         self.btn_editar.configure(text="Bloquear edición", command=self.desactivar_edicion)
- 
+
     def desactivar_edicion(self):
         self.ejercicio_actual = self.txt_ejercicio.get("1.0", "end-1c")
         self.txt_ejercicio.configure(state="disabled")
         self.lbl_modo_edicion.configure(text="")
         self.btn_editar.configure(text="Editar manualmente", command=self.activar_edicion)
- 
+
     def aplicar_cambio_ia(self):
         cambio = self.entry_cambio.get().strip()
         if not cambio:
@@ -1383,7 +1518,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                   f"Aplica el siguiente cambio y devuelve el ejercicio completo actualizado: {cambio}")
         self.entry_cambio.delete(0, "end")
         threading.Thread(target=lambda: self._thread_cambio(prompt), daemon=True).start()
- 
+
     def _thread_cambio(self, prompt):
         try:
             resultado = self._llamar_ia(prompt)
@@ -1393,7 +1528,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
         finally:
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
- 
+
     def generar_solucionario(self):
         if not self.ejercicio_actual:
             messagebox.showwarning("Atención", "Primero genera un ejercicio.")
@@ -1406,13 +1541,15 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                 self.solucionario_actual = sol
                 def _mostrar():
                     ven = ctk.CTkToplevel(self)
-                    ven.title("Solucionario"); ven.geometry("800x600")
-                    ctk.CTkLabel(ven, text="Solucionario Completo",
-                                 font=("Segoe UI", 16, "bold")).pack(pady=10)
-                    txt = ctk.CTkTextbox(ven, font=("Consolas", 12))
+                    ven.title("Solucionario – KernossIA"); ven.geometry("800x600")
+                    ven.configure(fg_color=COLOR_BG_DARK)
+                    ctk.CTkLabel(ven, text="💡 Solucionario Completo",
+                                 font=("Segoe UI", 18, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=15)
+                    txt = ctk.CTkTextbox(ven, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 10))
                     txt.insert("end", sol); txt.configure(state="disabled")
-                    ctk.CTkButton(ven, text="Exportar Solucionario a Word",
+                    ctk.CTkButton(ven, text="📄 Exportar Solucionario a Word",
+                                  fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                                   command=lambda: self._exportar_solucionario(sol)).pack(fill="x", padx=15, pady=(0, 15))
                 self.after(0, _mostrar)
             except Exception as e:
@@ -1420,7 +1557,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             finally:
                 self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
         threading.Thread(target=_thread, daemon=True).start()
- 
+
     def exportar_word(self, con_solucion=True):
         texto = self.txt_ejercicio.get("1.0", "end-1c")
         if not texto.strip():
@@ -1434,7 +1571,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         if not path:
             return
         doc = Document()
-        doc.add_heading(f"Ejercicio — {tema}", 0)
+        doc.add_heading(f"Ejercicio — {tema} (KernossIA)", 0)
         doc.add_paragraph(f"Nivel: {self.combo_nivel.get()} | Tipo: {self.combo_tipo.get()}")
         doc.add_paragraph(f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
         doc.add_paragraph(""); doc.add_paragraph(texto)
@@ -1444,7 +1581,7 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             doc.add_paragraph(self.solucionario_actual)
         doc.save(path)
         messagebox.showinfo("Exportado", f"Guardado en:\n{path}")
- 
+
     def _exportar_solucionario(self, sol):
         tema = self.entry_tema.get().strip() or "Ejercicio"
         path = filedialog.asksaveasfilename(
@@ -1452,14 +1589,14 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
             initialfile=f"Solucionario_{tema}_{datetime.now().strftime('%Y%m%d')}.docx")
         if path:
             doc = Document()
-            doc.add_heading(f"Solucionario — {tema}", 0)
+            doc.add_heading(f"Solucionario — {tema} (KernossIA)", 0)
             doc.add_paragraph(f"Nivel: {self.combo_nivel.get()}")
             doc.add_paragraph(f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
             doc.add_paragraph(""); doc.add_paragraph(sol)
             doc.save(path)
             messagebox.showinfo("Exportado", f"Solucionario guardado en:\n{path}")
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MÓDULO: CORRECTOR DE EXÁMENES (PROFESOR)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1470,15 +1607,15 @@ Para cada pregunta debes:
 2. Puntuación obtenida sobre la puntuación máxima de esa pregunta.
 3. Comentario breve explicando el acierto o el error.
 4. Sugerencia de mejora si aplica.
- 
+
 Al final incluye:
 - NOTA TOTAL (sobre 10).
 - Resumen general de puntos fuertes y débiles del alumno.
 - Recomendaciones de estudio personalizadas.
- 
+
 Sé justo, constructivo y motivador en el tono."""
- 
- 
+
+
 class ModuloCorrectorExamenes(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
@@ -1486,133 +1623,150 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.correccion_actual = ""
         self.alumnos = {}
         self._build_ui()
- 
+
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(0, weight=1)
- 
-        sidebar = ctk.CTkFrame(self, width=270, corner_radius=0)
+
+        sidebar = ctk.CTkFrame(self, width=270, corner_radius=0,
+                               fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         sidebar.grid(row=0, column=0, sticky="nsew")
         sidebar.grid_propagate(False)
-        ctk.CTkLabel(sidebar, text="Corrector de\nExámenes",
-                     font=("Segoe UI", 20, "bold"), text_color="#1e88e5").pack(pady=(20, 5))
-        ctk.CTkLabel(sidebar, text="Modo Profesor",
-                     font=("Segoe UI", 11), text_color="#888").pack(pady=(0, 15))
- 
-        ctk.CTkLabel(sidebar, text="Motor de IA:", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
+        ctk.CTkLabel(sidebar, text="📋 Corrector de\nExámenes",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(20, 5))
+        ctk.CTkLabel(sidebar, text="Modo Docente",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(pady=(0, 15))
+
+        ctk.CTkLabel(sidebar, text="Motor de IA:", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
         fm = ctk.CTkFrame(sidebar, fg_color="transparent")
         fm.pack(fill="x", padx=15, pady=5)
-        self.btn_groq = ctk.CTkButton(fm, text="Básico\n(Groq)", height=50,
-                                       fg_color="#1565c0", hover_color="#0d47a1",
+        self.btn_groq = ctk.CTkButton(fm, text="⚡ Groq", height=42,
+                                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                        font=("Segoe UI", 10, "bold"),
                                        command=lambda: self._set_modelo("groq"))
         self.btn_groq.pack(side="left", expand=True, fill="x", padx=(0, 3))
-        self.btn_gemini = ctk.CTkButton(fm, text="Avanzado\n(Gemini)", height=50,
-                                         fg_color="#333", hover_color="#444",
+        self.btn_gemini = ctk.CTkButton(fm, text="🧠 Gemini", height=42,
+                                         fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                          font=("Segoe UI", 10, "bold"),
                                          command=lambda: self._set_modelo("gemini"))
         self.btn_gemini.pack(side="left", expand=True, fill="x", padx=(3, 0))
         self.lbl_limite = ctk.CTkLabel(sidebar, text="Groq: ~1.000 msgs/día",
-                                        font=("Segoe UI", 9), text_color="#666")
+                                        font=("Segoe UI", 9), text_color=COLOR_TEXT_MUTED)
         self.lbl_limite.pack(pady=(2, 8))
-        ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
- 
-        ctk.CTkLabel(sidebar, text="Materia / Examen", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15, pady=(5, 2))
-        self.entry_materia = ctk.CTkEntry(sidebar, placeholder_text="Ej: Matemáticas — Tema 3")
+        ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
+
+        ctk.CTkLabel(sidebar, text="Materia / Examen", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15, pady=(5, 2))
+        self.entry_materia = ctk.CTkEntry(sidebar, placeholder_text="Ej: Historia — Tema 4",
+                                          fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_materia.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(sidebar, text="Nivel educativo", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
+
+        ctk.CTkLabel(sidebar, text="Nivel educativo", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
         self.combo_nivel = ctk.CTkComboBox(sidebar, values=[
             "Primaria", "1º ESO", "2º ESO", "3º ESO", "4º ESO",
-            "1º Bachillerato", "2º Bachillerato", "Universidad"])
+            "1º Bachillerato", "2º Bachillerato", "Universidad"],
+            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.combo_nivel.set("2º ESO")
         self.combo_nivel.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(sidebar, text="Nombre del alumno", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
-        self.entry_alumno = ctk.CTkEntry(sidebar, placeholder_text="Nombre y apellidos")
+
+        ctk.CTkLabel(sidebar, text="Nombre del alumno", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
+        self.entry_alumno = ctk.CTkEntry(sidebar, placeholder_text="Nombre y apellidos",
+                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_alumno.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(sidebar, text="Criterios de puntuación", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
-        self.entry_criterios = ctk.CTkEntry(sidebar, placeholder_text="Ej: P1=2pts, P2=3pts, P3=5pts")
+
+        ctk.CTkLabel(sidebar, text="Criterios de puntuación", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
+        self.entry_criterios = ctk.CTkEntry(sidebar, placeholder_text="Ej: P1=2pts, P2=3pts, P3=5pts",
+                                            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_criterios.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkFrame(sidebar, height=1, fg_color="#333").pack(fill="x", padx=15, pady=5)
- 
+        ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
+
         self.btn_corregir = ctk.CTkButton(sidebar, text="✅ Corregir Examen",
-                                           height=45, font=("Segoe UI", 13, "bold"),
-                                           fg_color="#1b5e20", hover_color="#003300",
+                                           height=44, font=("Segoe UI", 13, "bold"),
+                                           fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                                            command=self.corregir_examen)
         self.btn_corregir.pack(fill="x", padx=15, pady=5)
-        self.btn_guardar_alumno = ctk.CTkButton(sidebar, text="💾 Guardar resultado alumno",
-                                                 height=38, fg_color="#37474f", hover_color="#263238",
+
+        self.btn_guardar_alumno = ctk.CTkButton(sidebar, text="💾 Guardar alumno",
+                                                 height=36, fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
                                                  command=self.guardar_alumno, state="disabled")
-        self.btn_guardar_alumno.pack(fill="x", padx=15, pady=3)
-        self.btn_exportar_uno = ctk.CTkButton(sidebar, text="📄 Exportar corrección (Word)",
-                                               height=38, fg_color="#4a148c", hover_color="#2d0065",
+        self.btn_guardar_alumno.pack(fill="x", padx=15, pady=2)
+
+        self.btn_exportar_uno = ctk.CTkButton(sidebar, text="📄 Exportar (Word)",
+                                               height=36, fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                                command=self.exportar_correccion, state="disabled")
-        self.btn_exportar_uno.pack(fill="x", padx=15, pady=3)
-        self.btn_exportar_clase = ctk.CTkButton(sidebar, text="📊 Exportar informe de clase",
-                                                 height=38, fg_color="#0d47a1", hover_color="#002171",
+        self.btn_exportar_uno.pack(fill="x", padx=15, pady=2)
+
+        self.btn_exportar_clase = ctk.CTkButton(sidebar, text="📊 Informe de clase",
+                                                 height=36, fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                                  command=self.exportar_informe_clase, state="disabled")
-        self.btn_exportar_clase.pack(fill="x", padx=15, pady=3)
-        ctk.CTkButton(sidebar, text="🧹 Nuevo examen", height=35,
-                      fg_color="transparent", border_width=1,
-                      command=self.limpiar_todo).pack(fill="x", padx=15, pady=3)
- 
+        self.btn_exportar_clase.pack(fill="x", padx=15, pady=2)
+
+        ctk.CTkButton(sidebar, text="🧹 Nuevo examen", height=32,
+                      fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
+                      command=self.limpiar_todo).pack(fill="x", padx=15, pady=2)
+
         ctk.CTkLabel(sidebar, text="Alumnos corregidos",
-                     font=("Segoe UI", 11, "bold"), text_color="#aaa").pack(pady=(10, 3))
-        self.frame_alumnos = ctk.CTkScrollableFrame(sidebar, fg_color="transparent", height=120)
-        self.frame_alumnos.pack(fill="x", padx=10, pady=3)
-        self.status = ctk.CTkLabel(sidebar, text="Listo", text_color="gray", font=("Segoe UI", 10))
-        self.status.pack(side="bottom", pady=10)
- 
+                     font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(pady=(8, 2))
+        self.frame_alumnos = ctk.CTkScrollableFrame(sidebar, fg_color="transparent", height=100)
+        self.frame_alumnos.pack(fill="x", padx=10, pady=2)
+        self.status = ctk.CTkLabel(sidebar, text="Listo", text_color=COLOR_TEXT_MUTED, font=("Segoe UI", 10))
+        self.status.pack(side="bottom", pady=6)
+
         # Panel central — Enunciado
         panel_izq = ctk.CTkFrame(self, fg_color="transparent")
         panel_izq.grid(row=0, column=1, sticky="nsew", padx=(15, 7), pady=15)
         panel_izq.grid_rowconfigure(1, weight=1)
         panel_izq.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(panel_izq, text="📝 Enunciado / Criterios del examen",
-                     font=("Segoe UI", 15, "bold")).grid(row=0, column=0, sticky="w", pady=(0, 8))
-        self.txt_enunciado = ctk.CTkTextbox(panel_izq, font=("Consolas", 12))
+
+        ctk.CTkLabel(panel_izq, text="📝 Enunciado y Criterios del examen",
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, sticky="w", pady=(0, 8))
+        self.txt_enunciado = ctk.CTkTextbox(panel_izq, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
         self.txt_enunciado.grid(row=1, column=0, sticky="nsew")
         self.txt_enunciado.insert("end",
             "Pega aquí el enunciado del examen y/o los criterios de corrección...\n\n"
             "Ejemplo:\n"
             "Pregunta 1 (2 pts): ¿Qué es la fotosíntesis? Explícala.\n"
             "Pregunta 2 (3 pts): Nombra 3 diferencias entre células animales y vegetales.")
- 
+
         # Panel derecho — Respuestas y corrección
         panel_der = ctk.CTkFrame(self, fg_color="transparent")
         panel_der.grid(row=0, column=2, sticky="nsew", padx=(7, 15), pady=15)
         panel_der.grid_rowconfigure(1, weight=2)
         panel_der.grid_rowconfigure(3, weight=3)
         panel_der.grid_columnconfigure(0, weight=1)
+
         ctk.CTkLabel(panel_der, text="✍️ Respuestas del alumno",
-                     font=("Segoe UI", 15, "bold")).grid(row=0, column=0, sticky="w", pady=(0, 8))
-        self.txt_respuestas = ctk.CTkTextbox(panel_der, font=("Consolas", 12))
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, sticky="w", pady=(0, 8))
+        self.txt_respuestas = ctk.CTkTextbox(panel_der, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
         self.txt_respuestas.grid(row=1, column=0, sticky="nsew", pady=(0, 10))
         self.txt_respuestas.insert("end", "Pega o escribe aquí las respuestas del alumno...")
+
         sep_frame = ctk.CTkFrame(panel_der, fg_color="transparent")
         sep_frame.grid(row=2, column=0, sticky="ew", pady=4)
-        ctk.CTkLabel(sep_frame, text="📋 Corrección de la IA",
-                     font=("Segoe UI", 15, "bold")).pack(side="left")
-        self.lbl_nota = ctk.CTkLabel(sep_frame, text="", font=("Segoe UI", 16, "bold"), text_color="#4caf50")
+        ctk.CTkLabel(sep_frame, text="📋 Corrección Inteligente",
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
+        self.lbl_nota = ctk.CTkLabel(sep_frame, text="", font=("Segoe UI", 16, "bold"), text_color=COLOR_SUCCESS)
         self.lbl_nota.pack(side="right")
-        self.txt_correccion = ctk.CTkTextbox(panel_der, font=("Consolas", 12), state="disabled")
+
+        self.txt_correccion = ctk.CTkTextbox(panel_der, font=("Consolas", 12), state="disabled",
+                                            fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
         self.txt_correccion.grid(row=3, column=0, sticky="nsew")
- 
+
     def _set_modelo(self, m):
         self.modelo_actual = m
         if m == "groq":
-            self.btn_groq.configure(fg_color="#1565c0"); self.btn_gemini.configure(fg_color="#333")
+            self.btn_groq.configure(fg_color=COLOR_ACCENT_PRIMARY); self.btn_gemini.configure(fg_color=COLOR_BG_SURFACE)
             self.lbl_limite.configure(text="Groq: ~1.000 msgs/día")
         else:
-            self.btn_groq.configure(fg_color="#333"); self.btn_gemini.configure(fg_color="#6a1b9a")
+            self.btn_groq.configure(fg_color=COLOR_BG_SURFACE); self.btn_gemini.configure(fg_color=COLOR_ACCENT_PURPLE)
             self.lbl_limite.configure(text="Gemini: 15 msgs/minuto")
- 
+
     def _llamar_ia(self, prompt):
         full_prompt = f"{INSTRUCCIONES_CORRECTOR}\n\n{prompt}"
         if self.modelo_actual == "groq":
             return llamar_groq(full_prompt)
         return llamar_gemini(full_prompt)
- 
+
     def corregir_examen(self):
         enunciado = self.txt_enunciado.get("1.0", "end-1c").strip()
         respuestas = self.txt_respuestas.get("1.0", "end-1c").strip()
@@ -1632,7 +1786,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
                   + (f"CRITERIOS DE PUNTUACIÓN: {criterios}\n" if criterios else "")
                   + f"\nENUNCIADO DEL EXAMEN:\n{enunciado}\n\nRESPUESTAS DEL ALUMNO:\n{respuestas}")
         threading.Thread(target=self._thread_corregir, args=(prompt, alumno, respuestas), daemon=True).start()
- 
+
     def _thread_corregir(self, prompt, alumno, respuestas):
         try:
             resultado = self._llamar_ia(prompt)
@@ -1659,7 +1813,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         finally:
             self.after(0, lambda: self.btn_corregir.configure(state="normal"))
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
- 
+
     def guardar_alumno(self):
         alumno = self.entry_alumno.get().strip() or "Alumno sin nombre"
         if not self.correccion_actual:
@@ -1672,7 +1826,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self._actualizar_lista_alumnos()
         self.btn_exportar_clase.configure(state="normal")
         messagebox.showinfo("Guardado", f"Resultado de '{alumno}' guardado.\nTotal alumnos: {len(self.alumnos)}")
- 
+
     def _actualizar_lista_alumnos(self):
         for w in self.frame_alumnos.winfo_children():
             w.destroy()
@@ -1680,12 +1834,12 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
             fila = ctk.CTkFrame(self.frame_alumnos, fg_color="transparent")
             fila.pack(fill="x", pady=2)
             ctk.CTkButton(fila, text=nombre, fg_color="transparent",
-                          text_color="#ccc", anchor="w", hover_color="#2a2a4a", height=28,
+                          text_color=COLOR_TEXT_MAIN, anchor="w", hover_color=COLOR_BG_SURFACE, height=28,
                           command=lambda n=nombre: self._cargar_alumno(n)).pack(side="left", fill="x", expand=True)
             ctk.CTkButton(fila, text="❌", width=28, height=28,
-                          fg_color="#7a0000", hover_color="#500000",
+                          fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER,
                           command=lambda n=nombre: self._borrar_alumno(n)).pack(side="right")
- 
+
     def _cargar_alumno(self, nombre):
         datos = self.alumnos[nombre]
         self.entry_alumno.delete(0, "end"); self.entry_alumno.insert(0, nombre)
@@ -1696,14 +1850,14 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.correccion_actual = datos["correccion"]
         for btn in [self.btn_guardar_alumno, self.btn_exportar_uno]:
             btn.configure(state="normal")
- 
+
     def _borrar_alumno(self, nombre):
         if messagebox.askyesno("Confirmar", f"¿Borrar resultado de '{nombre}'?"):
             del self.alumnos[nombre]
             self._actualizar_lista_alumnos()
             if not self.alumnos:
                 self.btn_exportar_clase.configure(state="disabled")
- 
+
     def limpiar_todo(self):
         self.txt_respuestas.delete("1.0", "end")
         self.txt_correccion.configure(state="normal")
@@ -1714,7 +1868,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.lbl_nota.configure(text="")
         for btn in [self.btn_guardar_alumno, self.btn_exportar_uno]:
             btn.configure(state="disabled")
- 
+
     def exportar_correccion(self):
         if not self.correccion_actual:
             messagebox.showwarning("Vacío", "No hay corrección que exportar.")
@@ -1727,7 +1881,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         if not path:
             return
         doc = Document()
-        doc.add_heading(f"Corrección — {materia}", 0)
+        doc.add_heading(f"Corrección — {materia} (KernossIA)", 0)
         doc.add_paragraph(f"Alumno: {alumno}")
         doc.add_paragraph(f"Nivel: {self.combo_nivel.get()}")
         doc.add_paragraph(f"Fecha corrección: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
@@ -1739,7 +1893,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         doc.add_paragraph(self.correccion_actual)
         doc.save(path)
         messagebox.showinfo("Exportado", f"Corrección guardada en:\n{path}")
- 
+
     def exportar_informe_clase(self):
         if not self.alumnos:
             messagebox.showwarning("Sin datos", "No hay alumnos guardados todavía.")
@@ -1751,7 +1905,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         if not path:
             return
         doc = Document()
-        doc.add_heading(f"Informe de Clase — {materia}", 0)
+        doc.add_heading(f"Informe de Clase — {materia} (KernossIA)", 0)
         doc.add_paragraph(f"Nivel: {self.combo_nivel.get()}")
         doc.add_paragraph(f"Total alumnos corregidos: {len(self.alumnos)}")
         doc.add_paragraph(f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
@@ -1765,10 +1919,10 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
             doc.add_page_break()
         doc.save(path)
         messagebox.showinfo("Exportado", f"Informe de clase guardado en:\n{path}")
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
-#  DASHBOARD PRINCIPAL  (integra todos los módulos como frames)
+#  DASHBOARD PRINCIPAL (HOME CON CHAT DIRECTO IA, HISTORIAL Y CAMBIO DE MÓDULOS)
 # ══════════════════════════════════════════════════════════════════════════════
 class DashboardEstudios(ctk.CTk):
     def __init__(self, sesion):
@@ -1777,116 +1931,418 @@ class DashboardEstudios(ctk.CTk):
         self.rol     = sesion.get("rol", "Alumno")
         self.nombre  = sesion.get("nombre", "Usuario")
         self.email   = sesion.get("email", "")
- 
-        self.title(f"Kernosss AI – {self.rol}: {self.nombre}")
-        self.geometry("1400x820")
-        self.resizable(True, True)
- 
+
+        self.title(f"KernossIA – {self.rol}: {self.nombre}")
+        self.geometry("1420x840")
+        self.minsize(1050, 680)
+        self.configure(fg_color=COLOR_BG_DARK)
+
         # Módulos instanciados pero inicialmente ocultos
         self._modulos: dict[str, ctk.CTkFrame] = {}
         self._modulo_activo = None
- 
+
+        # Estado del Chat Directo de Bienvenida (Home)
+        self.modelo_chat_home = "groq"
+        self.historial_chat_home = []
+        suffix = self.email.replace("@", "_").replace(".", "_") if self.email else "default"
+        self.ruta_historial_home = os.path.expanduser(f"~/.historial_home_{suffix}.json")
+        self.todo_el_historial_home = self._cargar_historial_home()
+        self.chat_home_id_actual = None
+
+        self._botones_modulos = {}
         self._build_ui()
-        self._mostrar_bienvenida()
- 
+        self._mostrar_home_chat()
+
     def _build_ui(self):
-        # ── SIDEBAR ──
-        self.sidebar = ctk.CTkFrame(self, width=290, corner_radius=0, fg_color="#0f0f1a")
+        # ── SIDEBAR LATERAL ──
+        self.sidebar = ctk.CTkFrame(self, width=285, corner_radius=0,
+                                   fg_color=COLOR_BG_SIDEBAR,
+                                   border_width=1, border_color=COLOR_BORDER)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
- 
-        ctk.CTkLabel(self.sidebar, text="\nKernosss AI",
-                     font=("Segoe UI", 24, "bold"), text_color="#1f6aa5").pack(pady=(30, 5))
-        ctk.CTkLabel(self.sidebar, text="2026 Edition",
-                     font=("Segoe UI", 11), text_color="#555").pack()
- 
-        frame_user = ctk.CTkFrame(self.sidebar, fg_color="#1a1a2e", corner_radius=10)
-        frame_user.pack(fill="x", padx=15, pady=(20, 5))
+
+        # Cabecera de la Marca
+        frame_brand = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        frame_brand.pack(fill="x", padx=18, pady=(24, 10))
+
+        ctk.CTkLabel(frame_brand, text="⚡ KernossIA",
+                     font=("Segoe UI", 24, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
+        ctk.CTkLabel(frame_brand, text="Suite de Estudio 2026",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(anchor="w")
+
+        # Perfil de usuario con badge
+        frame_user = ctk.CTkFrame(self.sidebar, fg_color=COLOR_BG_CARD, corner_radius=12,
+                                  border_width=1, border_color=COLOR_BORDER)
+        frame_user.pack(fill="x", padx=15, pady=(10, 10))
         icono = "🎓" if self.rol == "Alumno" else "👨‍🏫"
         ctk.CTkLabel(frame_user, text=f"{icono} {self.nombre}",
-                     font=("Segoe UI", 13, "bold"), anchor="w").pack(fill="x", padx=12, pady=(10, 2))
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN, anchor="w").pack(fill="x", padx=12, pady=(10, 2))
         ctk.CTkLabel(frame_user, text=self.email,
-                     font=("Segoe UI", 10), text_color="#888", anchor="w").pack(fill="x", padx=12)
-        badge_color = "#1565c0" if self.rol == "Alumno" else "#6a1b9a"
+                     font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED, anchor="w").pack(fill="x", padx=12)
+
+        badge_color = COLOR_ACCENT_PRIMARY if self.rol == "Alumno" else COLOR_ACCENT_PURPLE
         ctk.CTkLabel(frame_user, text=f"  {self.rol}  ",
                      font=("Segoe UI", 10, "bold"), fg_color=badge_color,
-                     corner_radius=8, text_color="white").pack(anchor="w", padx=12, pady=(4, 10))
- 
-        ctk.CTkLabel(self.sidebar, text="🟢 Servidores IA Conectados",
-                     font=("Segoe UI", 11, "italic"), text_color="#2ecc71").pack(pady=(5, 10))
-        ctk.CTkFrame(self.sidebar, height=1, fg_color="#2a2a3a").pack(fill="x", padx=15, pady=5)
- 
-        # ── BOTONES DE MÓDULOS ──
-        ctk.CTkLabel(self.sidebar, text="MÓDULOS ALUMNO",
-                     font=("Segoe UI", 10, "bold"), text_color="#888").pack(anchor="w", padx=20, pady=(10, 2))
+                     corner_radius=8, text_color="white").pack(anchor="w", padx=12, pady=(6, 10))
+
+        # ── BOTÓN HOME (INICIO / CHAT DIRECTO) ──
+        self.btn_home = ctk.CTkButton(
+            self.sidebar, text="🏠  Inicio / Chat IA",
+            font=("Segoe UI", 13, "bold"), height=42, anchor="w",
+            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+            command=self._mostrar_home_chat
+        )
+        self.btn_home.pack(fill="x", padx=15, pady=(4, 6))
+
+        # ── HISTORIAL DE CHAT DESPLEGABLE EN SIDEBAR ──
+        frame_historial_header = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        frame_historial_header.pack(fill="x", padx=16, pady=(8, 2))
+        ctk.CTkLabel(frame_historial_header, text="🕒 HISTORIAL DE CHAT",
+                     font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
+
+        ctk.CTkButton(frame_historial_header, text="➕ Nuevo", width=55, height=22,
+                      font=("Segoe UI", 10, "bold"), fg_color=COLOR_BG_SURFACE,
+                      hover_color=COLOR_ACCENT_HOVER,
+                      command=self._nuevo_chat_home).pack(side="right")
+
+        self.scroll_historial_home = ctk.CTkScrollableFrame(self.sidebar, height=95, fg_color=COLOR_BG_CARD,
+                                                           border_width=1, border_color=COLOR_BORDER,
+                                                           corner_radius=8)
+        self.scroll_historial_home.pack(fill="x", padx=15, pady=(2, 8))
+        self._actualizar_historial_home_ui()
+
+        ctk.CTkFrame(self.sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=4)
+
+        # ── LISTADO DE MÓDULOS ──
+        ctk.CTkLabel(self.sidebar, text="MÓDULOS DE ESTUDIO",
+                     font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_DIM).pack(anchor="w", padx=20, pady=(6, 2))
+
         self._btn("📊  Calculador de Medias",  "calculador")
         self._btn("📝  Apuntador de Notas",     "apuntador")
         self._btn("🔍  Resumidor de Textos AI", "resumidor")
         self._btn("🎯  Generador de Exámenes",  "examen")
         self._btn("🤖  Ayudante de Problemas",  "ayudador")
         self._btn("📅  Agenda de Estudios",     "calendario")
- 
+
         if self.rol == "Profesor":
-            ctk.CTkFrame(self.sidebar, height=1, fg_color="#2a2a3a").pack(fill="x", padx=15, pady=8)
-            ctk.CTkLabel(self.sidebar, text="MÓDULOS PROFESOR",
-                         font=("Segoe UI", 10, "bold"), text_color="#9c6fe0").pack(anchor="w", padx=20, pady=(2, 2))
-            self._btn("✏️  Creador de Ejercicios",  "creador",  color="#4a1a7a")
-            self._btn("📋  Corrector de Exámenes",  "corrector", color="#4a1a7a")
- 
-        ctk.CTkButton(self.sidebar, text="🚪 Cerrar Sesión", height=36,
-                      fg_color="transparent", border_width=1, border_color="#444",
-                      text_color="#aaa", hover_color="#1a1a2e",
+            ctk.CTkFrame(self.sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=6)
+            ctk.CTkLabel(self.sidebar, text="HERRAMIENTAS DOCENTE",
+                         font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_PURPLE).pack(anchor="w", padx=20, pady=(2, 2))
+            self._btn("✏️  Creador de Ejercicios",  "creador",  color=COLOR_BG_SURFACE)
+            self._btn("📋  Corrector de Exámenes",  "corrector", color=COLOR_BG_SURFACE)
+
+        # Botón Cerrar Sesión fijo abajo
+        ctk.CTkButton(self.sidebar, text="🚪 Cerrar Sesión", height=38,
+                      fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
+                      text_color=COLOR_TEXT_MUTED, hover_color=COLOR_DANGER_HOVER,
                       command=self._cerrar_sesion).pack(fill="x", padx=15, pady=(15, 20), side="bottom")
- 
-        # ── CONTENEDOR PRINCIPAL ──
-        self.contenedor = ctk.CTkFrame(self, corner_radius=0, fg_color="#0d0d1a")
+
+        # ── CONTENEDOR PRINCIPAL DERECHO ──
+        self.contenedor = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR_BG_DARK)
         self.contenedor.pack(side="right", fill="both", expand=True)
         self.contenedor.grid_rowconfigure(0, weight=1)
         self.contenedor.grid_columnconfigure(0, weight=1)
- 
-        # Frame de bienvenida
-        self.frame_bienvenida = ctk.CTkFrame(self.contenedor, fg_color="transparent")
-        saludo = "¡Bienvenido de vuelta!" if self.rol == "Alumno" else "¡Panel de Profesor!"
-        ctk.CTkLabel(self.frame_bienvenida, text=saludo,
-                     font=("Segoe UI", 30, "bold")).pack(pady=(120, 10))
-        ctk.CTkLabel(self.frame_bienvenida,
-                     text=f"Hola, {self.nombre}. Selecciona cualquier herramienta del menú lateral.",
-                     font=("Segoe UI", 14), text_color="#666").pack()
-        if self.rol == "Profesor":
-            ctk.CTkLabel(self.frame_bienvenida,
-                         text="Los módulos en morado son exclusivos para profesores.",
-                         font=("Segoe UI", 12), text_color="#9c6fe0").pack(pady=(5, 0))
-        self.lbl_hora = ctk.CTkLabel(self.frame_bienvenida, text="",
-                                     font=("Segoe UI", 11), text_color="#444")
-        self.lbl_hora.pack(pady=(30, 0))
-        self._actualizar_hora()
- 
-    def _btn(self, texto, modulo_id, color="#1f3a5f"):
-        ctk.CTkButton(
+
+        # ── VISTA HOME: CHAT DIRECTO CON IA & ACCESO A MÓDULOS ──
+        self._crear_vista_home_chat()
+
+    def _btn(self, texto, modulo_id, color=COLOR_BG_SURFACE):
+        btn = ctk.CTkButton(
             self.sidebar, text=texto,
-            font=("Segoe UI", 13), height=42, anchor="w",
-            fg_color=color, hover_color="#2a2a4a",
+            font=("Segoe UI", 12, "bold"), height=36, anchor="w",
+            fg_color=color, hover_color=COLOR_ACCENT_HOVER,
             command=lambda mid=modulo_id: self._abrir_modulo(mid)
-        ).pack(fill="x", padx=15, pady=3)
- 
-    def _actualizar_hora(self):
-        ahora = datetime.now().strftime("%A, %d de %B de %Y  •  %H:%M:%S")
-        self.lbl_hora.configure(text=ahora)
-        self.after(1000, self._actualizar_hora)
- 
-    def _mostrar_bienvenida(self):
+        )
+        btn.pack(fill="x", padx=15, pady=2)
+        self._botones_modulos[modulo_id] = btn
+
+    def _crear_vista_home_chat(self):
+        self.frame_home = ctk.CTkFrame(self.contenedor, fg_color="transparent")
+        self.frame_home.grid_rowconfigure(2, weight=1)
+        self.frame_home.grid_columnconfigure(0, weight=1)
+
+        # 1. Header de Bienvenida
+        header_home = ctk.CTkFrame(self.frame_home, fg_color="transparent")
+        header_home.grid(row=0, column=0, sticky="ew", padx=25, pady=(20, 10))
+
+        saludo = f"¡Hola de nuevo, {self.nombre}!" if self.rol == "Alumno" else f"¡Bienvenido, Profesor {self.nombre}!"
+        ctk.CTkLabel(header_home, text=saludo, font=("Segoe UI", 26, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w")
+
+        sub_header = ctk.CTkFrame(header_home, fg_color="transparent")
+        sub_header.pack(fill="x", pady=(2, 0))
+
+        self.lbl_estado_ia_home = ctk.CTkLabel(sub_header, text="🟢 Asistente IA Activo (Groq & Gemini) • ¿Qué necesitas estudiar o preparar hoy?",
+                                               font=("Segoe UI", 12), text_color=COLOR_SUCCESS)
+        self.lbl_estado_ia_home.pack(side="left")
+
+        # Selector de motor en el home
+        frame_selector_ia = ctk.CTkFrame(sub_header, fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER, corner_radius=8)
+        frame_selector_ia.pack(side="right")
+
+        self.btn_home_groq = ctk.CTkButton(frame_selector_ia, text="⚡ Groq (Rápido)", height=28, width=115,
+                                           font=("Segoe UI", 11, "bold"),
+                                           fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                           command=lambda: self._set_home_modelo("groq"))
+        self.btn_home_groq.pack(side="left", padx=2, pady=2)
+
+        self.btn_home_gemini = ctk.CTkButton(frame_selector_ia, text="🧠 Gemini (Profundo)", height=28, width=125,
+                                             font=("Segoe UI", 11, "bold"),
+                                             fg_color="transparent", hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                                             command=lambda: self._set_home_modelo("gemini"))
+        self.btn_home_gemini.pack(side="left", padx=2, pady=2)
+
+        # 2. Barra de sugerencias y cambio de módulo rápido
+        bar_modulos = ctk.CTkFrame(self.frame_home, fg_color=COLOR_BG_CARD, corner_radius=12,
+                                   border_width=1, border_color=COLOR_BORDER)
+        bar_modulos.grid(row=1, column=0, sticky="ew", padx=25, pady=(0, 12))
+
+        ctk.CTkLabel(bar_modulos, text="Acceso Directo a Módulos:", font=("Segoe UI", 11, "bold"),
+                     text_color=COLOR_TEXT_MUTED).pack(side="left", padx=(14, 8), pady=8)
+
+        modulos_rapidos = [
+            ("📊 Medias", "calculador"),
+            ("📝 Apuntes", "apuntador"),
+            ("🔍 Resumir", "resumidor"),
+            ("🎯 Exámenes", "examen"),
+            ("🤖 Solver", "ayudador"),
+            ("📅 Agenda", "calendario")
+        ]
+        if self.rol == "Profesor":
+            modulos_rapidos.extend([("✏️ Ejercicios", "creador"), ("📋 Corrector", "corrector")])
+
+        for label, mid in modulos_rapidos:
+            ctk.CTkButton(bar_modulos, text=label, height=28, font=("Segoe UI", 11, "bold"),
+                          fg_color=COLOR_BG_CARD_LIGHT, hover_color=COLOR_ACCENT_HOVER,
+                          border_width=1, border_color=COLOR_BORDER,
+                          command=lambda m=mid: self._abrir_modulo(m)).pack(side="left", padx=3, pady=6)
+
+        # 3. Ventana del Chat de Bienvenida
+        self.txt_home_chat = ctk.CTkTextbox(self.frame_home, font=("Segoe UI", 14), state="disabled", wrap="word",
+                                            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
+                                            corner_radius=14)
+        self.txt_home_chat.grid(row=2, column=0, sticky="nsew", padx=25, pady=(0, 12))
+
+        # Mensaje de bienvenida inicial en el chat
+        self._inicializar_chat_bienvenida_texto()
+
+        # 4. Input y Botones de Envío
+        input_container = ctk.CTkFrame(self.frame_home, fg_color="transparent")
+        input_container.grid(row=3, column=0, sticky="ew", padx=25, pady=(0, 20))
+        input_container.grid_columnconfigure(0, weight=1)
+
+        self.entry_home_pregunta = ctk.CTkEntry(input_container, placeholder_text="Escribe tu pregunta, tema de examen o consulta para resolverla con IA...",
+                                                height=46, font=("Segoe UI", 13),
+                                                fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_home_pregunta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
+        self.entry_home_pregunta.bind("<Return>", lambda e: self._enviar_chat_home())
+
+        btn_enviar_home = ctk.CTkButton(input_container, text="⚡ Consultar IA", width=140, height=46,
+                                       font=("Segoe UI", 13, "bold"),
+                                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                       command=self._enviar_chat_home)
+        btn_enviar_home.grid(row=0, column=1, padx=(0, 6))
+
+        btn_word_home = ctk.CTkButton(input_container, text="📄 Word", width=80, height=46,
+                                      font=("Segoe UI", 12, "bold"),
+                                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
+                                      hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                                      command=self._exportar_home_word)
+        btn_word_home.grid(row=0, column=2)
+
+    def _inicializar_chat_bienvenida_texto(self):
+        self.txt_home_chat.configure(state="normal")
+        self.txt_home_chat.delete("1.0", "end")
+        texto_intro = (
+            f"👋 ¡Hola, {self.nombre}! Soy tu asistente académico inteligente en KernossIA.\n\n"
+            f"• Pregúntame dudas de cualquier asignatura (Matemáticas, Historia, Ciencias, Idiomas...).\n"
+            f"• Pídeme resúmenes, esquemas explicativos o resolución paso a paso de problemas.\n"
+            f"• O cambia a cualquiera de los módulos dedicados en el menú lateral o en la barra superior.\n"
+            f"──────────────────────────────────────────────────────────────────────────\n"
+        )
+        self.txt_home_chat.insert("end", texto_intro)
+        self.txt_home_chat.configure(state="disabled")
+
+    def _set_home_modelo(self, m):
+        self.modelo_chat_home = m
+        if m == "groq":
+            self.btn_home_groq.configure(fg_color=COLOR_ACCENT_PRIMARY)
+            self.btn_home_gemini.configure(fg_color="transparent")
+            self.lbl_estado_ia_home.configure(text="🟢 Asistente IA Activo (Groq - LLaMA 3.3 70B Ultrarrápido)", text_color=COLOR_SUCCESS)
+        else:
+            self.btn_home_groq.configure(fg_color="transparent")
+            self.btn_home_gemini.configure(fg_color=COLOR_ACCENT_PURPLE)
+            self.lbl_estado_ia_home.configure(text="🟣 Asistente IA Activo (Google Gemini - Análisis Avanzado)", text_color="#a5b4fc")
+
+    def _enviar_chat_home(self):
+        pregunta = self.entry_home_pregunta.get().strip()
+        if not pregunta:
+            return
+
+        self.txt_home_chat.configure(state="normal")
+        self.txt_home_chat.insert("end", f"\n\n👤 {self.nombre}:\n{pregunta}\n")
+        self.txt_home_chat.see("end")
+        self.txt_home_chat.configure(state="disabled")
+
+        self.entry_home_pregunta.delete(0, "end")
+        self.lbl_estado_ia_home.configure(text="🟡 Pensando y analizando respuesta...", text_color=COLOR_WARNING)
+        self.historial_chat_home.append({"role": "user", "content": pregunta})
+
+        threading.Thread(target=self._thread_proceso_home, daemon=True).start()
+
+    def _thread_proceso_home(self):
+        try:
+            self.after(0, lambda: self._stream_home_texto(f"\n🤖 KernossIA ({self.modelo_chat_home.upper()}):\n"))
+            instrucciones = (
+                "Eres el tutor y asistente de estudio principal de la plataforma KernossIA. "
+                "Responde de forma clara, didáctica, amigable y rigurosa a las consultas académicas del usuario."
+            )
+            prompt = construir_prompt(instrucciones, self.historial_chat_home)
+            if self.modelo_chat_home == "groq":
+                respuesta = llamar_groq(prompt)
+            else:
+                respuesta = llamar_gemini(prompt)
+
+            self.historial_chat_home.append({"role": "assistant", "content": respuesta})
+            self.after(0, self._stream_home_texto, respuesta + "\n")
+            self._guardar_historial_home()
+
+            color = COLOR_SUCCESS if self.modelo_chat_home == "groq" else "#a5b4fc"
+            self.after(0, lambda: self.lbl_estado_ia_home.configure(
+                text=f"🟢 Listo • {self.modelo_chat_home.upper()} respondió correctamente", text_color=color))
+        except Exception as e:
+            self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
+            self.after(0, lambda: self.lbl_estado_ia_home.configure(text="🔴 Error al procesar respuesta", text_color=COLOR_DANGER))
+        finally:
+            self.after(0, lambda: self.txt_home_chat.configure(state="disabled"))
+
+    def _stream_home_texto(self, texto):
+        self.txt_home_chat.configure(state="normal")
+        self.txt_home_chat.insert("end", texto)
+        self.txt_home_chat.see("end")
+        self.txt_home_chat.configure(state="disabled")
+
+    def _nuevo_chat_home(self):
+        self._mostrar_home_chat()
+        self.historial_chat_home = []
+        self.chat_home_id_actual = None
+        self._inicializar_chat_bienvenida_texto()
+
+    def _exportar_home_word(self):
+        if not self.historial_chat_home:
+            messagebox.showwarning("Vacío", "No hay mensajes en el chat para exportar.")
+            return
+        path = filedialog.asksaveasfilename(defaultextension=".docx",
+                                            initialfile=f"Conversacion_KernossIA_{datetime.now().strftime('%Y%m%d_%H%M')}.docx")
+        if path:
+            doc = Document()
+            doc.add_heading(f"Sesión de Estudio – {self.nombre} (KernossIA)", 0)
+            doc.add_paragraph(f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            doc.add_paragraph("")
+            for msg in self.historial_chat_home:
+                rol = self.nombre if msg["role"] == "user" else "KernossIA Tutor"
+                p = doc.add_paragraph()
+                p.add_run(f"{rol}: ").bold = True
+                p.add_run(msg["content"])
+            doc.save(path)
+            messagebox.showinfo("Éxito", f"Conversación guardada en:\n{path}")
+
+    def _cargar_historial_home(self):
+        if os.path.exists(self.ruta_historial_home):
+            try:
+                with open(self.ruta_historial_home, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                return {}
+        return {}
+
+    def _guardar_historial_home(self):
+        if not self.historial_chat_home:
+            return
+        if self.chat_home_id_actual is None:
+            primer = next((m["content"] for m in self.historial_chat_home if m["role"] == "user"), "Consulta")
+            resumen = primer[:20] + "..." if len(primer) > 20 else primer
+            self.chat_home_id_actual = f"[{datetime.now().strftime('%H:%M')}] {resumen}"
+        self.todo_el_historial_home[self.chat_home_id_actual] = self.historial_chat_home
+        try:
+            with open(self.ruta_historial_home, "w", encoding="utf-8") as f:
+                json.dump(self.todo_el_historial_home, f, ensure_ascii=False, indent=2)
+            self.after(0, self._actualizar_historial_home_ui)
+        except Exception as e:
+            print(f"Error guardando historial: {e}")
+
+    def _actualizar_historial_home_ui(self):
+        for w in self.scroll_historial_home.winfo_children():
+            w.destroy()
+        for chat_id in reversed(list(self.todo_el_historial_home.keys())):
+            fila = ctk.CTkFrame(self.scroll_historial_home, fg_color="transparent")
+            fila.pack(fill="x", pady=2)
+            ctk.CTkButton(fila, text=chat_id, fg_color="transparent",
+                          text_color=COLOR_TEXT_MAIN, anchor="w", hover_color=COLOR_BG_SURFACE, height=26,
+                          font=("Segoe UI", 10),
+                          command=lambda cid=chat_id: self._cargar_chat_home(cid)).pack(side="left", fill="x", expand=True)
+            ctk.CTkButton(fila, text="✕", width=22, height=22,
+                          fg_color="transparent", hover_color=COLOR_DANGER_HOVER,
+                          text_color=COLOR_TEXT_MUTED, font=("Segoe UI", 9, "bold"),
+                          command=lambda cid=chat_id: self._borrar_chat_home(cid)).pack(side="right")
+
+    def _cargar_chat_home(self, chat_id):
+        self._mostrar_home_chat()
+        self.chat_home_id_actual = chat_id
+        self.historial_chat_home = self.todo_el_historial_home.get(chat_id, [])
+        self.txt_home_chat.configure(state="normal")
+        self.txt_home_chat.delete("1.0", "end")
+        self.txt_home_chat.insert("end", f"💬 Cargado: {chat_id}\n{'─'*55}\n")
+        for msg in self.historial_chat_home:
+            if msg["role"] == "user":
+                self.txt_home_chat.insert("end", f"\n👤 {self.nombre}:\n{msg['content']}\n")
+            else:
+                self.txt_home_chat.insert("end", f"\n🤖 KernossIA:\n{msg['content']}\n")
+        self.txt_home_chat.configure(state="disabled")
+        self.txt_home_chat.see("end")
+
+    def _borrar_chat_home(self, chat_id):
+        if messagebox.askyesno("Confirmar", f"¿Eliminar este chat?\n'{chat_id}'"):
+            if chat_id in self.todo_el_historial_home:
+                del self.todo_el_historial_home[chat_id]
+                try:
+                    with open(self.ruta_historial_home, "w", encoding="utf-8") as f:
+                        json.dump(self.todo_el_historial_home, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+                if self.chat_home_id_actual == chat_id:
+                    self._nuevo_chat_home()
+                self._actualizar_historial_home_ui()
+
+    def _mostrar_home_chat(self):
+        # Ocultar cualquier módulo activo
         if self._modulo_activo:
             self._modulo_activo.grid_forget()
             self._modulo_activo = None
-        self.frame_bienvenida.grid(row=0, column=0, sticky="nsew")
- 
+
+        # Resetear colores de botones del sidebar
+        self.btn_home.configure(fg_color=COLOR_ACCENT_PRIMARY)
+        for btn in self._botones_modulos.values():
+            btn.configure(fg_color=COLOR_BG_SURFACE)
+
+        self.frame_home.grid(row=0, column=0, sticky="nsew")
+
     def _abrir_modulo(self, modulo_id):
-        # Ocultar lo que hay visible
+        # Ocultar la pantalla home
+        self.frame_home.grid_forget()
+
+        # Ocultar el módulo activo anterior
         if self._modulo_activo:
             self._modulo_activo.grid_forget()
-        self.frame_bienvenida.grid_forget()
- 
-        # Crear el módulo si no existe todavía (lazy init para mejorar arranque)
+
+        # Actualizar colores en sidebar
+        self.btn_home.configure(fg_color=COLOR_BG_SURFACE)
+        for mid, btn in self._botones_modulos.items():
+            if mid == modulo_id:
+                btn.configure(fg_color=COLOR_ACCENT_PRIMARY)
+            else:
+                btn.configure(fg_color=COLOR_BG_SURFACE)
+
+        # Crear el módulo si no existe todavía (lazy loading)
         if modulo_id not in self._modulos:
             if modulo_id == "calculador":
                 self._modulos[modulo_id] = ModuloCalculador(self.contenedor)
@@ -1904,40 +2360,39 @@ class DashboardEstudios(ctk.CTk):
                 self._modulos[modulo_id] = ModuloCreadorEjercicios(self.contenedor)
             elif modulo_id == "corrector":
                 self._modulos[modulo_id] = ModuloCorrectorExamenes(self.contenedor)
- 
+
         modulo = self._modulos[modulo_id]
         modulo.grid(row=0, column=0, sticky="nsew")
         self._modulo_activo = modulo
- 
+
     def _cerrar_sesion(self):
         if messagebox.askyesno("Cerrar Sesión", "¿Seguro que quieres cerrar sesión?"):
-            borrar_token()   # borra el JWT guardado
+            borrar_token()
             self.quit()
             self.destroy()
             os._exit(0)
- 
+
     def _al_cerrar(self):
         self.quit()
         self.destroy()
         os._exit(0)
- 
- 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  PUNTO DE ENTRADA
 # ══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     __spec__ = None
- 
+
     # Intentar recuperar sesión desde token JWT guardado
     _, sesion = token_guardado()
- 
+
     if not sesion:
         pantalla = PantallaLogin()
         pantalla.mainloop()
         sesion = pantalla.usuario_autenticado
- 
+
     if sesion:
         app = DashboardEstudios(sesion)
         app.protocol("WM_DELETE_WINDOW", app._al_cerrar)
         app.mainloop()
- 

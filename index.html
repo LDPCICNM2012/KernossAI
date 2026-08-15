@@ -3,490 +3,2330 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- SEO: título exacto para diferenciar de KernossIA -->
-  <title>KernossIA | Plataforma Educativa con IA</title>
-
-  <!-- Descripción con autor e institución para posicionamiento específico -->
-  <meta name="description" content="KernossIA es una aplicación gratuita de estudio con IA local para alumnos y profesores de KernossIA. Desarrollado por Lander de Pablos." />
-
-  <!-- Keywords clave para posicionamiento -->
-  <meta name="keywords" content="KernossIA, KernossIA, KernossIA, Lander de Pablos, IA educativa, suite de estudio" />
-
-  <!-- Autoría -->
+  <!-- SEO & Metadatos -->
+  <title>KernossIA | Suite de Estudio y Educación Potenciada con IA</title>
+  <meta name="description" content="KernossIA es una plataforma gratuita de estudio con IA para estudiantes y docentes. Resúmenes automáticos, generador de exámenes, cálculo de medias y apuntes en un entorno privado." />
+  <meta name="keywords" content="KernossIA, IA educativa, suite de estudio, resumen con IA, generador de examenes, calculador de medias, apuntes Word, Lander de Pablos" />
   <meta name="author" content="Lander de Pablos" />
 
-  <!-- Open Graph: tarjeta al compartir en WhatsApp, LinkedIn, Discord -->
-  <meta property="og:title" content="KernossIA — Inteligencia Artificial para Estudiar" />
-  <meta property="og:description" content="Notas, exámenes, agenda, resúmenes e IA en una sola app local y gratuita." />
+  <!-- Open Graph / Redes Sociales -->
   <meta property="og:type" content="website" />
+  <meta property="og:title" content="KernossIA — La Suite de Estudio con Inteligencia Artificial" />
+  <meta property="og:description" content="Notas, exámenes, medias, resúmenes y asistente de IA en una app gratuita y privada." />
   <meta property="og:url" content="https://ldpcicnm2012.github.io/KernossAI/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="KernossIA | Suite de Estudio con IA" />
+  <meta name="twitter:description" content="Todo lo que necesitas para estudiar o enseñar con el poder de la Inteligencia Artificial." />
 
-  <!-- Twitter Card (también lo usa Discord y Telegram) -->
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="KernossIA | Plataforma Educativa con IA" />
-  <meta name="twitter:description" content="Notas, exámenes, agenda, resúmenes e IA en una sola app local y gratuita. Por Lander de Pablos." />
+  <!-- Fuentes Tipográficas -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
+    /* ── VARIABLES & TOKENS DE COLOR (AZUL CÓSMICO / ELÉCTRICO) ── */
     :root {
-      --bg:      #0a0a0f;
-      --bg2:     #12121a;
-      --surface: #1a1a28;
-      --border:  rgba(255,255,255,0.08);
-      --text:    #f0f0f5;
-      --muted:   #6b6b80;
-      --accent:  #da755b;
-      --glow:    rgba(218,117,91,0.14);
+      --bg-main: #050811;
+      --bg-surface-1: #0a1124;
+      --bg-surface-2: #0f1a35;
+      --bg-surface-3: #152449;
+      --border-subtle: rgba(59, 130, 246, 0.15);
+      --border-glow: rgba(96, 165, 250, 0.35);
+      
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-indigo: #6366f1;
+      --accent-sky: #38bdf8;
+      
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --glow-primary: rgba(59, 130, 246, 0.22);
+      --glow-cyan: rgba(6, 182, 212, 0.18);
+      --glow-card: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.12), transparent 40%);
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-full: 9999px;
+      
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 48px;
-      background: rgba(10,10,15,0.75);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .nav-logo { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; text-decoration: none; color: var(--text); }
-    .nav-logo span { color: var(--accent); }
-    .nav-links { display: flex; gap: 28px; list-style: none; }
-    .nav-links a {
-      color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s;
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
       position: relative;
+      -webkit-font-smoothing: antialiased;
     }
-    .nav-links a::after {
-      content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
-      height: 1px; background: var(--accent); transform: scaleX(0); transition: transform .2s;
+
+    /* ── CANVAS DE FONDO INTERACTIVO ── */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.75;
     }
-    .nav-links a:hover { color: var(--text); }
-    .nav-links a:hover::after { transform: scaleX(1); }
-    .nav-cta {
-      background: var(--accent); color: #fff; border: none;
-      padding: 9px 22px; border-radius: 999px; font-size: 14px; font-weight: 500;
-      cursor: pointer; transition: opacity .2s, transform .15s; text-decoration: none;
+
+    /* ── EFECTOS DE RESPLANDOR DECORATIVOS ── */
+    .ambient-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.05) 70%, transparent 100%);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: floatGlow1 12s ease-in-out infinite alternate;
+    }
+    .glow-2 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+      top: 800px;
+      right: -100px;
+      animation: floatGlow2 14s ease-in-out infinite alternate;
+    }
+    .glow-3 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+      top: 1800px;
+      left: -80px;
+      animation: floatGlow3 16s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatGlow1 {
+      0% { transform: translateX(-50%) translateY(0px) scale(1); }
+      100% { transform: translateX(-48%) translateY(-40px) scale(1.08); }
+    }
+    @keyframes floatGlow2 {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-35px) rotate(15deg); }
+    }
+    @keyframes floatGlow3 {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(30px); }
+    }
+
+    /* ── TIPOGRAFÍA & GRADIENTES ── */
+    h1, h2, h3, h4, .font-heading {
+      font-family: var(--font-title);
+      letter-spacing: -0.025em;
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #ffffff 15%, #93c5fd 55%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       display: inline-block;
     }
-    .nav-cta:hover { opacity: .86; transform: scale(1.03); }
 
-    /* ── HERO ── */
+    .text-gradient-cyan {
+      background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    /* ── NAVEGACIÓN PRINCIPAL (GLASSMORPHISM) ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(5, 8, 17, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: var(--transition);
+    }
+
+    nav.scrolled {
+      padding: 12px 40px;
+      background: rgba(5, 8, 17, 0.94);
+      border-bottom-color: rgba(59, 130, 246, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: var(--font-title);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .nav-logo-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .nav-brand span {
+      background: linear-gradient(135deg, #38bdf8, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: var(--transition);
+      position: relative;
+      padding: 4px 0;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+      border-radius: 2px;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: #ffffff;
+    }
+
+    .nav-links a:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn-nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+      color: #ffffff;
+      padding: 9px 20px;
+      border-radius: var(--radius-full);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: var(--transition);
+    }
+
+    .btn-nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(59, 130, 246, 0.55);
+      background: linear-gradient(135deg, #60a5fa 0%, var(--accent-blue) 100%);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* ── SECCIÓN HERO ── */
     .hero {
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; text-align: center;
-      padding: 130px 24px 100px; position: relative; overflow: hidden;
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 130px 24px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    .orb {
-      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
-    }
-    .orb1 { width: 520px; height: 520px; background: rgba(218,117,91,0.11); top: -80px; left: 50%; transform: translateX(-50%); animation: driftC 9s ease-in-out infinite; }
-    .orb2 { width: 300px; height: 300px; background: rgba(201,96,106,0.07); bottom: 0; right: -80px; animation: driftR 11s ease-in-out infinite; }
-    .orb3 { width: 260px; height: 260px; background: rgba(90,90,220,0.05); bottom: 60px; left: -40px; animation: driftL 13s ease-in-out infinite; }
-    @keyframes driftC { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-28px)} }
-    @keyframes driftR { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
-    @keyframes driftL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(22px)} }
 
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 999px; padding: 6px 18px; font-size: 13px; color: var(--muted);
-      margin-bottom: 36px; animation: fadeUp .8s ease both;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 26, 53, 0.7);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 6px 18px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 500;
+      color: #93c5fd;
+      margin-bottom: 28px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+      animation: fadeInDown 0.8s ease both;
     }
-    .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s ease infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-cyan);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
 
     .hero h1 {
-      font-size: clamp(44px, 7.5vw, 90px);
-      font-weight: 300; line-height: 1.07; letter-spacing: -2.5px;
-      margin-bottom: 26px; animation: fadeUp .8s .1s ease both;
+      font-size: clamp(38px, 6.5vw, 76px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      margin-bottom: 24px;
+      max-width: 980px;
+      animation: fadeInUp 0.8s 0.1s ease both;
     }
-    .hero h1 em  { font-style: italic; color: var(--accent); font-weight: 400; }
-    .hero h1 strong { font-weight: 600; }
+
     .hero-sub {
-      font-size: 18px; color: var(--muted); max-width: 520px;
-      line-height: 1.65; margin-bottom: 44px; animation: fadeUp .8s .2s ease both;
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--text-secondary);
+      max-width: 680px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+      animation: fadeInUp 0.8s 0.2s ease both;
     }
 
-    /* ── DOWNLOAD BUTTON ── */
-    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; animation: fadeUp .8s .3s ease both; }
-    .btn-dl {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--accent); color: #fff; border: none;
-      padding: 14px 32px; border-radius: 999px; font-size: 15px; font-weight: 500;
-      cursor: pointer; transition: all .2s; text-decoration: none;
+    /* ── BOTONES DE ACCIÓN HERO ── */
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      animation: fadeInUp 0.8s 0.3s ease both;
     }
-    .btn-dl:hover { transform: scale(1.04); box-shadow: 0 0 36px rgba(218,117,91,.38); }
-    .btn-dl svg { width: 18px; height: 18px; flex-shrink: 0; }
-    .btn-ghost {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: transparent; color: var(--text); border: 1px solid var(--border);
-      padding: 14px 28px; border-radius: 999px; font-size: 15px;
-      cursor: pointer; transition: all .2s; text-decoration: none;
-    }
-    .btn-ghost:hover { background: var(--surface); border-color: rgba(255,255,255,.18); }
 
-    .os-note { margin-top: 14px; font-size: 12px; color: var(--muted); animation: fadeUp .8s .4s ease both; }
+    .btn-primary-glow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 16px 36px;
+      border-radius: var(--radius-full);
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
 
-    /* Scroll arrow */
-    .scroll-hint {
-      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      color: var(--muted); font-size: 11px; animation: fadeUp 1s .9s ease both;
+    .btn-primary-glow::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
     }
-    .scroll-arrow {
-      width: 18px; height: 18px;
-      border-right: 1px solid var(--muted); border-bottom: 1px solid var(--muted);
-      transform: rotate(45deg); animation: bounce 1.6s ease infinite;
-    }
-    @keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(6px)} }
 
-    /* ── STATS ── */
-    .values {
-      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      background: var(--bg2); padding: 60px 48px;
-      display: flex; justify-content: center; gap: 72px; flex-wrap: wrap;
+    .btn-primary-glow:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 40px rgba(59, 130, 246, 0.6);
+      background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
     }
-    .value-item { text-align: center; }
-    .value-num { font-size: 40px; font-weight: 300; color: var(--accent); letter-spacing: -1px; }
-    .value-label { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
-    /* ── FEATURES ── */
-    .section { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
-    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
-    .section-title { font-size: clamp(28px, 4vw, 46px); font-weight: 300; letter-spacing: -1px; margin-bottom: 14px; }
-    .section-title strong { font-weight: 600; }
-    .section-sub { font-size: 16px; color: var(--muted); max-width: 480px; line-height: 1.65; margin-bottom: 56px; }
+    .btn-primary-glow:hover::after {
+      opacity: 1;
+    }
 
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 20px; }
-    .card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;
-      padding: 30px; transition: all .3s; position: relative; overflow: hidden;
+    .btn-secondary-glass {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 26, 53, 0.6);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 16px 30px;
+      border-radius: var(--radius-full);
+      font-size: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
     }
-    .card::before {
-      content: ''; position: absolute; inset: 0; border-radius: 20px;
-      background: radial-gradient(circle at top left, var(--glow), transparent 65%);
-      opacity: 0; transition: opacity .4s;
-    }
-    .card:hover { border-color: rgba(218,117,91,.28); transform: translateY(-5px); }
-    .card:hover::before { opacity: 1; }
-    .card-icon { font-size: 26px; margin-bottom: 16px; }
-    .card-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
-    .card-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
 
-    /* Roles */
-    .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto; }
-    .role-card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 36px;
-      transition: all .3s;
+    .btn-secondary-glass:hover {
+      background: rgba(30, 58, 110, 0.4);
+      border-color: rgba(96, 165, 250, 0.5);
+      transform: translateY(-3px);
+      color: #ffffff;
     }
-    .role-card:hover { border-color: rgba(218,117,91,.25); transform: translateY(-4px); }
-    .role-badge {
-      display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
-      text-transform: uppercase; padding: 4px 14px; border-radius: 999px; margin-bottom: 18px;
-    }
-    .role-badge.alumno { background: rgba(218,117,91,.15); color: var(--accent); }
-    .role-badge.profesor { background: rgba(156,111,224,.15); color: #9c6fe0; }
-    .role-card h3 { font-size: 20px; font-weight: 500; margin-bottom: 12px; }
-    .role-card p { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; }
-    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .feature-list li { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-    .feature-list li::before { content: '→'; color: var(--accent); font-size: 12px; }
 
-    /* ── CTA FINAL ── */
-    .cta-section {
-      padding: 120px 48px; text-align: center;
-      background: radial-gradient(ellipse at center, rgba(218,117,91,.07) 0%, transparent 70%);
+    .os-detected-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      animation: fadeInUp 0.8s 0.4s ease both;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .cta-section h2 { font-size: clamp(30px, 5vw, 54px); font-weight: 300; letter-spacing: -1.5px; margin-bottom: 18px; }
-    .cta-section h2 strong { font-weight: 600; }
-    .cta-section p { color: var(--muted); font-size: 16px; margin-bottom: 40px; line-height: 1.6; }
+
+    .os-detected-label span {
+      color: var(--accent-sky);
+      font-weight: 500;
+    }
+
+    /* ── TRUST & HIGHLIGHT PILLS ── */
+    .trust-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-top: 48px;
+      animation: fadeInUp 0.8s 0.5s ease both;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: rgba(10, 17, 36, 0.5);
+      border: 1px solid rgba(59, 130, 246, 0.12);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+    }
+
+    .trust-item svg {
+      width: 15px;
+      height: 15px;
+      color: var(--accent-cyan);
+    }
+
+    /* ── SIMULADOR INTERACTIVO DE LA APLICACIÓN (SHOWCASE) ── */
+    .showcase-wrapper {
+      position: relative;
+      z-index: 2;
+      max-width: 1140px;
+      margin: 40px auto 100px;
+      padding: 0 24px;
+    }
+
+    .app-window {
+      background: rgba(10, 18, 38, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(59, 130, 246, 0.18);
+      overflow: hidden;
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      transition: var(--transition);
+    }
+
+    .app-window:hover {
+      border-color: rgba(96, 165, 250, 0.4);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), 0 0 50px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Barra superior de la ventana estilo macOS */
+    .app-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(15, 26, 53, 0.7);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .window-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot-close { background: #ef4444; }
+    .dot-min { background: #f59e0b; }
+    .dot-max { background: #10b981; }
+
+    .window-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .window-badge {
+      background: rgba(59, 130, 246, 0.18);
+      color: var(--accent-sky);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* Pestañas interactivas dentro de la app simulada */
+    .app-tabs-nav {
+      display: flex;
+      overflow-x: auto;
+      background: rgba(7, 12, 26, 0.6);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+      padding: 6px 12px;
+      gap: 6px;
+      scrollbar-width: none;
+    }
+    .app-tabs-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+    }
+
+    .tab-btn:hover {
+      color: #ffffff;
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .tab-btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
+    }
+
+    .tab-btn .tab-icon {
+      font-size: 16px;
+    }
+
+    /* Cuerpo y contenido de la app simulada */
+    .app-body {
+      padding: 32px;
+      min-height: 380px;
+      background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.06), transparent 50%);
+    }
+
+    .sim-panel {
+      display: none;
+      animation: fadeIn 0.4s ease both;
+    }
+    .sim-panel.active {
+      display: block;
+    }
+
+    /* Componentes de la vista previa */
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .sim-title {
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sim-badge-model {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: var(--accent-cyan);
+      font-family: monospace;
+    }
+
+    .sim-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .sim-box {
+      background: rgba(15, 26, 53, 0.7);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .sim-box-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sim-text-content {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    .sim-highlight-pill {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-sky);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    /* Tabla simulada de medias */
+    .sim-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .sim-table th {
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 500;
+    }
+    .sim-table td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .grade-badge.high { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+    .grade-badge.good { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+
+    /* Examen simulado */
+    .quiz-option {
+      background: rgba(7, 12, 26, 0.6);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .quiz-option.correct {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+    }
+    .quiz-option:hover:not(.correct) {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    /* ── SECCIÓN DE ESTADÍSTICAS & NÚMEROS EN VIVO ── */
+    .stats-section {
+      position: relative;
+      z-index: 2;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, rgba(10, 17, 36, 0.6) 0%, rgba(5, 8, 17, 0.8) 100%);
+      padding: 64px 24px;
+    }
+
+    .stats-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 20px 10px;
+      position: relative;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      right: -16px;
+      top: 20%;
+      height: 60%;
+      width: 1px;
+      background: rgba(59, 130, 246, 0.15);
+    }
+    .stat-card:last-child::after { display: none; }
+
+    .stat-number {
+      font-family: var(--font-title);
+      font-size: clamp(38px, 4vw, 54px);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ── SECCIÓN DE CARACTERÍSTICAS / HERRAMIENTAS ── */
+    .section-wrap {
+      position: relative;
+      z-index: 2;
+      padding: 120px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 64px;
+    }
+
+    .section-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      background: rgba(6, 182, 212, 0.1);
+      padding: 4px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* Grid de tarjetas con resplandor magnético */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      position: relative;
+      background: rgba(10, 18, 38, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 30px;
+      overflow: hidden;
+      transition: var(--transition);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-lg);
+      background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(59, 130, 246, 0.15), transparent 40%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(96, 165, 250, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.15);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+    }
+
+    .card-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-sky);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .card-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── SECCIÓN DE ROLES (ALUMNO VS PROFESOR) ── */
+    .roles-section {
+      background: linear-gradient(180deg, rgba(10, 18, 38, 0.4) 0%, rgba(5, 8, 17, 0.8) 100%);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 110px 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .role-box {
+      background: rgba(10, 18, 38, 0.75);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 42px 36px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      transition: var(--transition);
+    }
+
+    .role-box.alumno {
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+    .role-box.profesor {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .role-box:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+    }
+    .role-box.alumno:hover { border-color: rgba(59, 130, 246, 0.5); }
+    .role-box.profesor:hover { border-color: rgba(99, 102, 241, 0.55); }
+
+    .role-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: var(--radius-full);
+      margin-bottom: 20px;
+    }
+    .role-badge-pill.alumno {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-sky);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .role-badge-pill.profesor {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+    }
+
+    .role-box h3 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .role-box p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 26px;
+      line-height: 1.65;
+    }
+
+    .role-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .role-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+
+    .role-list li svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-cyan);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── SECCIÓN DE DESCARGAS MULTIPLATAFORMA ── */
+    .download-section {
+      position: relative;
+      z-index: 2;
+      padding: 120px 24px;
+      max-width: 1140px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .os-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin: 48px auto 36px;
+      text-align: left;
+    }
+
+    .os-card-box {
+      background: rgba(10, 18, 38, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px 26px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      transition: var(--transition);
+    }
+
+    .os-card-box.recommended {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: linear-gradient(145deg, rgba(20, 35, 75, 0.6) 0%, rgba(10, 18, 38, 0.8) 100%);
+      box-shadow: 0 15px 40px rgba(37, 99, 235, 0.2);
+    }
+
+    .os-card-box.recommended::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+    }
+
+    .os-card-box:hover {
+      transform: translateY(-5px);
+      border-color: rgba(96, 165, 250, 0.4);
+    }
+
+    .os-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .os-icon-large {
+      font-size: 36px;
+    }
+
+    .rec-badge {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .os-card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .os-card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.55;
+    }
+
+    .btn-os-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--bg-surface-3);
+      color: #ffffff;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 13px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .os-card-box.recommended .btn-os-download {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-os-download:hover {
+      background: linear-gradient(135deg, #60a5fa 0%, var(--accent-blue) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
+    }
+
+    /* ── SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) ── */
+    .faq-section {
+      position: relative;
+      z-index: 2;
+      padding: 80px 24px 120px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .faq-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .faq-item {
+      background: rgba(10, 18, 38, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .faq-item.open {
+      border-color: rgba(59, 130, 246, 0.35);
+      background: rgba(15, 26, 53, 0.7);
+    }
+
+    .faq-question {
+      padding: 20px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .faq-question:hover {
+      color: var(--accent-sky);
+    }
+
+    .faq-chevron {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-cyan);
+      transition: transform 0.3s ease;
+    }
+
+    .faq-item.open .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.35s ease;
+      padding: 0 24px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+      padding-bottom: 22px;
+    }
+
+    /* ── CTA BANNER FINAL ── */
+    .cta-banner {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto 100px;
+      padding: 70px 40px;
+      border-radius: 30px;
+      background: radial-gradient(ellipse at center, rgba(37, 99, 235, 0.25) 0%, rgba(10, 18, 38, 0.95) 75%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 50px rgba(59, 130, 246, 0.2);
+    }
+
+    .cta-banner h2 {
+      font-size: clamp(32px, 4.5vw, 52px);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .cta-banner p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+
+    /* ── BARRA FLOTANTE DE ACCIÓN RÁPIDA (STICKY CTA) ── */
+    .floating-cta {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      z-index: 999;
+      background: rgba(10, 18, 38, 0.88);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: var(--radius-full);
+      padding: 8px 10px 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(59, 130, 246, 0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .floating-cta.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .floating-cta-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .floating-cta .btn-quick-dl {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .floating-cta .btn-quick-dl:hover {
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+      transform: scale(1.03);
+    }
 
     /* ── FOOTER ── */
     footer {
-      border-top: 1px solid var(--border); padding: 36px 48px;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
-      color: var(--muted); font-size: 13px;
+      position: relative;
+      z-index: 2;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(5, 8, 17, 0.95);
+      padding: 48px 40px;
     }
-    footer a { color: var(--muted); text-decoration: none; margin-left: 22px; transition: color .2s; }
-    footer a:hover { color: var(--text); }
 
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
 
-    /* ── RESPONSIVE ── */
+    .footer-left {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-left strong {
+      color: var(--text-secondary);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-sky);
+    }
+
+    /* ── ANIMACIONES GENERALES ── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll reveal class */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE DESIGN ── */
+    @media (max-width: 992px) {
+      .stats-container { grid-template-columns: repeat(2, 1fr); }
+      .stat-card:nth-child(2)::after { display: none; }
+      .roles-grid { grid-template-columns: 1fr; }
+      .os-selection-grid { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 768px) {
       nav { padding: 14px 20px; }
       .nav-links { display: none; }
-      .hero { padding: 110px 20px 90px; }
-      .hero h1 { letter-spacing: -1.5px; }
-      .values { gap: 40px; padding: 48px 20px; }
-      .section { padding: 70px 20px; }
-      .roles { grid-template-columns: 1fr; }
-      footer { flex-direction: column; text-align: center; }
-      footer a { margin-left: 12px; }
-      .cta-section { padding: 80px 20px; }
+      .nav-links.mobile-open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(5, 8, 17, 0.98);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 24px;
+        gap: 18px;
+      }
+      .mobile-menu-btn { display: block; }
+      .hero { padding: 110px 16px 60px; }
+      .stats-container { grid-template-columns: 1fr 1fr; gap: 20px; }
+      .sim-grid-2col { grid-template-columns: 1fr; }
+      .app-body { padding: 20px 16px; }
+      .floating-cta { width: 90%; justify-content: space-between; }
+      .footer-inner { flex-direction: column; text-align: center; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .orb1, .orb2, .orb3, .dot, .scroll-arrow { animation: none; }
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="#">Kernoss<span>IA</span></a>
-  <ul class="nav-links">
-    <li><a href="#features">Características</a></li>
-    <li><a href="#roles">Alumno vs Profesor</a></li>
-    <li><a href="#download">Descargar</a></li>
-  </ul>
-  <a id="nav-download-btn" class="nav-cta" href="https://github.com/LDPCICNM2012/KernossAI/releases/latest" target="_blank">Descargar</a>
-</nav>
+  <!-- Canvas de fondo para partículas interactivas -->
+  <canvas id="bg-canvas"></canvas>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="orb orb3"></div>
+  <!-- Resplandores ambientales de fondo -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
 
-  <div class="hero-badge">
-    <span class="dot"></span>
-    Versión 1.0 — Ya disponible
-  </div>
+  <!-- NAVEGACIÓN -->
+  <nav id="navbar">
+    <a href="#" class="nav-brand">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span>Kernoss</span>IA
+    </a>
 
-  <h1>
-    <strong>KernossIA</strong><br>
-    estudia con <em>inteligencia artificial</em>
-  </h1>
+    <ul class="nav-links" id="navMenu">
+      <li><a href="#showcase">Demostración</a></li>
+      <li><a href="#features">Módulos</a></li>
+      <li><a href="#roles">Estudiante vs Docente</a></li>
+      <li><a href="#downloads">Descargas</a></li>
+      <li><a href="#faq">Preguntas</a></li>
+    </ul>
 
-  <p class="hero-sub">
-    KernossIA — Suite completa para alumnos y profesores. Notas, exámenes, agenda, resúmenes y IA avanzada en una sola app.
-  </p>
+    <div class="nav-actions">
+      <a href="#downloads" class="btn-nav-cta" id="nav-action-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+        </svg>
+        <span id="nav-btn-text">Descargar</span>
+      </a>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
 
-  <div class="hero-btns">
-    <a id="main-download-btn"
-    <a href="https://github.com/LDPCICNM2012/KernossAI/releases/latest"
-       target="_blank"
-       class="btn-dl">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      Versión 1.1 Disponible • 100% Gratuito y Libre
+    </div>
+
+    <h1>
+      Estudia y enseña mejor con el poder de la <span class="text-gradient">Inteligencia Artificial</span>
+    </h1>
+
+    <p class="hero-sub">
+      KernossIA reúne en una sola suite ultrarrápida notas, resúmenes con IA de 70B parámetros, generador de exámenes, cálculo de medias ponderadas y agenda inteligente.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#downloads" class="btn-primary-glow" id="hero-main-download-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+        </svg>
+        <span id="hero-btn-label">Descargar para Windows</span>
+      </a>
+
+      <a href="https://github.com/LDPCICNM2012/KernossAI" target="_blank" rel="noopener" class="btn-secondary-glass">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+        Ver en GitHub
+      </a>
+    </div>
+
+    <div class="os-detected-label" id="os-hint-text">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M5 13l4 4L19 7"/>
+      </svg>
+      Compatible con <span id="detected-os-name">Windows 10/11</span> • Archivo directo sin instaladores intrusivos
+    </div>
+
+    <!-- Badges de confianza -->
+    <div class="trust-bar">
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        100% Privado y Local
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+        Groq & Gemini IA
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 12v-2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z"/>
+        </svg>
+        Sin Coste Ni Suscripciones
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        </svg>
+        Exportación Word (.docx)
+      </div>
+    </div>
+  </section>
+
+  <!-- MOCKUP / SIMULADOR INTERACTIVO DE LA APP -->
+  <section class="showcase-wrapper reveal" id="showcase">
+    <div class="app-window">
+      <!-- Titlebar macOS style -->
+      <div class="app-titlebar">
+        <div class="window-dots">
+          <div class="window-dot dot-close"></div>
+          <div class="window-dot dot-min"></div>
+          <div class="window-dot dot-max"></div>
+        </div>
+        <div class="window-title">
+          <span>KernossIA Suite</span>
+          <span class="window-badge">v1.1 Activo</span>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted);">Modo Local Seguro</div>
+      </div>
+
+      <!-- Navegador de pestañas interactivas -->
+      <div class="app-tabs-nav" id="showcaseTabs">
+        <button class="tab-btn active" data-target="panel-resumidor">
+          <span class="tab-icon">🔍</span> Resumidor IA
+        </button>
+        <button class="tab-btn" data-target="panel-examenes">
+          <span class="tab-icon">🎯</span> Generador de Exámenes
+        </button>
+        <button class="tab-btn" data-target="panel-medias">
+          <span class="tab-icon">📊</span> Calculador de Medias
+        </button>
+        <button class="tab-btn" data-target="panel-apuntes">
+          <span class="tab-icon">📝</span> Apuntador de Notas
+        </button>
+        <button class="tab-btn" data-target="panel-asistente">
+          <span class="tab-icon">🤖</span> Asistente de Dudas
+        </button>
+        <button class="tab-btn" data-target="panel-agenda">
+          <span class="tab-icon">📅</span> Agenda de Estudio
+        </button>
+      </div>
+
+      <!-- Cuerpo del simulador con los paneles -->
+      <div class="app-body">
+        
+        <!-- Panel 1: Resumidor IA -->
+        <div class="sim-panel active" id="panel-resumidor">
+          <div class="sim-header">
+            <div class="sim-title">
+              <span>Resumen Académico Inteligente</span>
+            </div>
+            <div class="sim-badge-model">⚡ LLaMA 3.3 70B & Gemini Pro</div>
+          </div>
+          <div class="sim-grid-2col">
+            <div class="sim-box">
+              <div class="sim-box-title">
+                <span>Texto de Entrada (Biología Celular)</span>
+                <span style="font-size:11px; color:var(--accent-sky);">1,420 palabras</span>
+              </div>
+              <p class="sim-text-content" style="color:var(--text-muted); font-size:12px;">
+                "La fotosíntesis es un proceso anabólico mediante el cual los organismos autótrofos sintetizan materia orgánica a partir de dióxido de carbono y agua utilizando la energía solar captada por la clorofila..."
+              </p>
+            </div>
+            <div class="sim-box" style="border-color: rgba(6, 182, 212, 0.3);">
+              <div class="sim-box-title" style="color: var(--accent-cyan);">
+                <span>Resumen Sintetizado & Puntos Clave</span>
+                <span class="sim-highlight-pill">94% Reducción</span>
+              </div>
+              <ul class="sim-text-content" style="padding-left: 18px; display:flex; flex-direction:column; gap:6px;">
+                <li><strong>Fase Lumínica:</strong> En la membrana tilacoide; producción de ATP y NADPH.</li>
+                <li><strong>Ciclo de Calvin (Fase Oscura):</strong> Fijación de CO₂ en el estroma formando glucosa.</li>
+                <li><strong>Ecuación Global:</strong> 6CO₂ + 6H₂O + Luz → C₆H₁₂O₆ + 6O₂.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Generador de Exámenes -->
+        <div class="sim-panel" id="panel-examenes">
+          <div class="sim-header">
+            <div class="sim-title">Generador y Corrector de Exámenes</div>
+            <div class="sim-badge-model">Autocorrección Instantánea</div>
+          </div>
+          <div class="sim-box">
+            <div style="font-size:15px; font-weight:600; margin-bottom:14px;">Pregunta 3 de 10: ¿Cuál es la principal función de la mitocondria?</div>
+            <div class="quiz-option">A) Síntesis de proteínas y empaquetamiento vesicular.</div>
+            <div class="quiz-option correct">B) Generación de ATP mediante fosforilación oxidativa. ✓ (Correcto)</div>
+            <div class="quiz-option">C) Digestión de lípidos por enzimas hidrolíticas.</div>
+            <div class="quiz-option">D) Transcripción directa de ADN a ARNm.</div>
+            <div style="margin-top: 14px; font-size: 12px; color: var(--text-muted); display:flex; justify-content:space-between;">
+              <span>Explicación generada por IA incluida</span>
+              <span style="color: #34d399; font-weight:600;">Puntuación actual: 9.5 / 10</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Calculador de Medias -->
+        <div class="sim-panel" id="panel-medias">
+          <div class="sim-header">
+            <div class="sim-title">Cálculo de Medias con Ponderación</div>
+            <div class="sim-badge-model">Matemáticas II • Trimestre 2</div>
+          </div>
+          <div class="sim-box" style="overflow-x:auto;">
+            <table class="sim-table">
+              <thead>
+                <tr>
+                  <th>Concepto / Examen</th>
+                  <th>Ponderación</th>
+                  <th>Calificación</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Examen Tema 4 (Matrices)</td>
+                  <td>35%</td>
+                  <td>9.25</td>
+                  <td><span class="grade-badge high">Excelente</span></td>
+                </tr>
+                <tr>
+                  <td>Examen Tema 5 (Determinantes)</td>
+                  <td>35%</td>
+                  <td>8.75</td>
+                  <td><span class="grade-badge high">Sobresaliente</span></td>
+                </tr>
+                <tr>
+                  <td>Entrega Prácticas y Problemas</td>
+                  <td>20%</td>
+                  <td>10.00</td>
+                  <td><span class="grade-badge high">Perfecto</span></td>
+                </tr>
+                <tr>
+                  <td>Participación y Actitud</td>
+                  <td>10%</td>
+                  <td>9.00</td>
+                  <td><span class="grade-badge good">Notable</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:14px; color:var(--text-secondary);">Nota Media Calculada:</span>
+              <span style="font-size:22px; font-weight:700; color:var(--accent-sky);">9.20 / 10</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: Apuntador de Notas -->
+        <div class="sim-panel" id="panel-apuntes">
+          <div class="sim-header">
+            <div class="sim-title">Editor de Apuntes y Exportación Word</div>
+            <div class="sim-badge-model">Guardado Local Cifrado</div>
+          </div>
+          <div class="sim-box">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+              <span style="font-weight:600; color:#ffffff;">Tema: Historia Contemporánea - Revolución Industrial</span>
+              <button style="background:linear-gradient(135deg, #1d4ed8, #2563eb); border:none; color:#fff; font-size:12px; padding:4px 12px; border-radius:6px; cursor:pointer;">
+                ⬇ Exportar a .docx (Word)
+              </button>
+            </div>
+            <div style="background:rgba(5,8,17,0.5); padding:14px; border-radius:8px; border:1px solid rgba(59,130,246,0.1); font-size:13px; color:#cbd5e1;">
+              <p>• <strong>Causas principales:</strong> Innovación tecnológica (máquina de vapor de James Watt), disponibilidad de carbón y hierro, revolución agrícola previa.</p>
+              <p style="margin-top:6px;">• <strong>Impacto social:</strong> Éxodo rural masivo hacia los centros urbanos y surgimiento del proletariado industrial.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 5: Asistente de Dudas -->
+        <div class="sim-panel" id="panel-asistente">
+          <div class="sim-header">
+            <div class="sim-title">Tutor y Asistente IA Conversacional</div>
+            <div class="sim-badge-model">Historial Persistente</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="align-self:flex-end; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.3); padding:10px 16px; border-radius:14px 14px 2px 14px; max-width:80%; font-size:13px;">
+              ¿Puedes explicarme la diferencia entre mitosis y meiosis de forma clara?
+            </div>
+            <div style="align-self:flex-start; background:rgba(15,26,53,0.8); border:1px solid rgba(59,130,246,0.15); padding:12px 18px; border-radius:14px 14px 14px 2px; max-width:85%; font-size:13px; color:#cbd5e1;">
+              <strong style="color:var(--accent-sky);">Tutor KernossIA:</strong> La <strong>mitosis</strong> produce 2 células hijas genéticamente idénticas (para crecimiento y reparación celular), mientras que la <strong>meiosis</strong> produce 4 células hijas con la mitad de cromosomas (gametos) promoviendo la variabilidad genética.
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 6: Agenda de Estudio -->
+        <div class="sim-panel" id="panel-agenda">
+          <div class="sim-header">
+            <div class="sim-title">Calendario y Planificador de Tareas</div>
+            <div class="sim-badge-model">Semana en Curso</div>
+          </div>
+          <div class="sim-grid-2col">
+            <div class="sim-box">
+              <div class="sim-box-title">Próximas Entregas</div>
+              <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
+                <div style="display:flex; justify-content:space-between; padding:8px; background:rgba(59,130,246,0.08); border-radius:6px;">
+                  <span>📐 Examen Geometría</span>
+                  <span style="color:#ef4444; font-weight:600;">Mañana</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:8px; background:rgba(59,130,246,0.08); border-radius:6px;">
+                  <span>📖 Resumen Literatura</span>
+                  <span style="color:#f59e0b; font-weight:600;">Jueves</span>
+                </div>
+              </div>
+            </div>
+            <div class="sim-box">
+              <div class="sim-box-title">Progreso Semanal</div>
+              <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">8 de 10 tareas completadas (80%)</div>
+              <div style="height:8px; width:100%; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                <div style="height:100%; width:80%; background:linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE ESTADÍSTICAS ANIMADAS -->
+  <section class="stats-section reveal">
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-number" data-target="6">0</div>
+        <div class="stat-label">Módulos Académicos Integrados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="2">0</div>
+        <div class="stat-label">Motores de IA Avanzados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="100" data-suffix="%">0%</div>
+        <div class="stat-label">Gratuito y 100% Privado</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="0">0</div>
+        <div class="stat-label">Telemetría / Datos Enviados</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE CARACTERÍSTICAS / MÓDULOS -->
+  <section class="section-wrap reveal" id="features">
+    <div class="section-header">
+      <div class="section-badge">Herramientas Incluidas</div>
+      <h2 class="section-title">Diseñado para <span class="text-gradient">maximizar tu rendimiento</span></h2>
+      <p class="section-desc">
+        Todo lo que necesitas en tu rutina académica, organizado en una interfaz limpia, sin anuncios ni distracciones.
+      </p>
+    </div>
+
+    <div class="cards-grid">
+      <!-- Card 1 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">📊</div>
+        <div class="card-tag">Rendimiento</div>
+        <h3 class="card-title">Calculador de Medias</h3>
+        <p class="card-text">
+          Configura ponderaciones por asignatura y trimestre. Proyecta qué nota necesitas en el próximo examen para alcanzar tu meta.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">🔍</div>
+        <div class="card-tag">Inteligencia Artificial</div>
+        <h3 class="card-title">Resumidor de Textos</h3>
+        <p class="card-text">
+          Genera síntesis rigurosas con modelos de 70B parámetros. Extrae definiciones clave y esquemas listos para memorizar.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">🎯</div>
+        <div class="card-tag">Evaluación</div>
+        <h3 class="card-title">Generador de Exámenes</h3>
+        <p class="card-text">
+          Crea cuestionarios tipo test o desarrollo a partir de tus propios apuntes con corrección y retroalimentación inmediata.
+        </p>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">📝</div>
+        <div class="card-tag">Organización</div>
+        <h3 class="card-title">Apuntador & Word</h3>
+        <p class="card-text">
+          Toma notas con formato enriquecido y expórtalas directamente a Microsoft Word (.docx) con encabezados y estructura perfecta.
+        </p>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">🤖</div>
+        <div class="card-tag">Tutoría</div>
+        <h3 class="card-title">Ayudante de Dudas</h3>
+        <p class="card-text">
+          IA conversacional con memoria contextual para resolver ejercicios paso a paso en ciencias, historia, idiomas y más.
+        </p>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">📅</div>
+        <div class="card-tag">Planificación</div>
+        <h3 class="card-title">Agenda de Estudios</h3>
+        <p class="card-text">
+          Calendario interactivo para organizar entregas y repasos diarios, garantizando que nunca se te pase una fecha límite.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE ROLES (ALUMNOS Y DOCENTES) -->
+  <section class="roles-section reveal" id="roles">
+    <div class="section-wrap" style="padding: 0;">
+      <div class="section-header">
+        <div class="section-badge">Perfiles Personalizados</div>
+        <h2 class="section-title">Una solución para <span class="text-gradient">Alumnos y Profesores</span></h2>
+        <p class="section-desc">
+          Elige tu perfil al iniciar sesión para desbloquear las herramientas optimizadas para tu labor.
+        </p>
+      </div>
+
+      <div class="roles-grid">
+        <!-- Alumno -->
+        <div class="role-box alumno">
+          <div class="role-badge-pill alumno">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 14l9-5-9-5-9 5 9 5z"/>
+              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+            Perfil Alumno
+          </div>
+          <h3>Aprende más rápido</h3>
+          <p>
+            Automatiza las tareas repetitivas y enfoca tu tiempo en comprender los conceptos más complejos con tu tutor personal.
+          </p>
+          <ul class="role-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Calculador de medias ponderadas automático
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Resúmenes instantáneos de PDF y textos largos
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Simulación de exámenes con corrección inmediata
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Tus datos se guardan únicamente en tu equipo
+            </li>
+          </ul>
+        </div>
+
+        <!-- Profesor -->
+        <div class="role-box profesor">
+          <div class="role-badge-pill profesor">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+            </svg>
+            Perfil Profesor
+          </div>
+          <h3>Enseña con más recursos</h3>
+          <p>
+            Genera material pedagógico, diseña exámenes equilibrados y ahorra horas preparando contenido académico.
+          </p>
+          <ul class="role-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Creador de ejercicios y baterías de preguntas
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Corrector asistido por IA para pruebas importadas
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Exportación masiva de actividades a formato Word
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Panel con herramientas docentes especializadas
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE DESCARGAS -->
+  <section class="download-section reveal" id="downloads">
+    <div class="section-header">
+      <div class="section-badge">Instalación Directa</div>
+      <h2 class="section-title">Descarga <span class="text-gradient">KernossIA</span> para tu sistema</h2>
+      <p class="section-desc">
+        Compatible con los principales sistemas operativos de escritorio. Sin registros bancarios ni publicidad.
+      </p>
+    </div>
+
+    <div class="os-selection-grid">
+      <!-- Windows -->
+      <div class="os-card-box" id="card-windows">
+        <div class="os-card-header">
+          <div class="os-icon-large">🪟</div>
+          <span class="rec-badge" id="badge-windows" style="display:none;">Recomendado</span>
+        </div>
+        <h3 class="os-card-title">Windows</h3>
+        <p class="os-card-desc">Windows 10 / 11 de 64 bits. Ejecutable .exe autónomo listo para usar.</p>
+        <a href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe"
+           class="btn-os-download" id="btn-dl-windows" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          </svg>
+          Descargar .exe
+        </a>
+      </div>
+
+      <!-- macOS -->
+      <div class="os-card-box" id="card-mac">
+        <div class="os-card-header">
+          <div class="os-icon-large">🍎</div>
+          <span class="rec-badge" id="badge-mac" style="display:none;">Recomendado</span>
+        </div>
+        <h3 class="os-card-title">macOS</h3>
+        <p class="os-card-desc">macOS 12 (Monterey) o superior. Compatible con procesadores Intel y Apple Silicon.</p>
+        <a href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip"
+           class="btn-os-download" id="btn-dl-mac" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          </svg>
+          Descargar .zip
+        </a>
+      </div>
+
+      <!-- Linux -->
+      <div class="os-card-box" id="card-linux">
+        <div class="os-card-header">
+          <div class="os-icon-large">🐧</div>
+          <span class="rec-badge" id="badge-linux" style="display:none;">Recomendado</span>
+        </div>
+        <h3 class="os-card-title">Linux</h3>
+        <p class="os-card-desc">Paquete x86_64 para distribuciones basadas en Debian, Ubuntu, Arch y Fedora.</p>
+        <a href="https://github.com/LDPCICNM2012/KernossAI/releases"
+           class="btn-os-download" id="btn-dl-linux" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          </svg>
+          Ver Releases en GitHub
+        </a>
+      </div>
+    </div>
+
+    <p style="font-size:13px; color:var(--text-muted);">
+      ¿Quieres revisar versiones anteriores o el código fuente? Consulta el
+      <a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank" style="color:var(--accent-sky); text-decoration:none;">repositorio oficial en GitHub →</a>
+    </p>
+  </section>
+
+  <!-- SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) -->
+  <section class="faq-section reveal" id="faq">
+    <div class="section-header" style="margin-bottom: 44px;">
+      <div class="section-badge">Dudas Comunes</div>
+      <h2 class="section-title">Preguntas <span class="text-gradient">Frecuentes</span></h2>
+      <p class="section-desc">Todo lo que necesitas saber antes de empezar a usar KernossIA.</p>
+    </div>
+
+    <div class="faq-accordion">
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>¿KernossIA es completamente gratuito?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="faq-answer">
+          Sí, KernossIA es un proyecto educativo de código abierto y 100% gratuito. No incluye suscripciones premium, versiones bloqueadas ni publicidad.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>¿Qué modelos de Inteligencia Artificial utiliza?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="faq-answer">
+          Utiliza una arquitectura dual con motores ultrarrápidos de Groq (LLaMA 3.3 70B) para resúmenes y preguntas instantáneas, junto con Google Gemini para tareas de análisis complejo.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>¿Mis datos y exámenes son privados?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="faq-answer">
+          Absolutamente. Tus notas, exámenes, calificaciones y configuraciones se almacenan localmente en tu propio dispositivo. La aplicación no recopila telemetría ni comparte tu información con terceros.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>¿Requiere instalación compleja o dependencias?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="faq-answer">
+          No. En Windows y macOS se distribuye como binario autocontenido. Solo descargas el archivo, lo abres y ya puedes comenzar a trabajar sin necesidad de instalar Python o paquetes adicionales.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <div class="cta-banner reveal">
+    <h2>Empieza a estudiar de forma <span class="text-gradient">más inteligente hoy</span></h2>
+    <p>Únete a estudiantes y profesores que ya optimizan su tiempo y calificaciones con KernossIA.</p>
+    <a href="#downloads" class="btn-primary-glow" style="display:inline-flex;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
         <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
       </svg>
-      <span id="main-download-label">Detectando sistema...</span>
-    </a>
-    <a href="https://github.com/LDPCICNM2012/KernossAI" target="_blank" class="btn-ghost">
-      Ver en GitHub
+      Descargar KernossIA Gratis
     </a>
   </div>
 
-  <p class="os-note" id="os-note">Disponible para Windows, macOS y Linux</p>
-
-  <div class="scroll-hint">
-    <span>Descubre más</span>
-    <div class="scroll-arrow"></div>
+  <!-- BARRA FLOTANTE STICKY DE DESCARGA -->
+  <div class="floating-cta" id="floatingBar">
+    <div class="floating-cta-text">
+      <span class="status-dot"></span>
+      <span>KernossIA Suite</span>
+    </div>
+    <a href="#downloads" class="btn-quick-dl" id="floatingDlBtn">
+      Descargar Gratis
+    </a>
   </div>
-</section>
 
-<!-- STATS -->
-<div class="values">
-  <div class="value-item"><div class="value-num">6</div><div class="value-label">Módulos integrados</div></div>
-  <div class="value-item"><div class="value-num">2</div><div class="value-label">Motores de IA</div></div>
-  <div class="value-item"><div class="value-num">100%</div><div class="value-label">Gratuito y local</div></div>
-  <div class="value-item"><div class="value-num">0</div><div class="value-label">Datos enviados</div></div>
-</div>
-
-<!-- FEATURES -->
-<div class="section" id="features">
-  <p class="section-label">Herramientas</p>
-  <h2 class="section-title">Todo en un <strong>solo lugar</strong></h2>
-  <p class="section-sub">Cada módulo resuelve un problema real. Sin distracciones, sin suscripciones.</p>
-
-  <div class="cards">
-    <div class="card">
-      <div class="card-icon">📊</div>
-      <div class="card-title">Calculador de Medias</div>
-      <div class="card-desc">Calcula tu nota final con ponderaciones personalizadas. Visualiza tu progreso con gráficos automáticos.</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">📝</div>
-      <div class="card-title">Apuntador de Notas</div>
-      <div class="card-desc">Crea, organiza y exporta apuntes en Word. Notas persistentes guardadas localmente en tu dispositivo.</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">🔍</div>
-      <div class="card-title">Resumidor con IA</div>
-      <div class="card-desc">Pega cualquier texto y obtén un resumen académico riguroso generado por modelos de 70B parámetros.</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">🎯</div>
-      <div class="card-title">Generador de Exámenes</div>
-      <div class="card-desc">Crea exámenes personalizados, respóndelos y recibe corrección automática con puntuación final.</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">🤖</div>
-      <div class="card-title">Ayudante de Problemas</div>
-      <div class="card-desc">IA conversacional con historial persistente. Elige entre modo básico (Groq) o avanzado (Gemini).</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">📅</div>
-      <div class="card-title">Agenda de Estudios</div>
-      <div class="card-desc">Calendario interactivo para planificar tareas por día. Visualiza de un vistazo qué días tienes pendientes.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ROLES -->
-<div style="padding: 20px 48px 100px; background: var(--bg2);" id="roles">
-  <div style="max-width: 900px; margin: 0 auto;">
-    <p class="section-label" style="text-align:center;">Para todos</p>
-    <h2 class="section-title" style="text-align:center; margin-bottom:12px;">Alumno <strong>o</strong> Profesor</h2>
-    <p class="section-sub" style="text-align:center; margin: 0 auto 52px;">Acceso con cuenta propia. Cada perfil desbloquea sus herramientas.</p>
-    <div class="roles">
-      <div class="role-card">
-        <span class="role-badge alumno">Alumno</span>
-        <h3>Aprende más rápido</h3>
-        <p>Acceso a todos los módulos de estudio con tu cuenta personal. Tu progreso se guarda en tu dispositivo.</p>
-        <ul class="feature-list">
-          <li>Calculador de notas y medias</li>
-          <li>Apuntador y exportación a Word</li>
-          <li>Resumidor con IA en la nube</li>
-          <li>Generador y corrector de exámenes</li>
-          <li>Ayudante de problemas con IA</li>
-          <li>Agenda de estudios con calendario</li>
-        </ul>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <strong>KernossIA</strong> — Desarrollado por <strong>Lander de Pablos</strong>.<br>
+        Potenciado con Inteligencia Artificial para el futuro de la educación.
       </div>
-      <div class="role-card">
-        <span class="role-badge profesor">Profesor</span>
-        <h3>Enseña con más recursos</h3>
-        <p>Todo lo del alumno más herramientas exclusivas para crear y corregir material pedagógico.</p>
-        <ul class="feature-list">
-          <li>Todos los módulos del alumno</li>
-          <li>Creador de ejercicios con IA</li>
-          <li>Corrector de exámenes importados</li>
-          <li>Ajuste manual e IA simultáneo</li>
-          <li>Exportación de ejercicios a Word</li>
-          <li>Panel diferenciado en el dashboard</li>
-        </ul>
-      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/LDPCICNM2012/KernossAI" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank" rel="noopener">Releases</a></li>
+        <li><a href="https://github.com/LDPCICNM2012/KernossAI/issues" target="_blank" rel="noopener">Reportar Bug</a></li>
+        <li><a href="downloads-section.html" target="_blank">Todas las Descargas</a></li>
+      </ul>
     </div>
-  </div>
-</div>
+  </footer>
 
-<!-- CTA FINAL -->
-<div class="cta-section" id="download">
-  <h2>Descárgalo <strong>ahora</strong></h2>
-  <p>Gratis, sin cuenta de pago, sin telemetría. Solo tu ordenador y la IA.</p>
-  <a id="cta-download-btn"
-     href="https://github.com/LDPCICNM2012/KernossAI/releases/latest"
-     target="_blank"
-     class="btn-dl"
-     style="font-size:16px; padding:16px 38px; display:inline-flex;">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
-      <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
-    </svg>
-    <span id="cta-download-label">Descargar para tu sistema</span>
-  </a>
-  <p style="margin-top:16px; font-size:13px; color: var(--muted);">
-    También disponible en <a href="downloads-section.html" target="_blank" style="color:var(--accent); text-decoration:none;">todas las versiones →</a>
-  </p>
-</div>
+  <!-- SCRIPT INTERACTIVO: ANIMACIONES, CANVAS, DETECCIÓN OS & MOCKUP -->
+  <script>
+    /* ── 1. CANVAS DE PARTÍCULAS INTERACTIVAS (FONDO CÓSMICO AZUL) ── */
+    (function initCanvas() {
+      const canvas = document.getElementById('bg-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
 
-<!-- FOOTER -->
-<footer>
-  <div>© 2026 KernossIA — Hecho con IA y cariño.</div>
-  <div>
-    <a href="https://github.com/LDPCICNM2012/KernossAI" target="_blank">GitHub</a>
-    <a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank">Releases</a>
-    <a href="https://github.com/LDPCICNM2012/KernossAI/issues" target="_blank">Reportar un bug</a>
-  </div>
-</footer>
+      let mouse = { x: width / 2, y: height / 2, radius: 150 };
+      const particles = [];
+      const particleCount = Math.min(Math.floor((width * height) / 14000), 75);
 
-<script>
-  const DOWNLOADS = {
-    windows: {
-      label: 'Descargar para Windows',
-      url:   'https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe',
-      note:  'Windows 10/11 • .exe'
-    },
-    'mac-intel': {
-      label: 'Descargar para Mac',
-      url:   'https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip',
-      note:  'macOS 12+ • .zip (Procesadores Intel)'
-    },
-    linux: {
-      label: 'Descargar para Linux',
-      url:   '',
-      note:  'Linux • .tar.xz (x86_64) ACTUALMENTE NO DISPONIBLE/FUERA DE SERVICIO'
-    },
-    other: {
-      label: 'Ver todas las descargas',
-      url:   'downloads-section.html',
-      note:  'Elige tu sistema operativo'
-    }
-  };
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
 
-  function detectMacArch() {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (gl) {
-        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-        if (debugInfo) {
-          const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
-          if (renderer.includes('intel') || renderer.includes('amd') || renderer.includes('radeon') || renderer.includes('nvidia')) {
-            return 'mac-intel';
-          }
-          if (renderer.includes('apple')) {
-            return 'mac-arm';
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.45;
+          this.vy = (Math.random() - 0.5) * 0.45;
+          this.radius = Math.random() * 1.8 + 0.6;
+          this.color = Math.random() > 0.4 ? 'rgba(59, 130, 246, ' : 'rgba(6, 182, 212, ';
+          this.alpha = Math.random() * 0.5 + 0.2;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+
+          // Reacción suave al ratón
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouse.radius) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            this.x -= (dx / dist) * force * 1.2;
+            this.y -= (dy / dist) * force * 1.2;
           }
         }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + this.alpha + ')';
+          ctx.fill();
+        }
       }
-    } catch (e) {}
-    return 'mac-arm';
-  }
 
-  function detectOS() {
-    const ua = navigator.userAgent.toLowerCase();
-    const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
 
-    if (/win/.test(platform) || /windows/.test(ua)) return 'windows';
-    if (/mac/.test(platform) || /macintosh|mac os x/.test(ua)) return detectMacArch();
-    if (/linux/.test(platform) || /linux/.test(ua)) return 'linux';
-    return 'other';
-  }
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
 
-  function applyDownload() {
-    const os = detectOS();
-    const dl = DOWNLOADS[os];
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
 
-    // Botones de descarga (href)
-    const mainBtn = document.getElementById('main-download-btn');
-    const ctaBtn  = document.getElementById('cta-download-btn');
-    const navBtn  = document.getElementById('nav-download-btn');
-    if (mainBtn && dl) mainBtn.href = dl.url;
-    if (ctaBtn  && dl) ctaBtn.href  = dl.url;
-    if (navBtn  && dl) navBtn.href  = dl.url;
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(59, 130, 246, ${0.18 * (1 - dist / 110)})`;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
 
-    // Textos visibles en los botones
-    const mainLabel = document.getElementById('main-download-label');
-    const ctaLabel  = document.getElementById('cta-download-label');
-    if (mainLabel && dl) mainLabel.textContent = dl.label;
-    if (ctaLabel  && dl) ctaLabel.textContent  = dl.label;
+    /* ── 2. EFECTO DE RESPLANDOR MAGNÉTICO EN TARJETAS ── */
+    document.querySelectorAll('.feature-card, .app-window, .role-box').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
 
-    // Texto abreviado del botón del nav
-    if (navBtn && dl) navBtn.textContent = dl.label.replace('Descargar para ', '↓ ');
+    /* ── 3. INTERACCIÓN DE PESTAÑAS DEL SIMULADOR DE APP ── */
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const simPanels = document.querySelectorAll('.sim-panel');
+    let autoRotateInterval = null;
+    let currentTabIndex = 0;
 
-    // Nota de plataforma debajo del hero
-    const osNote = document.getElementById('os-note');
-    if (osNote && dl) osNote.textContent = dl.note;
-  }
+    function switchTab(targetId) {
+      tabButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.target === targetId);
+      });
+      simPanels.forEach(panel => {
+        panel.classList.toggle('active', panel.id === targetId);
+      });
+    }
 
-  document.addEventListener('DOMContentLoaded', applyDownload);
-</script>
+    tabButtons.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        clearInterval(autoRotateInterval);
+        currentTabIndex = index;
+        switchTab(btn.dataset.target);
+      });
+    });
+
+    // Rotación automática suave si el usuario no interactúa
+    function startTabAutoRotation() {
+      autoRotateInterval = setInterval(() => {
+        currentTabIndex = (currentTabIndex + 1) % tabButtons.length;
+        const targetId = tabButtons[currentTabIndex].dataset.target;
+        switchTab(targetId);
+      }, 5000);
+    }
+    startTabAutoRotation();
+
+    /* ── 4. ACORDEÓN DE PREGUNTAS FRECUENTES (FAQ) ── */
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.querySelector('.faq-question').addEventListener('click', () => {
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+        if (!isOpen) {
+          item.classList.add('open');
+        }
+      });
+    });
+    // Abrir la primera por defecto
+    const firstFaq = document.querySelector('.faq-item');
+    if (firstFaq) firstFaq.classList.add('open');
+
+    /* ── 5. SCROLL REVEAL Y CONTADORES ANIMADOS ── */
+    const reveals = document.querySelectorAll('.reveal');
+    const statNumbers = document.querySelectorAll('.stat-number');
+    let statsAnimated = false;
+
+    function animateStats() {
+      statNumbers.forEach(stat => {
+        const target = parseInt(stat.dataset.target, 10);
+        const suffix = stat.dataset.suffix || '';
+        let count = 0;
+        const duration = 1600;
+        const stepTime = Math.abs(Math.floor(duration / (target || 1)));
+
+        if (target === 0) {
+          stat.textContent = '0' + suffix;
+          return;
+        }
+
+        const timer = setInterval(() => {
+          count += 1;
+          stat.textContent = count + suffix;
+          if (count >= target) {
+            stat.textContent = target + suffix;
+            clearInterval(timer);
+          }
+        }, Math.max(stepTime, 20));
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          if (entry.target.classList.contains('stats-section') && !statsAnimated) {
+            statsAnimated = true;
+            animateStats();
+          }
+        }
+      });
+    }, { threshold: 0.12 });
+
+    reveals.forEach(el => observer.observe(el));
+
+    /* ── 6. BARRA FLOTANTE & NAVBAR SCROLL EFFECT ── */
+    const navbar = document.getElementById('navbar');
+    const floatingBar = document.getElementById('floatingBar');
+
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      if (scrollY > 60) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+
+      if (scrollY > 500) {
+        floatingBar.classList.add('visible');
+      } else {
+        floatingBar.classList.remove('visible');
+      }
+    });
+
+    /* ── 7. DETECCIÓN INTELIGENTE DE SISTEMA OPERATIVO ── */
+    const DOWNLOAD_CONFIG = {
+      windows: {
+        name: 'Windows 10/11',
+        btnText: 'Descargar para Windows (.exe)',
+        url: 'https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe',
+        cardId: 'card-windows',
+        badgeId: 'badge-windows'
+      },
+      mac: {
+        name: 'macOS (Intel & Apple Silicon)',
+        btnText: 'Descargar para macOS (.zip)',
+        url: 'https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip',
+        cardId: 'card-mac',
+        badgeId: 'badge-mac'
+      },
+      linux: {
+        name: 'Linux (x86_64)',
+        btnText: 'Descargar para Linux',
+        url: 'https://github.com/LDPCICNM2012/KernossAI/releases',
+        cardId: 'card-linux',
+        badgeId: 'badge-linux'
+      }
+    };
+
+    function getOperatingSystem() {
+      const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+      const ua = navigator.userAgent.toLowerCase();
+
+      if (/win/.test(platform) || /windows/.test(ua)) return 'windows';
+      if (/mac/.test(platform) || /macintosh|mac os x/.test(ua)) return 'mac';
+      if (/linux/.test(platform) || /linux/.test(ua)) return 'linux';
+      return 'windows'; // default fallback
+    }
+
+    function setupOsDownloads() {
+      const osKey = getOperatingSystem();
+      const cfg = DOWNLOAD_CONFIG[osKey] || DOWNLOAD_CONFIG.windows;
+
+      // Actualizar botón Hero
+      const heroBtn = document.getElementById('hero-main-download-btn');
+      const heroLabel = document.getElementById('hero-btn-label');
+      const osHintName = document.getElementById('detected-os-name');
+
+      if (heroBtn && heroLabel) {
+        heroBtn.href = cfg.url;
+        heroLabel.textContent = cfg.btnText;
+      }
+      if (osHintName) {
+        osHintName.textContent = cfg.name;
+      }
+
+      // Marcar tarjeta recomendada
+      const targetCard = document.getElementById(cfg.cardId);
+      const targetBadge = document.getElementById(cfg.badgeId);
+      if (targetCard) targetCard.classList.add('recommended');
+      if (targetBadge) targetBadge.style.display = 'inline-block';
+    }
+
+    // Menú Móvil
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const navMenu = document.getElementById('navMenu');
+    if (mobileMenuBtn && navMenu) {
+      mobileMenuBtn.addEventListener('click', () => {
+        navMenu.classList.toggle('mobile-open');
+      });
+      navMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => navMenu.classList.remove('mobile-open'));
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', setupOsDownloads);
+  </script>
 </body>
 </html>
