@@ -1576,7 +1576,7 @@
   <section class="hero">
     <div class="hero-badge">
       <span class="status-dot"></span>
-      Versión 1.1 Disponible • 100% Gratuito y Libre
+      Versión 1.2 Disponible • 100% Gratuito y Libre
     </div>
 
     <h1>
@@ -1655,7 +1655,7 @@
         </div>
         <div class="window-title">
           <span>KernossIA Suite</span>
-          <span class="window-badge">v1.1 Activo</span>
+          <span class="window-badge">v1.2 Activo</span>
         </div>
         <div style="font-size: 11px; color: var(--text-muted);">Modo Local Seguro</div>
       </div>
@@ -2458,7 +2458,7 @@
       }
     });
 
-    /* ── 7. DETECCIÓN INTELIGENTE DE SISTEMA OPERATIVO ── */
+    /* ── 7. DETECCIÓN INTELIGENTE DE SISTEMA OPERATIVO & SYNC CON GITHUB RELEASES ── */
     const DOWNLOAD_CONFIG = {
       windows: {
         name: 'Windows 10/11',
@@ -2517,6 +2517,48 @@
       if (targetBadge) targetBadge.style.display = 'inline-block';
     }
 
+    // Consultar automáticamente la última versión (latest release) de GitHub
+    async function syncLatestGithubRelease() {
+      try {
+        const res = await fetch('https://api.github.com/repos/LDPCICNM2012/KernossAI/releases/latest');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tag = data.tag_name || 'v1.1';
+        const cleanVer = tag.replace(/^v/, '');
+
+        // 1. Actualizar badges de versión visibles en el Hero y simulador
+        const heroBadge = document.querySelector('.hero-badge');
+        if (heroBadge) {
+          heroBadge.innerHTML = `<span class="status-dot"></span> Versión ${cleanVer} Disponible • 100% Gratuito y Libre`;
+        }
+        const winBadge = document.querySelector('.window-badge');
+        if (winBadge) {
+          winBadge.textContent = `${tag} Activo`;
+        }
+
+        // 2. Extraer los links directos de descarga de los assets subidos a GitHub
+        const assets = data.assets || [];
+        const winAsset = assets.find(a => a.name.toLowerCase().endsWith('.exe'));
+        const macAsset = assets.find(a => a.name.toLowerCase().endsWith('.zip') || a.name.toLowerCase().endsWith('.dmg'));
+
+        if (winAsset) {
+          DOWNLOAD_CONFIG.windows.url = winAsset.browser_download_url;
+          const btnDlWin = document.getElementById('btn-dl-windows');
+          if (btnDlWin) btnDlWin.href = winAsset.browser_download_url;
+        }
+        if (macAsset) {
+          DOWNLOAD_CONFIG.mac.url = macAsset.browser_download_url;
+          const btnDlMac = document.getElementById('btn-dl-mac');
+          if (btnDlMac) btnDlMac.href = macAsset.browser_download_url;
+        }
+
+        // 3. Re-aplicar los enlaces a los botones principales
+        setupOsDownloads();
+      } catch (err) {
+        console.log('Usando configuración por defecto de descargas:', err);
+      }
+    }
+
     // Menú Móvil
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const navMenu = document.getElementById('navMenu');
@@ -2529,7 +2571,10 @@
       });
     }
 
-    document.addEventListener('DOMContentLoaded', setupOsDownloads);
+    document.addEventListener('DOMContentLoaded', () => {
+      setupOsDownloads();
+      syncLatestGithubRelease();
+    });
   </script>
 </body>
 

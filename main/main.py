@@ -7,6 +7,8 @@ import json
 import re
 import threading
 import calendar
+import webbrowser
+import requests
 from datetime import datetime
 
 import customtkinter as ctk
@@ -22,8 +24,21 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from auth_backend import login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token
 
 # ─────────────────────────────────────────────
-#  CONFIGURACIÓN GLOBAL Y PALETA DE COLORES (AZUL CÓSMICO / ELÉCTRICO)
+#  VERSIÓN Y CONFIGURACIÓN GLOBAL (AZUL CÓSMICO / ELÉCTRICO)
 # ─────────────────────────────────────────────
+VERSION_APP = "1.2"
+
+def es_version_superior(remota: str, local: str) -> bool:
+    """Compara si la versión remota (ej: 'v1.2') es superior a la local (ej: '1.1')."""
+    try:
+        def parse_nums(v):
+            return [int(x) for x in re.findall(r'\d+', str(v))]
+        v_remota = parse_nums(remota)
+        v_local = parse_nums(local)
+        return v_remota > v_local
+    except Exception:
+        return remota.lstrip('vV').strip() != local.lstrip('vV').strip()
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -1950,8 +1965,13 @@ class DashboardEstudios(ctk.CTk):
         self.chat_home_id_actual = None
 
         self._botones_modulos = {}
+        self._datos_actualizacion = None
+        self.frame_banner_update = None
         self._build_ui()
         self._mostrar_home_chat()
+
+        # Comprobar si hay nueva versión de KernossIA en segundo plano
+        threading.Thread(target=self._comprobar_actualizaciones, daemon=True).start()
 
     def _build_ui(self):
         # ── SIDEBAR LATERAL ──
@@ -2371,6 +2391,175 @@ class DashboardEstudios(ctk.CTk):
             self.quit()
             self.destroy()
             os._exit(0)
+
+    def _comprobar_actualizaciones(self):
+        """Consulta GitHub Releases en segundo plano para comprobar si hay una nueva versión."""
+        try:
+            url = "https://api.github.com/repos/LDPCICNM2012/KernossAI/releases/latest"
+            headers = {"User-Agent": "KernossAI-Desktop-App"}
+            resp = requests.get(url, headers=headers, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json()
+                tag_remoto = data.get("tag_name", "")
+                if tag_remoto and es_version_superior(tag_remoto, VERSION_APP):
+                    assets = data.get("assets", [])
+                    download_url = data.get("html_url", "https://github.com/LDPCICNM2012/KernossAI/releases/latest")
+                    
+                    if sys.platform == "win32":
+                        for a in assets:
+                            if a.get("name", "").lower().endswith(".exe"):
+                                download_url = a.get("browser_download_url", download_url)
+                                break
+                    elif sys.platform == "darwin":
+                        for a in assets:
+                            if a.get("name", "").lower().endswith((".zip", ".dmg")):
+                                download_url = a.get("browser_download_url", download_url)
+                                break
+
+                    info = {
+                        "tag": tag_remoto,
+                        "url": download_url,
+                        "html_url": data.get("html_url", ""),
+                        "notas": data.get("body", "Mejoras de rendimiento, corrección de errores y nuevas funciones.")
+                    }
+                    self._datos_actualizacion = info
+                    self.after(500, lambda: self._mostrar_notificacion_actualizacion(info))
+        except Exception:
+            pass
+
+    def _mostrar_notificacion_actualizacion(self, info):
+        """Muestra un banner en la pantalla Home y un botón en el sidebar."""
+        tag = info["tag"]
+        dl_url = info["url"]
+
+        # 1. Botón destacado en el sidebar
+        if hasattr(self, "sidebar") and not hasattr(self, "btn_update_sidebar"):
+            self.btn_update_sidebar = ctk.CTkButton(
+                self.sidebar,
+                text=f"🚀 Actualizar a {tag}",
+                font=("Segoe UI", 11, "bold"),
+                height=32,
+                fg_color="#0284c7",
+                hover_color="#0ea5e9",
+                command=lambda: self._abrir_modal_actualizacion(info)
+            )
+            self.btn_update_sidebar.pack(fill="x", padx=15, pady=(2, 4), after=self.btn_home)
+
+        # 2. Banner de actualización en la vista Home
+        if hasattr(self, "frame_home") and self.frame_banner_update is None:
+            self.frame_banner_update = ctk.CTkFrame(
+                self.frame_home,
+                fg_color="#0c234a",
+                border_width=1,
+                border_color="#38bdf8",
+                corner_radius=10
+            )
+            # Insertar en la fila 0 y mover los demás
+            self.frame_banner_update.grid(row=0, column=0, sticky="ew", padx=25, pady=(15, 0))
+
+            frame_txt = ctk.CTkFrame(self.frame_banner_update, fg_color="transparent")
+            frame_txt.pack(side="left", padx=15, pady=10)
+
+            ctk.CTkLabel(
+                frame_txt,
+                text=f"🎉 ¡Nueva actualización disponible ({tag})!",
+                font=("Segoe UI", 13, "bold"),
+                text_color="#38bdf8"
+            ).pack(anchor="w")
+
+            ctk.CTkLabel(
+                frame_txt,
+                text=f"Tu versión actual es v{VERSION_APP}. Haz clic en 'Descargar' para actualizar tu app.",
+                font=("Segoe UI", 11),
+                text_color=COLOR_TEXT_MUTED
+            ).pack(anchor="w")
+
+            frame_btns = ctk.CTkFrame(self.frame_banner_update, fg_color="transparent")
+            frame_btns.pack(side="right", padx=15, pady=10)
+
+            ctk.CTkButton(
+                frame_btns,
+                text="⚡ Descargar",
+                font=("Segoe UI", 12, "bold"),
+                fg_color=COLOR_ACCENT_PRIMARY,
+                hover_color=COLOR_ACCENT_HOVER,
+                height=30,
+                command=lambda: webbrowser.open(dl_url)
+            ).pack(side="left", padx=4)
+
+            ctk.CTkButton(
+                frame_btns,
+                text="ℹ️ Novedades",
+                font=("Segoe UI", 11),
+                fg_color=COLOR_BG_SURFACE,
+                hover_color=COLOR_BORDER,
+                height=30,
+                command=lambda: self._abrir_modal_actualizacion(info)
+            ).pack(side="left", padx=4)
+
+            ctk.CTkButton(
+                frame_btns,
+                text="✕",
+                width=26,
+                height=30,
+                fg_color="transparent",
+                hover_color=COLOR_DANGER_HOVER,
+                command=self._cerrar_banner_update
+            ).pack(side="left", padx=2)
+
+    def _cerrar_banner_update(self):
+        if self.frame_banner_update:
+            self.frame_banner_update.destroy()
+            self.frame_banner_update = None
+
+    def _abrir_modal_actualizacion(self, info):
+        """Ventana emergente estilizada con el changelog y botón de descarga directa."""
+        modal = ctk.CTkToplevel(self)
+        modal.title("Actualización de KernossIA")
+        modal.geometry("520x420")
+        modal.minsize(450, 360)
+        modal.configure(fg_color=COLOR_BG_DARK)
+        modal.transient(self)
+        modal.grab_set()
+
+        ctk.CTkLabel(modal, text="🚀 Nueva Versión Disponible",
+                     font=("Segoe UI", 18, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(20, 4))
+        ctk.CTkLabel(modal, text=f"Versión instalada: v{VERSION_APP}   ➜   Última versión: {info['tag']}",
+                     font=("Segoe UI", 12), text_color=COLOR_TEXT_MAIN).pack(pady=(0, 10))
+
+        ctk.CTkLabel(modal, text="Novedades de esta versión:",
+                     font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=30, pady=(6, 2))
+
+        txt_notas = ctk.CTkTextbox(modal, height=180, fg_color=COLOR_BG_CARD,
+                                  border_width=1, border_color=COLOR_BORDER,
+                                  text_color=COLOR_TEXT_MAIN, font=("Segoe UI", 11))
+        txt_notas.pack(fill="both", expand=True, padx=30, pady=(0, 15))
+        txt_notas.insert("end", info.get("notas", "Mejoras de rendimiento, estabilidad y nuevas funciones."))
+        txt_notas.configure(state="disabled")
+
+        frame_modal_btns = ctk.CTkFrame(modal, fg_color="transparent")
+        frame_modal_btns.pack(fill="x", padx=30, pady=(0, 20))
+
+        ctk.CTkButton(
+            frame_modal_btns,
+            text="⚡ Descargar Actualización",
+            font=("Segoe UI", 13, "bold"),
+            fg_color=COLOR_ACCENT_PRIMARY,
+            hover_color=COLOR_ACCENT_HOVER,
+            height=38,
+            command=lambda: [webbrowser.open(info["url"]), modal.destroy()]
+        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+
+        ctk.CTkButton(
+            frame_modal_btns,
+            text="Cerrar",
+            font=("Segoe UI", 12),
+            fg_color=COLOR_BG_SURFACE,
+            hover_color=COLOR_BORDER,
+            height=38,
+            width=80,
+            command=modal.destroy
+        ).pack(side="right")
 
     def _al_cerrar(self):
         self.quit()

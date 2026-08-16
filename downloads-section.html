@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Descargas Oficiales – KernossIA</title>
-  <meta name="description" content="Descarga KernossIA para Windows, macOS y Linux. Suite gratuita de estudio con IA local." />
+  <meta name="description"
+    content="Descarga KernossIA para Windows, macOS y Linux. Suite gratuita de estudio con IA local." />
   <link rel="canonical" href="https://ldpcicnm2012.github.io/KernossAI/downloads-section.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -370,7 +371,7 @@
   <main class="downloads-wrap">
     <p class="section-label">Centro de Descargas</p>
     <h1 class="dl-title">Elige tu <span class="text-gradient">Plataforma</span></h1>
-    <p class="dl-sub">Versión 1.1 disponible. Gratuito, sin cuenta de pago y 100% privado.</p>
+    <p class="dl-sub">Versión 1.2 disponible. Gratuito, sin cuenta de pago y 100% privado.</p>
 
     <div class="detected-banner">
       <div class="detected-pill">
@@ -469,18 +470,40 @@
       return 'other';
     }
 
-    function applyDetection() {
-      const os = detectOS();
-      const detectedText = document.getElementById('detected-text');
-      if (detectedText) detectedText.textContent = OS_LABELS[os] || OS_LABELS.other;
+    async function syncLatestGithubRelease() {
+      try {
+        const res = await fetch('https://api.github.com/repos/LDPCICNM2012/KernossAI/releases/latest');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tag = data.tag_name || 'v1.1';
+        const cleanVer = tag.replace(/^v/, '');
 
-      ['windows', 'mac', 'linux'].forEach(id => {
-        const el = document.getElementById('card-' + id);
-        if (el) el.classList.toggle('active', id === os);
-      });
+        const dlSub = document.querySelector('.dl-sub');
+        if (dlSub) {
+          dlSub.textContent = `Versión ${cleanVer} disponible. Gratuito, sin cuenta de pago y 100% privado.`;
+        }
+
+        const assets = data.assets || [];
+        const winAsset = assets.find(a => a.name.toLowerCase().endsWith('.exe'));
+        const macAsset = assets.find(a => a.name.toLowerCase().endsWith('.zip') || a.name.toLowerCase().endsWith('.dmg'));
+
+        if (winAsset) {
+          const btnWin = document.getElementById('btn-windows');
+          if (btnWin) btnWin.href = winAsset.browser_download_url;
+        }
+        if (macAsset) {
+          const btnMac = document.getElementById('btn-mac');
+          if (btnMac) btnMac.href = macAsset.browser_download_url;
+        }
+      } catch (err) {
+        console.log('Usando enlaces por defecto:', err);
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', applyDetection);
+    document.addEventListener('DOMContentLoaded', () => {
+      applyDetection();
+      syncLatestGithubRelease();
+    });
   </script>
 </body>
 
