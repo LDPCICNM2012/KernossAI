@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['logo.ico'],
+    icon=['C:/Users/Lander/Documents/GitHub/KernossAI/main/logo.ico'],
 )
