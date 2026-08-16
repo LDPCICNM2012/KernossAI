@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- SEO & Metadatos -->
   <title>KernossIA | Suite de Estudio y Educación Potenciada con IA</title>
-  <meta name="description" content="KernossIA es una plataforma gratuita de estudio con IA para estudiantes y docentes. Resúmenes automáticos, generador de exámenes, cálculo de medias y apuntes en un entorno privado." />
-  <meta name="keywords" content="KernossIA, IA educativa, suite de estudio, resumen con IA, generador de examenes, calculador de medias, apuntes Word, Lander de Pablos" />
+  <meta name="description"
+    content="KernossIA es una plataforma gratuita de estudio con IA para estudiantes y docentes. Resúmenes automáticos, generador de exámenes, cálculo de medias y apuntes en un entorno privado." />
+  <meta name="keywords"
+    content="KernossIA, IA educativa, suite de estudio, resumen con IA, generador de examenes, calculador de medias, apuntes Word, Lander de Pablos" />
   <meta name="author" content="Lander de Pablos" />
 
   <!-- Open Graph / Redes Sociales -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="KernossIA — La Suite de Estudio con Inteligencia Artificial" />
-  <meta property="og:description" content="Notas, exámenes, medias, resúmenes y asistente de IA en una app gratuita y privada." />
+  <meta property="og:description"
+    content="Notas, exámenes, medias, resúmenes y asistente de IA en una app gratuita y privada." />
   <meta property="og:url" content="https://ldpcicnm2012.github.io/KernossAI/" />
+  <link rel="canonical" href="https://ldpcicnm2012.github.io/KernossAI/" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="KernossIA | Suite de Estudio con IA" />
-  <meta name="twitter:description" content="Todo lo que necesitas para estudiar o enseñar con el poder de la Inteligencia Artificial." />
+  <meta name="twitter:description"
+    content="Todo lo que necesitas para estudiar o enseñar con el poder de la Inteligencia Artificial." />
 
   <!-- Fuentes Tipográficas -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
   <style>
     /* ── VARIABLES & TOKENS DE COLOR (AZUL CÓSMICO / ELÉCTRICO) ── */
@@ -32,31 +40,33 @@
       --bg-surface-3: #152449;
       --border-subtle: rgba(59, 130, 246, 0.15);
       --border-glow: rgba(96, 165, 250, 0.35);
-      
+
       --accent-blue: #3b82f6;
       --accent-cyan: #06b6d4;
       --accent-indigo: #6366f1;
       --accent-sky: #38bdf8;
-      
+
       --text-main: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
-      
+
       --glow-primary: rgba(59, 130, 246, 0.22);
       --glow-cyan: rgba(6, 182, 212, 0.18);
       --glow-card: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.12), transparent 40%);
-      
+
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 22px;
       --radius-full: 9999px;
-      
+
       --font-title: 'Outfit', sans-serif;
       --font-body: 'Inter', sans-serif;
       --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -97,6 +107,7 @@
       pointer-events: none;
       z-index: 0;
     }
+
     .glow-1 {
       width: 600px;
       height: 600px;
@@ -106,6 +117,7 @@
       transform: translateX(-50%);
       animation: floatGlow1 12s ease-in-out infinite alternate;
     }
+
     .glow-2 {
       width: 450px;
       height: 450px;
@@ -114,6 +126,7 @@
       right: -100px;
       animation: floatGlow2 14s ease-in-out infinite alternate;
     }
+
     .glow-3 {
       width: 400px;
       height: 400px;
@@ -124,20 +137,41 @@
     }
 
     @keyframes floatGlow1 {
-      0% { transform: translateX(-50%) translateY(0px) scale(1); }
-      100% { transform: translateX(-48%) translateY(-40px) scale(1.08); }
+      0% {
+        transform: translateX(-50%) translateY(0px) scale(1);
+      }
+
+      100% {
+        transform: translateX(-48%) translateY(-40px) scale(1.08);
+      }
     }
+
     @keyframes floatGlow2 {
-      0% { transform: translateY(0px) rotate(0deg); }
-      100% { transform: translateY(-35px) rotate(15deg); }
+      0% {
+        transform: translateY(0px) rotate(0deg);
+      }
+
+      100% {
+        transform: translateY(-35px) rotate(15deg);
+      }
     }
+
     @keyframes floatGlow3 {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(30px); }
+      0% {
+        transform: translateY(0px);
+      }
+
+      100% {
+        transform: translateY(30px);
+      }
     }
 
     /* ── TIPOGRAFÍA & GRADIENTES ── */
-    h1, h2, h3, h4, .font-heading {
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-heading {
       font-family: var(--font-title);
       letter-spacing: -0.025em;
     }
@@ -335,8 +369,17 @@
     }
 
     @keyframes pulseDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+      }
     }
 
     .hero h1 {
@@ -524,9 +567,18 @@
       height: 11px;
       border-radius: 50%;
     }
-    .dot-close { background: #ef4444; }
-    .dot-min { background: #f59e0b; }
-    .dot-max { background: #10b981; }
+
+    .dot-close {
+      background: #ef4444;
+    }
+
+    .dot-min {
+      background: #f59e0b;
+    }
+
+    .dot-max {
+      background: #10b981;
+    }
 
     .window-title {
       font-size: 13px;
@@ -556,7 +608,10 @@
       gap: 6px;
       scrollbar-width: none;
     }
-    .app-tabs-nav::-webkit-scrollbar { display: none; }
+
+    .app-tabs-nav::-webkit-scrollbar {
+      display: none;
+    }
 
     .tab-btn {
       display: flex;
@@ -601,6 +656,7 @@
       display: none;
       animation: fadeIn 0.4s ease both;
     }
+
     .sim-panel.active {
       display: block;
     }
@@ -682,6 +738,7 @@
       border-collapse: collapse;
       font-size: 13px;
     }
+
     .sim-table th {
       text-align: left;
       padding: 8px 10px;
@@ -689,11 +746,13 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       font-weight: 500;
     }
+
     .sim-table td {
       padding: 10px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       color: #cbd5e1;
     }
+
     .grade-badge {
       display: inline-block;
       padding: 2px 8px;
@@ -701,8 +760,16 @@
       font-weight: 600;
       font-size: 12px;
     }
-    .grade-badge.high { background: rgba(16, 185, 129, 0.18); color: #34d399; }
-    .grade-badge.good { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+
+    .grade-badge.high {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+    }
+
+    .grade-badge.good {
+      background: rgba(59, 130, 246, 0.18);
+      color: #60a5fa;
+    }
 
     /* Examen simulado */
     .quiz-option {
@@ -718,11 +785,13 @@
       cursor: pointer;
       transition: var(--transition);
     }
+
     .quiz-option.correct {
       border-color: rgba(16, 185, 129, 0.5);
       background: rgba(16, 185, 129, 0.1);
       color: #34d399;
     }
+
     .quiz-option:hover:not(.correct) {
       border-color: rgba(59, 130, 246, 0.4);
       background: rgba(59, 130, 246, 0.1);
@@ -761,7 +830,10 @@
       width: 1px;
       background: rgba(59, 130, 246, 0.15);
     }
-    .stat-card:last-child::after { display: none; }
+
+    .stat-card:last-child::after {
+      display: none;
+    }
 
     .stat-number {
       font-family: var(--font-title);
@@ -932,6 +1004,7 @@
     .role-box.alumno {
       border-color: rgba(59, 130, 246, 0.25);
     }
+
     .role-box.profesor {
       border-color: rgba(99, 102, 241, 0.3);
     }
@@ -940,8 +1013,14 @@
       transform: translateY(-6px);
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
     }
-    .role-box.alumno:hover { border-color: rgba(59, 130, 246, 0.5); }
-    .role-box.profesor:hover { border-color: rgba(99, 102, 241, 0.55); }
+
+    .role-box.alumno:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .role-box.profesor:hover {
+      border-color: rgba(99, 102, 241, 0.55);
+    }
 
     .role-badge-pill {
       display: inline-flex;
@@ -955,11 +1034,13 @@
       border-radius: var(--radius-full);
       margin-bottom: 20px;
     }
+
     .role-badge-pill.alumno {
       background: rgba(59, 130, 246, 0.15);
       color: var(--accent-sky);
       border: 1px solid rgba(59, 130, 246, 0.3);
     }
+
     .role-badge-pill.profesor {
       background: rgba(99, 102, 241, 0.15);
       color: #a5b4fc;
@@ -1315,16 +1396,37 @@
 
     /* ── ANIMACIONES GENERALES ── */
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
+
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Scroll reveal class */
@@ -1333,6 +1435,7 @@
       transform: translateY(30px);
       transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     .reveal.active {
       opacity: 1;
       transform: translateY(0);
@@ -1340,15 +1443,32 @@
 
     /* ── RESPONSIVE DESIGN ── */
     @media (max-width: 992px) {
-      .stats-container { grid-template-columns: repeat(2, 1fr); }
-      .stat-card:nth-child(2)::after { display: none; }
-      .roles-grid { grid-template-columns: 1fr; }
-      .os-selection-grid { grid-template-columns: 1fr; }
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-card:nth-child(2)::after {
+        display: none;
+      }
+
+      .roles-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .os-selection-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 768px) {
-      nav { padding: 14px 20px; }
-      .nav-links { display: none; }
+      nav {
+        padding: 14px 20px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
       .nav-links.mobile-open {
         display: flex;
         flex-direction: column;
@@ -1361,17 +1481,44 @@
         padding: 24px;
         gap: 18px;
       }
-      .mobile-menu-btn { display: block; }
-      .hero { padding: 110px 16px 60px; }
-      .stats-container { grid-template-columns: 1fr 1fr; gap: 20px; }
-      .sim-grid-2col { grid-template-columns: 1fr; }
-      .app-body { padding: 20px 16px; }
-      .floating-cta { width: 90%; justify-content: space-between; }
-      .footer-inner { flex-direction: column; text-align: center; }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .hero {
+        padding: 110px 16px 60px;
+      }
+
+      .stats-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .sim-grid-2col {
+        grid-template-columns: 1fr;
+      }
+
+      .app-body {
+        padding: 20px 16px;
+      }
+
+      .floating-cta {
+        width: 90%;
+        justify-content: space-between;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, ::before, ::after {
+
+      *,
+      ::before,
+      ::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
@@ -1380,6 +1527,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Canvas de fondo para partículas interactivas -->
@@ -1395,7 +1543,7 @@
     <a href="#" class="nav-brand">
       <div class="nav-logo-icon">
         <svg viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
         </svg>
       </div>
       <span>Kernoss</span>IA
@@ -1412,13 +1560,13 @@
     <div class="nav-actions">
       <a href="#downloads" class="btn-nav-cta" id="nav-action-btn">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
         </svg>
         <span id="nav-btn-text">Descargar</span>
       </a>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M4 6h16M4 12h16M4 18h16"/>
+          <path d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
     </div>
@@ -1436,20 +1584,22 @@
     </h1>
 
     <p class="hero-sub">
-      KernossIA reúne en una sola suite ultrarrápida notas, resúmenes con IA de 70B parámetros, generador de exámenes, cálculo de medias ponderadas y agenda inteligente.
+      KernossIA reúne en una sola suite ultrarrápida notas, resúmenes con IA de 70B parámetros, generador de exámenes,
+      cálculo de medias ponderadas y agenda inteligente.
     </p>
 
     <div class="hero-actions">
       <a href="#downloads" class="btn-primary-glow" id="hero-main-download-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+          <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
         </svg>
         <span id="hero-btn-label">Descargar para Windows</span>
       </a>
 
       <a href="https://github.com/LDPCICNM2012/KernossAI" target="_blank" rel="noopener" class="btn-secondary-glass">
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
         </svg>
         Ver en GitHub
       </a>
@@ -1457,7 +1607,7 @@
 
     <div class="os-detected-label" id="os-hint-text">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M5 13l4 4L19 7"/>
+        <path d="M5 13l4 4L19 7" />
       </svg>
       Compatible con <span id="detected-os-name">Windows 10/11</span> • Archivo directo sin instaladores intrusivos
     </div>
@@ -1466,25 +1616,27 @@
     <div class="trust-bar">
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
         100% Privado y Local
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
         </svg>
         Groq & Gemini IA
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 12v-2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z"/>
+          <path
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 12v-2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z" />
         </svg>
         Sin Coste Ni Suscripciones
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
         </svg>
         Exportación Word (.docx)
       </div>
@@ -1532,7 +1684,7 @@
 
       <!-- Cuerpo del simulador con los paneles -->
       <div class="app-body">
-        
+
         <!-- Panel 1: Resumidor IA -->
         <div class="sim-panel active" id="panel-resumidor">
           <div class="sim-header">
@@ -1548,7 +1700,8 @@
                 <span style="font-size:11px; color:var(--accent-sky);">1,420 palabras</span>
               </div>
               <p class="sim-text-content" style="color:var(--text-muted); font-size:12px;">
-                "La fotosíntesis es un proceso anabólico mediante el cual los organismos autótrofos sintetizan materia orgánica a partir de dióxido de carbono y agua utilizando la energía solar captada por la clorofila..."
+                "La fotosíntesis es un proceso anabólico mediante el cual los organismos autótrofos sintetizan materia
+                orgánica a partir de dióxido de carbono y agua utilizando la energía solar captada por la clorofila..."
               </p>
             </div>
             <div class="sim-box" style="border-color: rgba(6, 182, 212, 0.3);">
@@ -1572,12 +1725,14 @@
             <div class="sim-badge-model">Autocorrección Instantánea</div>
           </div>
           <div class="sim-box">
-            <div style="font-size:15px; font-weight:600; margin-bottom:14px;">Pregunta 3 de 10: ¿Cuál es la principal función de la mitocondria?</div>
+            <div style="font-size:15px; font-weight:600; margin-bottom:14px;">Pregunta 3 de 10: ¿Cuál es la principal
+              función de la mitocondria?</div>
             <div class="quiz-option">A) Síntesis de proteínas y empaquetamiento vesicular.</div>
             <div class="quiz-option correct">B) Generación de ATP mediante fosforilación oxidativa. ✓ (Correcto)</div>
             <div class="quiz-option">C) Digestión de lípidos por enzimas hidrolíticas.</div>
             <div class="quiz-option">D) Transcripción directa de ADN a ARNm.</div>
-            <div style="margin-top: 14px; font-size: 12px; color: var(--text-muted); display:flex; justify-content:space-between;">
+            <div
+              style="margin-top: 14px; font-size: 12px; color: var(--text-muted); display:flex; justify-content:space-between;">
               <span>Explicación generada por IA incluida</span>
               <span style="color: #34d399; font-weight:600;">Puntuación actual: 9.5 / 10</span>
             </div>
@@ -1627,7 +1782,8 @@
                 </tr>
               </tbody>
             </table>
-            <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+            <div
+              style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
               <span style="font-size:14px; color:var(--text-secondary);">Nota Media Calculada:</span>
               <span style="font-size:22px; font-weight:700; color:var(--accent-sky);">9.20 / 10</span>
             </div>
@@ -1643,13 +1799,17 @@
           <div class="sim-box">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
               <span style="font-weight:600; color:#ffffff;">Tema: Historia Contemporánea - Revolución Industrial</span>
-              <button style="background:linear-gradient(135deg, #1d4ed8, #2563eb); border:none; color:#fff; font-size:12px; padding:4px 12px; border-radius:6px; cursor:pointer;">
+              <button
+                style="background:linear-gradient(135deg, #1d4ed8, #2563eb); border:none; color:#fff; font-size:12px; padding:4px 12px; border-radius:6px; cursor:pointer;">
                 ⬇ Exportar a .docx (Word)
               </button>
             </div>
-            <div style="background:rgba(5,8,17,0.5); padding:14px; border-radius:8px; border:1px solid rgba(59,130,246,0.1); font-size:13px; color:#cbd5e1;">
-              <p>• <strong>Causas principales:</strong> Innovación tecnológica (máquina de vapor de James Watt), disponibilidad de carbón y hierro, revolución agrícola previa.</p>
-              <p style="margin-top:6px;">• <strong>Impacto social:</strong> Éxodo rural masivo hacia los centros urbanos y surgimiento del proletariado industrial.</p>
+            <div
+              style="background:rgba(5,8,17,0.5); padding:14px; border-radius:8px; border:1px solid rgba(59,130,246,0.1); font-size:13px; color:#cbd5e1;">
+              <p>• <strong>Causas principales:</strong> Innovación tecnológica (máquina de vapor de James Watt),
+                disponibilidad de carbón y hierro, revolución agrícola previa.</p>
+              <p style="margin-top:6px;">• <strong>Impacto social:</strong> Éxodo rural masivo hacia los centros urbanos
+                y surgimiento del proletariado industrial.</p>
             </div>
           </div>
         </div>
@@ -1661,11 +1821,16 @@
             <div class="sim-badge-model">Historial Persistente</div>
           </div>
           <div style="display:flex; flex-direction:column; gap:12px;">
-            <div style="align-self:flex-end; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.3); padding:10px 16px; border-radius:14px 14px 2px 14px; max-width:80%; font-size:13px;">
+            <div
+              style="align-self:flex-end; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.3); padding:10px 16px; border-radius:14px 14px 2px 14px; max-width:80%; font-size:13px;">
               ¿Puedes explicarme la diferencia entre mitosis y meiosis de forma clara?
             </div>
-            <div style="align-self:flex-start; background:rgba(15,26,53,0.8); border:1px solid rgba(59,130,246,0.15); padding:12px 18px; border-radius:14px 14px 14px 2px; max-width:85%; font-size:13px; color:#cbd5e1;">
-              <strong style="color:var(--accent-sky);">Tutor KernossIA:</strong> La <strong>mitosis</strong> produce 2 células hijas genéticamente idénticas (para crecimiento y reparación celular), mientras que la <strong>meiosis</strong> produce 4 células hijas con la mitad de cromosomas (gametos) promoviendo la variabilidad genética.
+            <div
+              style="align-self:flex-start; background:rgba(15,26,53,0.8); border:1px solid rgba(59,130,246,0.15); padding:12px 18px; border-radius:14px 14px 14px 2px; max-width:85%; font-size:13px; color:#cbd5e1;">
+              <strong style="color:var(--accent-sky);">Tutor KernossIA:</strong> La <strong>mitosis</strong> produce 2
+              células hijas genéticamente idénticas (para crecimiento y reparación celular), mientras que la
+              <strong>meiosis</strong> produce 4 células hijas con la mitad de cromosomas (gametos) promoviendo la
+              variabilidad genética.
             </div>
           </div>
         </div>
@@ -1680,11 +1845,13 @@
             <div class="sim-box">
               <div class="sim-box-title">Próximas Entregas</div>
               <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
-                <div style="display:flex; justify-content:space-between; padding:8px; background:rgba(59,130,246,0.08); border-radius:6px;">
+                <div
+                  style="display:flex; justify-content:space-between; padding:8px; background:rgba(59,130,246,0.08); border-radius:6px;">
                   <span>📐 Examen Geometría</span>
                   <span style="color:#ef4444; font-weight:600;">Mañana</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; padding:8px; background:rgba(59,130,246,0.08); border-radius:6px;">
+                <div
+                  style="display:flex; justify-content:space-between; padding:8px; background:rgba(59,130,246,0.08); border-radius:6px;">
                   <span>📖 Resumen Literatura</span>
                   <span style="color:#f59e0b; font-weight:600;">Jueves</span>
                 </div>
@@ -1692,9 +1859,13 @@
             </div>
             <div class="sim-box">
               <div class="sim-box-title">Progreso Semanal</div>
-              <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">8 de 10 tareas completadas (80%)</div>
-              <div style="height:8px; width:100%; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
-                <div style="height:100%; width:80%; background:linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));"></div>
+              <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">8 de 10 tareas completadas
+                (80%)</div>
+              <div
+                style="height:8px; width:100%; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                <div
+                  style="height:100%; width:80%; background:linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));">
+                </div>
               </div>
             </div>
           </div>
@@ -1743,7 +1914,8 @@
         <div class="card-tag">Rendimiento</div>
         <h3 class="card-title">Calculador de Medias</h3>
         <p class="card-text">
-          Configura ponderaciones por asignatura y trimestre. Proyecta qué nota necesitas en el próximo examen para alcanzar tu meta.
+          Configura ponderaciones por asignatura y trimestre. Proyecta qué nota necesitas en el próximo examen para
+          alcanzar tu meta.
         </p>
       </div>
 
@@ -1753,7 +1925,8 @@
         <div class="card-tag">Inteligencia Artificial</div>
         <h3 class="card-title">Resumidor de Textos</h3>
         <p class="card-text">
-          Genera síntesis rigurosas con modelos de 70B parámetros. Extrae definiciones clave y esquemas listos para memorizar.
+          Genera síntesis rigurosas con modelos de 70B parámetros. Extrae definiciones clave y esquemas listos para
+          memorizar.
         </p>
       </div>
 
@@ -1763,7 +1936,8 @@
         <div class="card-tag">Evaluación</div>
         <h3 class="card-title">Generador de Exámenes</h3>
         <p class="card-text">
-          Crea cuestionarios tipo test o desarrollo a partir de tus propios apuntes con corrección y retroalimentación inmediata.
+          Crea cuestionarios tipo test o desarrollo a partir de tus propios apuntes con corrección y retroalimentación
+          inmediata.
         </p>
       </div>
 
@@ -1773,7 +1947,8 @@
         <div class="card-tag">Organización</div>
         <h3 class="card-title">Apuntador & Word</h3>
         <p class="card-text">
-          Toma notas con formato enriquecido y expórtalas directamente a Microsoft Word (.docx) con encabezados y estructura perfecta.
+          Toma notas con formato enriquecido y expórtalas directamente a Microsoft Word (.docx) con encabezados y
+          estructura perfecta.
         </p>
       </div>
 
@@ -1783,7 +1958,8 @@
         <div class="card-tag">Tutoría</div>
         <h3 class="card-title">Ayudante de Dudas</h3>
         <p class="card-text">
-          IA conversacional con memoria contextual para resolver ejercicios paso a paso en ciencias, historia, idiomas y más.
+          IA conversacional con memoria contextual para resolver ejercicios paso a paso en ciencias, historia, idiomas y
+          más.
         </p>
       </div>
 
@@ -1793,7 +1969,8 @@
         <div class="card-tag">Planificación</div>
         <h3 class="card-title">Agenda de Estudios</h3>
         <p class="card-text">
-          Calendario interactivo para organizar entregas y repasos diarios, garantizando que nunca se te pase una fecha límite.
+          Calendario interactivo para organizar entregas y repasos diarios, garantizando que nunca se te pase una fecha
+          límite.
         </p>
       </div>
     </div>
@@ -1815,30 +1992,40 @@
         <div class="role-box alumno">
           <div class="role-badge-pill alumno">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M12 14l9-5-9-5-9 5 9 5z"/>
-              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path
+                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
             </svg>
             Perfil Alumno
           </div>
           <h3>Aprende más rápido</h3>
           <p>
-            Automatiza las tareas repetitivas y enfoca tu tiempo en comprender los conceptos más complejos con tu tutor personal.
+            Automatiza las tareas repetitivas y enfoca tu tiempo en comprender los conceptos más complejos con tu tutor
+            personal.
           </p>
           <ul class="role-list">
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Calculador de medias ponderadas automático
             </li>
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Resúmenes instantáneos de PDF y textos largos
             </li>
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Simulación de exámenes con corrección inmediata
             </li>
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Tus datos se guardan únicamente en tu equipo
             </li>
           </ul>
@@ -1848,7 +2035,8 @@
         <div class="role-box profesor">
           <div class="role-badge-pill profesor">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+              <path
+                d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
             </svg>
             Perfil Profesor
           </div>
@@ -1858,19 +2046,27 @@
           </p>
           <ul class="role-list">
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Creador de ejercicios y baterías de preguntas
             </li>
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Corrector asistido por IA para pruebas importadas
             </li>
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Exportación masiva de actividades a formato Word
             </li>
             <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
               Panel con herramientas docentes especializadas
             </li>
           </ul>
@@ -1899,9 +2095,9 @@
         <h3 class="os-card-title">Windows</h3>
         <p class="os-card-desc">Windows 10 / 11 de 64 bits. Ejecutable .exe autónomo listo para usar.</p>
         <a href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe"
-           class="btn-os-download" id="btn-dl-windows" target="_blank" rel="noopener">
+          class="btn-os-download" id="btn-dl-windows" target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
           </svg>
           Descargar .exe
         </a>
@@ -1916,9 +2112,9 @@
         <h3 class="os-card-title">macOS</h3>
         <p class="os-card-desc">macOS 12 (Monterey) o superior. Compatible con procesadores Intel y Apple Silicon.</p>
         <a href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip"
-           class="btn-os-download" id="btn-dl-mac" target="_blank" rel="noopener">
+          class="btn-os-download" id="btn-dl-mac" target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
           </svg>
           Descargar .zip
         </a>
@@ -1932,10 +2128,10 @@
         </div>
         <h3 class="os-card-title">Linux</h3>
         <p class="os-card-desc">Paquete x86_64 para distribuciones basadas en Debian, Ubuntu, Arch y Fedora.</p>
-        <a href="https://github.com/LDPCICNM2012/KernossAI/releases"
-           class="btn-os-download" id="btn-dl-linux" target="_blank" rel="noopener">
+        <a href="https://github.com/LDPCICNM2012/KernossAI/releases" class="btn-os-download" id="btn-dl-linux"
+          target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
           </svg>
           Ver Releases en GitHub
         </a>
@@ -1944,7 +2140,8 @@
 
     <p style="font-size:13px; color:var(--text-muted);">
       ¿Quieres revisar versiones anteriores o el código fuente? Consulta el
-      <a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank" style="color:var(--accent-sky); text-decoration:none;">repositorio oficial en GitHub →</a>
+      <a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank"
+        style="color:var(--accent-sky); text-decoration:none;">repositorio oficial en GitHub →</a>
     </p>
   </section>
 
@@ -1961,11 +2158,12 @@
         <div class="faq-question">
           <span>¿KernossIA es completamente gratuito?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 9l6 6 6-6"/>
+            <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
         <div class="faq-answer">
-          Sí, KernossIA es un proyecto educativo de código abierto y 100% gratuito. No incluye suscripciones premium, versiones bloqueadas ni publicidad.
+          Sí, KernossIA es un proyecto educativo de código abierto y 100% gratuito. No incluye suscripciones premium,
+          versiones bloqueadas ni publicidad.
         </div>
       </div>
 
@@ -1973,11 +2171,12 @@
         <div class="faq-question">
           <span>¿Qué modelos de Inteligencia Artificial utiliza?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 9l6 6 6-6"/>
+            <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
         <div class="faq-answer">
-          Utiliza una arquitectura dual con motores ultrarrápidos de Groq (LLaMA 3.3 70B) para resúmenes y preguntas instantáneas, junto con Google Gemini para tareas de análisis complejo.
+          Utiliza una arquitectura dual con motores ultrarrápidos de Groq (LLaMA 3.3 70B) para resúmenes y preguntas
+          instantáneas, junto con Google Gemini para tareas de análisis complejo.
         </div>
       </div>
 
@@ -1985,11 +2184,12 @@
         <div class="faq-question">
           <span>¿Mis datos y exámenes son privados?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 9l6 6 6-6"/>
+            <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
         <div class="faq-answer">
-          Absolutamente. Tus notas, exámenes, calificaciones y configuraciones se almacenan localmente en tu propio dispositivo. La aplicación no recopila telemetría ni comparte tu información con terceros.
+          Absolutamente. Tus notas, exámenes, calificaciones y configuraciones se almacenan localmente en tu propio
+          dispositivo. La aplicación no recopila telemetría ni comparte tu información con terceros.
         </div>
       </div>
 
@@ -1997,11 +2197,12 @@
         <div class="faq-question">
           <span>¿Requiere instalación compleja o dependencias?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 9l6 6 6-6"/>
+            <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
         <div class="faq-answer">
-          No. En Windows y macOS se distribuye como binario autocontenido. Solo descargas el archivo, lo abres y ya puedes comenzar a trabajar sin necesidad de instalar Python o paquetes adicionales.
+          No. En Windows y macOS se distribuye como binario autocontenido. Solo descargas el archivo, lo abres y ya
+          puedes comenzar a trabajar sin necesidad de instalar Python o paquetes adicionales.
         </div>
       </div>
     </div>
@@ -2013,7 +2214,7 @@
     <p>Únete a estudiantes y profesores que ya optimizan su tiempo y calificaciones con KernossIA.</p>
     <a href="#downloads" class="btn-primary-glow" style="display:inline-flex;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17"/>
+        <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
       </svg>
       Descargar KernossIA Gratis
     </a>
@@ -2039,8 +2240,10 @@
       </div>
       <ul class="footer-links">
         <li><a href="https://github.com/LDPCICNM2012/KernossAI" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank" rel="noopener">Releases</a></li>
-        <li><a href="https://github.com/LDPCICNM2012/KernossAI/issues" target="_blank" rel="noopener">Reportar Bug</a></li>
+        <li><a href="https://github.com/LDPCICNM2012/KernossAI/releases" target="_blank" rel="noopener">Releases</a>
+        </li>
+        <li><a href="https://github.com/LDPCICNM2012/KernossAI/issues" target="_blank" rel="noopener">Reportar Bug</a>
+        </li>
         <li><a href="downloads-section.html" target="_blank">Todas las Descargas</a></li>
       </ul>
     </div>
@@ -2329,4 +2532,5 @@
     document.addEventListener('DOMContentLoaded', setupOsDownloads);
   </script>
 </body>
+
 </html>

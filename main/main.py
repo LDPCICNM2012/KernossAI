@@ -2395,4 +2395,4 @@ if __name__ == "__main__":
     if sesion:
         app = DashboardEstudios(sesion)
         app.protocol("WM_DELETE_WINDOW", app._al_cerrar)
-        app.mainloop()
+        app.mainloop() 
