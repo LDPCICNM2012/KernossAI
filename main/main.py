@@ -26,7 +26,7 @@ from auth_backend import login, registro, llamar_gemini, llamar_groq, token_guar
 # ─────────────────────────────────────────────
 #  VERSIÓN Y CONFIGURACIÓN GLOBAL (AZUL CÓSMICO / ELÉCTRICO)
 # ─────────────────────────────────────────────
-VERSION_APP = "1.2"
+VERSION_APP = "1.3"
 
 def es_version_superior(remota: str, local: str) -> bool:
     """Compara si la versión remota (ej: 'v1.2') es superior a la local (ej: '1.1')."""
