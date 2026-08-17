@@ -1665,6 +1665,9 @@
         <button class="tab-btn active" data-target="panel-resumidor">
           <span class="tab-icon">🔍</span> Resumidor IA
         </button>
+        <button class="tab-btn" data-target="panel-mapamental">
+          <span class="tab-icon">🧠</span> Mapas Mentales
+        </button>
         <button class="tab-btn" data-target="panel-examenes">
           <span class="tab-icon">🎯</span> Generador de Exámenes
         </button>
@@ -1718,7 +1721,43 @@
           </div>
         </div>
 
-        <!-- Panel 2: Generador de Exámenes -->
+        <!-- Panel 2: Generador de Mapas Mentales -->
+        <div class="sim-panel" id="panel-mapamental">
+          <div class="sim-header">
+            <div class="sim-title">
+              <span>Esquema y Mapa Mental Conceptual</span>
+            </div>
+            <div class="sim-badge-model">⚡ IA Visual • Exportación .docx & .png</div>
+          </div>
+          <div class="sim-box" style="position: relative; overflow: hidden; min-height: 200px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, rgba(37, 99, 235, 0.15), transparent 70%);">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%;">
+              <div style="display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; align-items: center;">
+                <div style="background: rgba(15, 26, 53, 0.9); border: 1.5px solid var(--accent-cyan); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #f8fafc; box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);">
+                  🧬 1. Estructura Celular
+                </div>
+                <div style="background: linear-gradient(135deg, #2563eb, #0284c7); border: 2px solid #38bdf8; padding: 12px 24px; border-radius: 26px; font-size: 14px; font-weight: 700; color: #ffffff; box-shadow: 0 0 25px rgba(37, 99, 235, 0.6);">
+                  🌟 LA CÉLULA EUCARIOTA
+                </div>
+                <div style="background: rgba(15, 26, 53, 0.9); border: 1.5px solid var(--accent-indigo); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #f8fafc; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);">
+                  ⚡ 2. Respiración & ATP
+                </div>
+              </div>
+              <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 4px;">
+                <div style="background: rgba(10, 17, 36, 0.85); border: 1px dashed rgba(6, 182, 212, 0.5); padding: 6px 14px; border-radius: 14px; font-size: 11px; color: #cbd5e1;">
+                  • Núcleo y Membrana
+                </div>
+                <div style="background: rgba(10, 17, 36, 0.85); border: 1px dashed rgba(56, 189, 248, 0.5); padding: 6px 14px; border-radius: 14px; font-size: 11px; color: #cbd5e1;">
+                  • Orgánulos y Citosol
+                </div>
+                <div style="background: rgba(10, 17, 36, 0.85); border: 1px dashed rgba(99, 102, 241, 0.5); padding: 6px 14px; border-radius: 14px; font-size: 11px; color: #cbd5e1;">
+                  • Mitocondrias & Cloroplastos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Generador de Exámenes -->
         <div class="sim-panel" id="panel-examenes">
           <div class="sim-header">
             <div class="sim-title">Generador y Corrector de Exámenes</div>
@@ -1879,7 +1918,7 @@
   <section class="stats-section reveal">
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-number" data-target="6">0</div>
+        <div class="stat-number" data-target="7">0</div>
         <div class="stat-label">Módulos Académicos Integrados</div>
       </div>
       <div class="stat-card">
@@ -1971,6 +2010,17 @@
         <p class="card-text">
           Calendario interactivo para organizar entregas y repasos diarios, garantizando que nunca se te pase una fecha
           límite.
+        </p>
+      </div>
+
+      <!-- Card 7: Mapas Mentales -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">🧠</div>
+        <div class="card-tag">Esquemas Visuales</div>
+        <h3 class="card-title">Mapas Mentales con IA</h3>
+        <p class="card-text">
+          Genera mapas conceptuales interactivos en alta resolución, edita sus nodos y ramas en tiempo real y expórtalos
+          directamente a Microsoft Word (.docx) e imagen (.png).
         </p>
       </div>
     </div>

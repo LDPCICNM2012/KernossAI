@@ -1937,6 +1937,472 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  MÓDULO: GENERADOR Y EDITOR DE MAPAS MENTALES CON IA
+# ══════════════════════════════════════════════════════════════════════════════
+INSTRUCCIONES_MAPA_MENTAL = """
+Eres un pedagogo experto en síntesis visual y mapas conceptuales educativos.
+Tu objetivo es transformar el tema académico en una estructura de Mapa Mental jerárquica, clara y visualmente estructurada.
+
+Debes responder ÚNICAMENTE con un objeto JSON válido (sin texto antes ni después) estructurado de la siguiente forma:
+{
+  "tema_central": "Título conciso del tema central",
+  "descripcion_general": "Resumen conceptual sintético de 2-3 frases.",
+  "ramas": [
+    {
+      "titulo": "Rama 1 (ej: Origen, Definición, Fases, etc.)",
+      "descripcion": "Explicación breve de la rama.",
+      "sub_conceptos": [
+        {
+          "nombre": "Subconcepto 1.1",
+          "detalle": "Dato o definición clave."
+        },
+        {
+          "nombre": "Subconcepto 1.2",
+          "detalle": "Dato o definición clave."
+        }
+      ]
+    },
+    {
+      "titulo": "Rama 2",
+      "descripcion": "Explicación breve.",
+      "sub_conceptos": [
+        {
+          "nombre": "Subconcepto 2.1",
+          "detalle": "Dato o definición clave."
+        }
+      ]
+    }
+  ]
+}
+
+Genera entre 4 y 6 ramas principales coherentes con el nivel educativo indicado. Asegúrate de que las definiciones sean precisas y claras.
+"""
+
+class ModuloMapaMental(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="transparent")
+        self.modelo_actual = "groq"
+        self.datos_mapa = None
+        self.fig = None
+        self.ax = None
+        self.canvas_grafico = None
+        self._build_ui()
+
+    def _build_ui(self):
+        # 2 Columnas principales: Izquierda (Entradas + Editor) y Derecha (Mapa Visual Interactivo)
+        self.grid_columnconfigure(0, weight=4, minsize=420)
+        self.grid_columnconfigure(1, weight=6, minsize=550)
+        self.grid_rowconfigure(0, weight=1)
+
+        # ── PANEL IZQUIERDO: FORMULARIO Y EDITOR ──
+        panel_izq = ctk.CTkFrame(self, corner_radius=14, fg_color=COLOR_BG_CARD,
+                                 border_width=1, border_color=COLOR_BORDER)
+        panel_izq.grid(row=0, column=0, sticky="nsew", padx=(20, 10), pady=20)
+        panel_izq.grid_rowconfigure(7, weight=1)
+        panel_izq.grid_columnconfigure(0, weight=1)
+
+        # Encabezado
+        frame_header = ctk.CTkFrame(panel_izq, fg_color="transparent")
+        frame_header.grid(row=0, column=0, sticky="ew", padx=18, pady=(16, 10))
+
+        ctk.CTkLabel(frame_header, text="🧠 Generador de Mapas Mentales",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
+        ctk.CTkLabel(frame_header, text="Genera esquemas conceptuales con IA, edítalos y expórtalos",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
+
+        # Campo: Tema Principal
+        ctk.CTkLabel(panel_izq, text="Tema o Materia a Sintetizar:",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=1, column=0, sticky="w", padx=18, pady=(4, 2))
+        self.entry_tema = ctk.CTkEntry(panel_izq, placeholder_text="Ej: La Célula y Fotosíntesis, Guerra Fría, Vectores...",
+                                       height=38, font=("Segoe UI", 12),
+                                       fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_tema.grid(row=2, column=0, sticky="ew", padx=18, pady=(0, 10))
+
+        # Fila: Curso / Nivel + Enfoque
+        frame_opts = ctk.CTkFrame(panel_izq, fg_color="transparent")
+        frame_opts.grid(row=3, column=0, sticky="ew", padx=18, pady=(0, 10))
+        frame_opts.grid_columnconfigure((0, 1), weight=1)
+
+        ctk.CTkLabel(frame_opts, text="Nivel / Curso:", font=("Segoe UI", 11, "bold"),
+                     text_color=COLOR_TEXT_MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6), pady=(0, 2))
+        self.combo_nivel = ctk.CTkComboBox(frame_opts,
+                                           values=["Secundaria / ESO", "Bachillerato", "Universidad / FP", "Primaria", "General"],
+                                           font=("Segoe UI", 11), height=34,
+                                           fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.combo_nivel.set("Secundaria / ESO")
+        self.combo_nivel.grid(row=1, column=0, sticky="ew", padx=(0, 6))
+
+        ctk.CTkLabel(frame_opts, text="Enfoque Específico (Opcional):", font=("Segoe UI", 11, "bold"),
+                     text_color=COLOR_TEXT_MUTED).grid(row=0, column=1, sticky="w", padx=(6, 0), pady=(0, 2))
+        self.entry_enfoque = ctk.CTkEntry(frame_opts, placeholder_text="Ej: Énfasis en fórmulas...",
+                                          font=("Segoe UI", 11), height=34,
+                                          fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_enfoque.grid(row=1, column=1, sticky="ew", padx=(6, 0))
+
+        # Fila: Selector de Modelo IA + Botón Generar
+        frame_ia_bar = ctk.CTkFrame(panel_izq, fg_color="transparent")
+        frame_ia_bar.grid(row=4, column=0, sticky="ew", padx=18, pady=(0, 10))
+        frame_ia_bar.grid_columnconfigure(0, weight=1)
+
+        frame_model_switch = ctk.CTkFrame(frame_ia_bar, fg_color=COLOR_BG_CARD_LIGHT,
+                                          border_width=1, border_color=COLOR_BORDER, corner_radius=8)
+        frame_model_switch.pack(side="left")
+
+        self.btn_groq = ctk.CTkButton(frame_model_switch, text="⚡ Groq", height=28, width=75,
+                                      font=("Segoe UI", 10, "bold"),
+                                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                      command=lambda: self._set_modelo("groq"))
+        self.btn_groq.pack(side="left", padx=2, pady=2)
+
+        self.btn_gemini = ctk.CTkButton(frame_model_switch, text="🧠 Gemini", height=28, width=75,
+                                        font=("Segoe UI", 10, "bold"),
+                                        fg_color="transparent", hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                                        command=lambda: self._set_modelo("gemini"))
+        self.btn_gemini.pack(side="left", padx=2, pady=2)
+
+        self.btn_generar = ctk.CTkButton(frame_ia_bar, text="✨ Generar con IA", height=34,
+                                         font=("Segoe UI", 12, "bold"),
+                                         fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                         command=self.generar_mapa_mental)
+        self.btn_generar.pack(side="right", fill="x", expand=True, padx=(10, 0))
+
+        # Estado
+        self.lbl_status = ctk.CTkLabel(panel_izq, text="Listo para generar", font=("Segoe UI", 11),
+                                       text_color=COLOR_TEXT_DIM)
+        self.lbl_status.grid(row=5, column=0, sticky="w", padx=18, pady=(0, 6))
+
+        # Editor de Estructura / JSON en tiempo real
+        frame_edit_header = ctk.CTkFrame(panel_izq, fg_color="transparent")
+        frame_edit_header.grid(row=6, column=0, sticky="ew", padx=18, pady=(4, 4))
+        ctk.CTkLabel(frame_edit_header, text="📝 Editor de Estructura:",
+                     font=("Segoe UI", 11, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
+
+        self.btn_redibujar = ctk.CTkButton(frame_edit_header, text="🔄 Redibujar Mapa", height=24, width=120,
+                                           font=("Segoe UI", 10, "bold"),
+                                           fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                                           border_width=1, border_color=COLOR_BORDER,
+                                           command=self.redibujar_desde_editor)
+        self.btn_redibujar.pack(side="right")
+
+        self.txt_estructura = ctk.CTkTextbox(panel_izq, font=("Consolas", 11), wrap="word",
+                                             fg_color=COLOR_BG_CARD_LIGHT, border_width=1,
+                                             border_color=COLOR_BORDER, corner_radius=10)
+        self.txt_estructura.grid(row=7, column=0, sticky="nsew", padx=18, pady=(0, 10))
+
+        # Botones de Acción (Exportar Word, Exportar Imagen)
+        frame_acciones = ctk.CTkFrame(panel_izq, fg_color="transparent")
+        frame_acciones.grid(row=8, column=0, sticky="ew", padx=18, pady=(0, 16))
+        frame_acciones.grid_columnconfigure((0, 1), weight=1)
+
+        self.btn_exportar_word = ctk.CTkButton(frame_acciones, text="📄 Exportar a Word (.docx)", height=36,
+                                               font=("Segoe UI", 11, "bold"),
+                                               fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                               state="disabled",
+                                               command=self.exportar_word)
+        self.btn_exportar_word.grid(row=0, column=0, sticky="ew", padx=(0, 4))
+
+        self.btn_exportar_img = ctk.CTkButton(frame_acciones, text="🖼️ Guardar Imagen (.png)", height=36,
+                                              font=("Segoe UI", 11, "bold"),
+                                              fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                                              state="disabled",
+                                              command=self.exportar_imagen)
+        self.btn_exportar_img.grid(row=0, column=1, sticky="ew", padx=(4, 0))
+
+
+        # ── PANEL DERECHO: VISUALIZADOR GRÁFICO INTERACTIVO ──
+        self.panel_der = ctk.CTkFrame(self, corner_radius=14, fg_color=COLOR_BG_CARD,
+                                      border_width=1, border_color=COLOR_BORDER)
+        self.panel_der.grid(row=0, column=1, sticky="nsew", padx=(10, 20), pady=20)
+        self.panel_der.grid_rowconfigure(1, weight=1)
+        self.panel_der.grid_columnconfigure(0, weight=1)
+
+        # Header del visualizador
+        header_der = ctk.CTkFrame(self.panel_der, fg_color="transparent")
+        header_der.grid(row=0, column=0, sticky="ew", padx=18, pady=(16, 6))
+
+        ctk.CTkLabel(header_der, text="🎨 Vista Gráfica del Mapa Mental",
+                     font=("Segoe UI", 16, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left")
+
+        self.lbl_info_ramas = ctk.CTkLabel(header_der, text="Sin mapa generado",
+                                           font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM)
+        self.lbl_info_ramas.pack(side="right")
+
+        # Contenedor del Canvas de Matplotlib
+        self.frame_canvas = ctk.CTkFrame(self.panel_der, fg_color="#070c18", corner_radius=10,
+                                         border_width=1, border_color=COLOR_BORDER)
+        self.frame_canvas.grid(row=1, column=0, sticky="nsew", padx=18, pady=(0, 18))
+        self.frame_canvas.grid_rowconfigure(0, weight=1)
+        self.frame_canvas.grid_columnconfigure(0, weight=1)
+
+        # Inicializar figura de matplotlib
+        self._inicializar_canvas_vacio()
+
+    def _set_modelo(self, modelo):
+        self.modelo_actual = modelo
+        if modelo == "groq":
+            self.btn_groq.configure(fg_color=COLOR_ACCENT_PRIMARY)
+            self.btn_gemini.configure(fg_color="transparent")
+        else:
+            self.btn_groq.configure(fg_color="transparent")
+            self.btn_gemini.configure(fg_color=COLOR_ACCENT_PURPLE)
+
+    def _inicializar_canvas_vacio(self):
+        plt.style.use("dark_background")
+        self.fig, self.ax = plt.subplots(figsize=(8, 7), facecolor="#070c18")
+        self.ax.set_facecolor("#070c18")
+        self.ax.text(0, 0, "🧠 Escribe un tema y haz clic en\n'✨ Generar con IA' para crear tu mapa",
+                     color="#64748b", fontsize=12, ha="center", va="center",
+                     bbox=dict(boxstyle="round,pad=0.8", facecolor="#0a1124", edgecolor="#1e3a6a", lw=1.5))
+        self.ax.set_xlim(-6, 6)
+        self.ax.set_ylim(-6, 6)
+        self.ax.axis("off")
+
+        self.canvas_grafico = FigureCanvasTkAgg(self.fig, master=self.frame_canvas)
+        self.canvas_grafico.get_tk_widget().pack(fill="both", expand=True)
+        self.canvas_grafico.draw()
+
+    def generar_mapa_mental(self):
+        tema = self.entry_tema.get().strip()
+        if not tema:
+            messagebox.showwarning("Tema requerido", "Introduce el tema o concepto para crear el mapa mental.")
+            return
+
+        nivel = self.combo_nivel.get()
+        enfoque = self.entry_enfoque.get().strip()
+
+        self.btn_generar.configure(state="disabled")
+        self.lbl_status.configure(text="✨ Creando estructura con IA...", text_color=COLOR_ACCENT_SKY)
+
+        prompt = f"TEMA PRINCIPAL: {tema}\nNIVEL EDUCATIVO: {nivel}\n"
+        if enfoque:
+            prompt += f"ENFOQUE Y PUNTOS CLAVE: {enfoque}\n"
+
+        threading.Thread(target=self._thread_generar_mapa, args=(prompt,), daemon=True).start()
+
+    def _thread_generar_mapa(self, prompt):
+        try:
+            full_prompt = f"{INSTRUCCIONES_MAPA_MENTAL}\n\n{prompt}"
+            if self.modelo_actual == "groq":
+                respuesta = llamar_groq(full_prompt)
+            else:
+                respuesta = llamar_gemini(full_prompt)
+
+            datos = self._extraer_json(respuesta)
+            if not datos:
+                datos = {
+                    "tema_central": self.entry_tema.get().strip() or "Tema Principal",
+                    "descripcion_general": "Esquema conceptual estructurado.",
+                    "ramas": [
+                        {"titulo": "Conceptos Clave", "descripcion": "Puntos esenciales.", "sub_conceptos": [{"nombre": "Definición", "detalle": "Concepto central."}]},
+                        {"titulo": "Características", "descripcion": "Propiedades fundamentales.", "sub_conceptos": [{"nombre": "Propiedad 1", "detalle": "Detalle explicativo."}]},
+                        {"titulo": "Aplicaciones", "descripcion": "Uso práctico.", "sub_conceptos": [{"nombre": "Ejemplo práctico", "detalle": "Demostración."}]}
+                    ]
+                }
+
+            self.after(0, lambda: self._mostrar_mapa_generado(datos))
+        except Exception as e:
+            self.after(0, lambda: messagebox.showerror("Error al Generar", f"No se pudo generar el mapa mental: {e}"))
+        finally:
+            self.after(0, lambda: [
+                self.btn_generar.configure(state="normal"),
+                self.lbl_status.configure(text="Listo", text_color=COLOR_SUCCESS)
+            ])
+
+    def _extraer_json(self, texto):
+        try:
+            match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", texto, re.DOTALL)
+            if match:
+                return json.loads(match.group(1))
+            start = texto.find("{")
+            end = texto.rfind("}")
+            if start != -1 and end != -1:
+                return json.loads(texto[start:end+1])
+        except Exception:
+            pass
+        return None
+
+    def _mostrar_mapa_generado(self, datos):
+        self.datos_mapa = datos
+
+        self.txt_estructura.delete("1.0", "end")
+        self.txt_estructura.insert("end", json.dumps(datos, ensure_ascii=False, indent=2))
+
+        self._dibujar_mapa_visual(datos)
+
+        self.btn_exportar_word.configure(state="normal")
+        self.btn_exportar_img.configure(state="normal")
+        ramas_count = len(datos.get("ramas", []))
+        self.lbl_info_ramas.configure(text=f"✨ {ramas_count} Ramas Principales Generadas", text_color=COLOR_ACCENT_CYAN)
+
+    def redibujar_desde_editor(self):
+        contenido = self.txt_estructura.get("1.0", "end-1c").strip()
+        if not contenido:
+            return
+        try:
+            datos = json.loads(contenido)
+            self.datos_mapa = datos
+            self._dibujar_mapa_visual(datos)
+            self.lbl_status.configure(text="Mapa visual actualizado", text_color=COLOR_SUCCESS)
+        except Exception as e:
+            messagebox.showerror("Error JSON", f"El formato JSON no es válido:\n{e}")
+
+    def _dibujar_mapa_visual(self, datos):
+        import numpy as np
+
+        self.ax.clear()
+        self.ax.set_facecolor("#070c18")
+
+        tema_central = datos.get("tema_central", "Tema Central")
+        ramas = datos.get("ramas", [])
+        num_ramas = len(ramas)
+
+        if num_ramas == 0:
+            self._inicializar_canvas_vacio()
+            return
+
+        paleta_colores = ["#06b6d4", "#38bdf8", "#6366f1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"]
+
+        # 1. Dibujar Nodo Central
+        tema_fmt = "\n".join([tema_central[i:i+16] for i in range(0, len(tema_central), 16)])
+        self.ax.text(0, 0, f"🌟\n{tema_fmt}",
+                     color="#ffffff", fontsize=11, fontweight="bold", ha="center", va="center",
+                     bbox=dict(boxstyle="round,pad=0.7", facecolor="#2563eb", edgecolor="#38bdf8", lw=2.5, alpha=0.95))
+
+        # 2. Dibujar Ramas y Subconceptos
+        r_rama = 3.2
+        r_sub = 5.2
+
+        for i, rama in enumerate(ramas):
+            color = paleta_colores[i % len(paleta_colores)]
+            angulo = (2 * np.pi * i / num_ramas) + (np.pi / (num_ramas * 2))
+
+            x_rama = r_rama * np.cos(angulo)
+            y_rama = r_rama * np.sin(angulo)
+
+            # Conector Centro -> Rama (Curva suave)
+            self.ax.annotate("", xy=(x_rama, y_rama), xytext=(0, 0),
+                             arrowprops=dict(arrowstyle="-", color=color, lw=2.2, alpha=0.85,
+                                             connectionstyle="arc3,rad=0.1"))
+
+            # Nodo Rama
+            titulo_rama = rama.get("titulo", f"Rama {i+1}")
+            titulo_fmt = "\n".join([titulo_rama[k:k+14] for k in range(0, len(titulo_rama), 14)])
+
+            self.ax.text(x_rama, y_rama, titulo_fmt,
+                         color="#f8fafc", fontsize=9.5, fontweight="bold", ha="center", va="center",
+                         bbox=dict(boxstyle="round,pad=0.5", facecolor="#0f1a35", edgecolor=color, lw=2.0, alpha=0.95))
+
+            # Sub-conceptos
+            subs = rama.get("sub_conceptos", [])
+            num_subs = len(subs)
+
+            for j, sub in enumerate(subs):
+                offset_ang = (j - (num_subs - 1) / 2) * (0.35 if num_subs > 1 else 0)
+                sub_ang = angulo + offset_ang
+
+                x_sub = r_sub * np.cos(sub_ang)
+                y_sub = r_sub * np.sin(sub_ang)
+
+                # Conector Rama -> Subconcepto
+                self.ax.annotate("", xy=(x_sub, y_sub), xytext=(x_rama, y_rama),
+                                 arrowprops=dict(arrowstyle="-", color=color, lw=1.2, ls="--", alpha=0.6,
+                                                 connectionstyle="arc3,rad=-0.08"))
+
+                # Nodo Subconcepto
+                nombre_sub = sub.get("nombre", f"Punto {j+1}")
+                nombre_fmt = "\n".join([nombre_sub[k:k+16] for k in range(0, len(nombre_sub), 16)])
+
+                self.ax.text(x_sub, y_sub, nombre_fmt,
+                             color="#cbd5e1", fontsize=8, ha="center", va="center",
+                             bbox=dict(boxstyle="round,pad=0.35", facecolor="#070c18", edgecolor=color, lw=1.0, alpha=0.9))
+
+        self.ax.set_xlim(-6.8, 6.8)
+        self.ax.set_ylim(-6.8, 6.8)
+        self.ax.set_aspect("equal")
+        self.ax.axis("off")
+        self.canvas_grafico.draw()
+
+    def exportar_imagen(self):
+        if not self.datos_mapa or not self.fig:
+            messagebox.showwarning("Sin mapa", "Primero genera o redibuja un mapa mental.")
+            return
+
+        tema = self.datos_mapa.get("tema_central", "Mapa_Mental").replace(" ", "_")
+        path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("Imagen PNG", "*.png"), ("Todos los archivos", "*.*")],
+            initialfile=f"MapaMental_{tema}_{datetime.now().strftime('%Y%m%d')}.png"
+        )
+        if not path:
+            return
+
+        try:
+            self.fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="#070c18", edgecolor="none")
+            messagebox.showinfo("Imagen Guardada", f"Mapa mental exportado con éxito en alta resolución (300 DPI):\n{path}")
+        except Exception as e:
+            messagebox.showerror("Error al Guardar", f"No se pudo guardar la imagen:\n{e}")
+
+    def exportar_word(self):
+        if not self.datos_mapa:
+            messagebox.showwarning("Sin mapa", "Primero genera o redibuja un mapa mental.")
+            return
+
+        tema = self.datos_mapa.get("tema_central", "Mapa Mental")
+        path = filedialog.asksaveasfilename(
+            defaultextension=".docx",
+            filetypes=[("Documento Word", "*.docx"), ("Todos los archivos", "*.*")],
+            initialfile=f"MapaMental_{tema.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.docx"
+        )
+        if not path:
+            return
+
+        try:
+            doc = Document()
+            # Título principal
+            titulo_p = doc.add_heading(f"Mapa Mental: {tema}", 0)
+            doc.add_paragraph(f"Nivel Académico: {self.combo_nivel.get()}  |  Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            
+            desc_gen = self.datos_mapa.get("descripcion_general", "")
+            if desc_gen:
+                p_res = doc.add_paragraph()
+                p_res.add_run("Resumen Conceptual: ").bold = True
+                p_res.add_run(desc_gen)
+
+            # Guardar imagen temporal e incrustar
+            temp_img = os.path.expanduser("~/.temp_mapa_mental_export.png")
+            self.fig.savefig(temp_img, dpi=300, bbox_inches="tight", facecolor="#070c18", edgecolor="none")
+
+            doc.add_paragraph("")
+            doc.add_heading("Estructura Gráfica del Mapa Mental", level=1)
+            doc.add_picture(temp_img, width=Inches(6.2))
+            doc.add_paragraph("")
+
+            if os.path.exists(temp_img):
+                os.remove(temp_img)
+
+            # Desglose de ramas y conceptos
+            doc.add_heading("Desglose Detallado de Ramas y Conceptos", level=1)
+
+            for rama in self.datos_mapa.get("ramas", []):
+                doc.add_heading(f"📌 {rama.get('titulo', 'Rama')}", level=2)
+                if rama.get("descripcion"):
+                    doc.add_paragraph(rama.get("descripcion"))
+
+                subs = rama.get("sub_conceptos", [])
+                if subs:
+                    for sub in subs:
+                        p_sub = doc.add_paragraph(style="List Bullet")
+                        r_bold = p_sub.add_run(f"{sub.get('nombre', 'Concepto')}: ")
+                        r_bold.bold = True
+                        p_sub.add_run(sub.get("detalle", ""))
+
+            doc.save(path)
+            messagebox.showinfo("Exportado a Word", f"Documento Word creado con éxito con gráfico HD e información detallada:\n{path}")
+        except Exception as e:
+            messagebox.showerror("Error al Exportar", f"No se pudo generar el documento Word:\n{e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  DASHBOARD PRINCIPAL (HOME CON CHAT DIRECTO IA, HISTORIAL Y CAMBIO DE MÓDULOS)
 # ══════════════════════════════════════════════════════════════════════════════
 class DashboardEstudios(ctk.CTk):
@@ -1972,6 +2438,9 @@ class DashboardEstudios(ctk.CTk):
 
         # Comprobar si hay nueva versión de KernossIA en segundo plano
         threading.Thread(target=self._comprobar_actualizaciones, daemon=True).start()
+
+        # Comprobar si corresponde mostrar el Changelog de actualización (Solo 1 vez tras actualizar)
+        self.after(600, self._comprobar_changelog_post_actualizacion)
 
     def _build_ui(self):
         # ── SIDEBAR LATERAL ──
@@ -2037,6 +2506,7 @@ class DashboardEstudios(ctk.CTk):
         ctk.CTkLabel(self.sidebar, text="MÓDULOS DE ESTUDIO",
                      font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_DIM).pack(anchor="w", padx=20, pady=(6, 2))
 
+        self._btn("🧠  Mapas Mentales",        "mapa_mental")
         self._btn("📊  Calculador de Medias",  "calculador")
         self._btn("📝  Apuntador de Notas",     "apuntador")
         self._btn("🔍  Resumidor de Textos AI", "resumidor")
@@ -2120,6 +2590,7 @@ class DashboardEstudios(ctk.CTk):
                      text_color=COLOR_TEXT_MUTED).pack(side="left", padx=(14, 8), pady=8)
 
         modulos_rapidos = [
+            ("🧠 Mapas", "mapa_mental"),
             ("📊 Medias", "calculador"),
             ("📝 Apuntes", "apuntador"),
             ("🔍 Resumir", "resumidor"),
@@ -2364,7 +2835,9 @@ class DashboardEstudios(ctk.CTk):
 
         # Crear el módulo si no existe todavía (lazy loading)
         if modulo_id not in self._modulos:
-            if modulo_id == "calculador":
+            if modulo_id == "mapa_mental":
+                self._modulos[modulo_id] = ModuloMapaMental(self.contenedor)
+            elif modulo_id == "calculador":
                 self._modulos[modulo_id] = ModuloCalculador(self.contenedor)
             elif modulo_id == "apuntador":
                 self._modulos[modulo_id] = ModuloApuntador(self.contenedor)
@@ -2560,6 +3033,79 @@ class DashboardEstudios(ctk.CTk):
             width=80,
             command=modal.destroy
         ).pack(side="right")
+
+    def _comprobar_changelog_post_actualizacion(self):
+        """Muestra una ventana modal con las novedades de la versión actual SOLO UNA VEZ tras actualizar."""
+        ruta_version_vista = os.path.expanduser("~/.kernoss_version_seen.json")
+        version_vista = ""
+        try:
+            if os.path.exists(ruta_version_vista):
+                with open(ruta_version_vista, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    version_vista = data.get("ultima_version_vista", "")
+        except Exception:
+            pass
+
+        if version_vista != VERSION_APP:
+            # Guardar que ya se vio esta versión
+            try:
+                with open(ruta_version_vista, "w", encoding="utf-8") as f:
+                    json.dump({"ultima_version_vista": VERSION_APP}, f)
+            except Exception:
+                pass
+
+            # Mostrar modal de bienvenida con novedades
+            self._mostrar_modal_bienvenida_changelog()
+
+    def _mostrar_modal_bienvenida_changelog(self):
+        """Ventana modal elegante con el changelog de la nueva versión."""
+        modal = ctk.CTkToplevel(self)
+        modal.title(f"¡Novedades en KernossIA v{VERSION_APP}!")
+        modal.geometry("580x500")
+        modal.minsize(520, 440)
+        modal.configure(fg_color=COLOR_BG_DARK)
+        modal.transient(self)
+        modal.grab_set()
+
+        # Header
+        ctk.CTkLabel(modal, text=f"🎉 ¡Bienvenido a KernossIA v{VERSION_APP}!",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(22, 4))
+        ctk.CTkLabel(modal, text="Descubre las nuevas funciones y mejoras añadidas en esta versión:",
+                     font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(pady=(0, 14))
+
+        # Tarjeta de novedades
+        frame_box = ctk.CTkScrollableFrame(modal, fg_color=COLOR_BG_CARD,
+                                           border_width=1, border_color=COLOR_BORDER,
+                                           corner_radius=12)
+        frame_box.pack(fill="both", expand=True, padx=25, pady=(0, 16))
+
+        novedades = [
+            ("🧠 Nuevo Módulo de Mapas Mentales con IA",
+             "Genera mapas conceptuales interactivos a partir de cualquier tema y nivel. Edita la estructura en tiempo real y expórtala directamente a Word (.docx) con gráficos HD e imagen (.png)."),
+            ("💬 Chat Directo de IA en Inicio",
+             "Accede directamente a los motores Groq (LLaMA 3.3 70B) y Gemini desde la pantalla principal sin tener que entrar a otros módulos."),
+            ("🕒 Historial de Chat Persistente",
+             "Tus conversaciones del chat de inicio ahora se guardan automáticamente en tu perfil para que puedas consultarlas y continuarlas cuando quieras."),
+            ("⚡ Barra de Acceso Rápido",
+             "Salta al instante entre tus herramientas favoritas (Mapas, Medias, Apuntes, Resúmenes, Exámenes, Solver y Agenda) en 1 solo clic."),
+            ("🎨 Nueva Estética Cósmica Azul",
+             "Diseño unificado con la nueva web oficial, bordes pulidos y mayor contraste visual.")
+        ]
+
+        for titulo, desc in novedades:
+            item = ctk.CTkFrame(frame_box, fg_color=COLOR_BG_CARD_LIGHT, corner_radius=8,
+                                border_width=1, border_color=COLOR_BORDER)
+            item.pack(fill="x", pady=5, padx=2)
+            ctk.CTkLabel(item, text=titulo, font=("Segoe UI", 12, "bold"),
+                         text_color=COLOR_ACCENT_CYAN).pack(anchor="w", padx=12, pady=(8, 2))
+            ctk.CTkLabel(item, text=desc, font=("Segoe UI", 11),
+                         text_color=COLOR_TEXT_MAIN, wraplength=480, justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+
+        # Botón Empezar
+        ctk.CTkButton(modal, text="🚀 ¡Empezar a Usar KernossIA!",
+                      font=("Segoe UI", 13, "bold"), height=42,
+                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      command=modal.destroy).pack(fill="x", padx=25, pady=(0, 20))
 
     def _al_cerrar(self):
         self.quit()
