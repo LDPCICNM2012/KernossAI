@@ -1,25 +1,10 @@
-"""
-auth_backend.py — pega este archivo junto a tu main.py del cliente
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reemplaza completamente el APP_SECRET y la función
-consultar_ia_backend() que tenías en main.py.
- 
-Cómo usarlo en main.py:
-    from auth_backend import login, registro, consultar_ia, token_guardado
- 
-No hay ningún secret hardcodeado aquí.
-El token lo genera el servidor y expira en 24h.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"""
- 
 import json
 import os
 import requests
  
 BACKEND_URL = "https://kernosai-backend.onrender.com"
 RUTA_TOKEN  = os.path.expanduser("~/.kernos_token.json")
- 
- 
+
 # ── Guardar / leer token en disco ──────────────────
  
 def _guardar_token(token: str, sesion: dict):
