@@ -21,12 +21,17 @@ from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from auth_backend import login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token
+from auth_backend import (
+    login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token,
+    actualizar_hogar_principal, obtener_chats_cloud, guardar_chat_cloud, borrar_chat_cloud
+)
+from config_manager import obtener_ajustes_tts, guardar_ajustes_tts
+from tts_engine import tts_engine, VOICES_DISPONIBLES, VELOCIDADES_DISPONIBLES
 
 # ─────────────────────────────────────────────
 #  VERSIÓN Y CONFIGURACIÓN GLOBAL (AZUL CÓSMICO / ELÉCTRICO)
 # ─────────────────────────────────────────────
-VERSION_APP = "1.3"
+VERSION_APP = "1.4"
 
 def es_version_superior(remota: str, local: str) -> bool:
     """Compara si la versión remota (ej: 'v1.2') es superior a la local (ej: '1.1')."""
@@ -78,6 +83,86 @@ def construir_prompt(instrucciones, historial=None):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  MODAL DE PROTECCIÓN DE HOGAR PRINCIPAL
+# ══════════════════════════════════════════════════════════════════════════════
+class VentanaConfirmacionHogar(ctk.CTkToplevel):
+    """Modal estilo Netflix para confirmar ubicación/red principal de estudio."""
+    def __init__(self, parent, hogar_info: dict, on_finalizar):
+        super().__init__(parent)
+        self.title("🏠 Hogar Principal de Estudio – KernossIA")
+        self.geometry("580x480")
+        self.minsize(520, 420)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+        self.grab_set()
+        self.hogar_info = hogar_info
+        self.on_finalizar = on_finalizar
+        self._build_ui()
+
+    def _build_ui(self):
+        # Cabecera
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", padx=25, pady=(22, 10))
+
+        ctk.CTkLabel(header, text="🏠 ¿Estás en tu Hogar Principal?",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
+        ctk.CTkLabel(header, text="Control de ubicación y protección de cuenta compartida",
+                     font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
+
+        # Tarjeta informativa
+        card = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=14,
+                            border_width=1, border_color=COLOR_BORDER)
+        card.pack(fill="both", expand=True, padx=25, pady=(5, 15))
+
+        nombre_hogar = self.hogar_info.get("hogar_nombre", "Hogar Principal")
+        ip_actual = self.hogar_info.get("ip_actual", "Nueva Red")
+
+        ctk.CTkLabel(card, text="📍 Ubicación o Red No Habitual Detectada",
+                     font=("Segoe UI", 14, "bold"), text_color=COLOR_WARNING).pack(anchor="w", padx=18, pady=(16, 6))
+
+        desc = (
+            f"Tu cuenta de KernossIA tiene registrado como Hogar Principal: '{nombre_hogar}'.\n\n"
+            f"Hemos detectado que estás iniciando sesión desde una red o ubicación diferente ({ip_actual}). "
+            "Para evitar el uso compartido indebido y proteger tu cuenta:\n\n"
+            "• Si estás en la biblioteca, cafetería o de viaje, puedes continuar normalmente.\n"
+            "• Si te has mudado o esta es tu nueva red fija, puedes actualizar tu Hogar Principal."
+        )
+        ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT_MAIN,
+                     wraplength=480, justify="left").pack(anchor="w", padx=18, pady=(0, 15))
+
+        # Botones de Acción
+        btns = ctk.CTkFrame(self, fg_color="transparent")
+        btns.pack(fill="x", padx=25, pady=(0, 20))
+
+        ctk.CTkButton(
+            btns, text="✈️ Estudiar Fuera de Casa (De viaje)",
+            height=40, font=("Segoe UI", 12, "bold"),
+            fg_color=COLOR_BG_SURFACE, hover_color=COLOR_BORDER,
+            command=self._continuar_temporal
+        ).pack(fill="x", pady=(0, 8))
+
+        ctk.CTkButton(
+            btns, text="🏡 Establecer Esta Red como mi Hogar Principal",
+            height=40, font=("Segoe UI", 12, "bold"),
+            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+            command=self._actualizar_hogar
+        ).pack(fill="x")
+
+    def _continuar_temporal(self):
+        self.destroy()
+        if self.on_finalizar:
+            self.on_finalizar()
+
+    def _actualizar_hogar(self):
+        exito, msg = actualizar_hogar_principal("Hogar Principal de Estudio")
+        if exito:
+            messagebox.showinfo("Hogar Actualizado", "Se ha registrado esta red como tu Hogar Principal de Estudio.")
+        self.destroy()
+        if self.on_finalizar:
+            self.on_finalizar()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  PANTALLA DE LOGIN / REGISTRO
 # ══════════════════════════════════════════════════════════════════════════════
 class PantallaLogin(ctk.CTk):
@@ -115,25 +200,25 @@ class PantallaLogin(ctk.CTk):
         self.tab.add("Registrarse")
 
         # ── LOGIN ──
-        login = self.tab.tab("Iniciar Sesión")
-        ctk.CTkLabel(login, text="Correo electrónico", anchor="w", font=("Segoe UI", 12, "bold"),
+        login_tab = self.tab.tab("Iniciar Sesión")
+        ctk.CTkLabel(login_tab, text="Correo electrónico", anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_email = ctk.CTkEntry(login, placeholder_text="tu@correo.com", height=38,
+        self.entry_login_email = ctk.CTkEntry(login_tab, placeholder_text="tu@correo.com", height=38,
                                               fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_login_email.pack(fill="x", padx=10)
 
-        ctk.CTkLabel(login, text="Contraseña", anchor="w", font=("Segoe UI", 12, "bold"),
+        ctk.CTkLabel(login_tab, text="Contraseña", anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_pass = ctk.CTkEntry(login, placeholder_text="••••••••", show="•", height=38,
+        self.entry_login_pass = ctk.CTkEntry(login_tab, placeholder_text="••••••••", show="•", height=38,
                                              fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_login_pass.pack(fill="x", padx=10)
         self.entry_login_pass.bind("<Return>", lambda e: self._login())
 
-        ctk.CTkButton(login, text="Iniciar Sesión", height=42,
+        ctk.CTkButton(login_tab, text="Iniciar Sesión", height=42,
                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                       font=("Segoe UI", 13, "bold"),
                       command=self._login).pack(fill="x", padx=10, pady=(20, 5))
-        self.lbl_login_error = ctk.CTkLabel(login, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
+        self.lbl_login_error = ctk.CTkLabel(login_tab, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
         self.lbl_login_error.pack()
 
         # ── REGISTRO ──
@@ -171,7 +256,7 @@ class PantallaLogin(ctk.CTk):
         self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
         self.lbl_reg_error.pack()
 
-        ctk.CTkLabel(self, text="🔒 100% Gratuito y Privado • Tus datos se guardan en tu equipo.",
+        ctk.CTkLabel(self, text="🔒 100% Gratuito y Privado • Tus apuntes se guardan en tu equipo.",
                      font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(pady=(18, 0))
 
     def _login(self):
@@ -180,14 +265,22 @@ class PantallaLogin(ctk.CTk):
         if not email or not password:
             self.lbl_login_error.configure(text="Completa todos los campos.")
             return
-        self.lbl_login_error.configure(text="Conectando...", text_color=COLOR_ACCENT_SKY)
+        self.lbl_login_error.configure(text="Conectando con el servidor...", text_color=COLOR_ACCENT_SKY)
         self.update()
-        exito, error, sesion = login(email, password)
+        exito, error, sesion, hogar_info = login(email, password)
         if not exito:
             self.lbl_login_error.configure(text=error, text_color=COLOR_DANGER)
             return
+
         self.usuario_autenticado = sesion
-        self.destroy()
+
+        # Comprobar si se conecta desde fuera de su Hogar Principal (estilo Netflix)
+        if hogar_info.get("hogar_estado") == "fuera_de_hogar":
+            def _cerrar_y_entrar():
+                self.destroy()
+            VentanaConfirmacionHogar(self, hogar_info, on_finalizar=_cerrar_y_entrar)
+        else:
+            self.destroy()
 
     def _registrar(self):
         nombre   = self.entry_reg_nombre.get().strip()
@@ -203,7 +296,7 @@ class PantallaLogin(ctk.CTk):
         if len(password) < 6:
             self.lbl_reg_error.configure(text="La contraseña debe tener al menos 6 caracteres.")
             return
-        self.lbl_reg_error.configure(text="Creando cuenta...", text_color=COLOR_ACCENT_SKY)
+        self.lbl_reg_error.configure(text="Creando cuenta en el servidor...", text_color=COLOR_ACCENT_SKY)
         self.update()
         exito, error, sesion = registro(nombre, email, password, rol)
         if not exito:
@@ -553,6 +646,12 @@ class ModuloApuntador(ctk.CTkFrame):
         btn_bar = ctk.CTkFrame(frame_top, fg_color="transparent")
         btn_bar.pack(side="right")
 
+        self.btn_tts_nota = ctk.CTkButton(btn_bar, text="🔊 Leer", width=85, height=36,
+                                          fg_color=COLOR_BG_SURFACE, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                          hover_color=COLOR_ACCENT_HOVER,
+                                          command=self._toggle_tts)
+        self.btn_tts_nota.pack(side="left", padx=4)
+
         ctk.CTkButton(btn_bar, text="💾 Guardar", width=95, height=36,
                       fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                       command=self.guardar_nota).pack(side="left", padx=4)
@@ -567,6 +666,24 @@ class ModuloApuntador(ctk.CTkFrame):
                                            fg_color=COLOR_BG_CARD_LIGHT, border_width=1,
                                            border_color=COLOR_BORDER, wrap="word")
         self.editor_texto.grid(row=1, column=0, sticky="nsew")
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_nota.configure(text="🔊 Leer", fg_color=COLOR_BG_SURFACE)
+        else:
+            texto = self.editor_texto.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("Sin texto", "No hay texto escrito en la nota para leer.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_nota.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_nota.configure(text="🔊 Leer", fg_color=COLOR_BG_SURFACE)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def nueva_nota(self):
         d = ctk.CTkInputDialog(text="Nombre de la nueva nota:", title="Nueva Nota")
@@ -690,10 +807,36 @@ class ModuloResumidor(ctk.CTkFrame):
                                           fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                           command=self.iniciar_proceso)
         self.btn_procesar.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        ctk.CTkButton(footer, text="📄 Guardar en Word", height=45, width=200,
+
+        self.btn_tts_resumen = ctk.CTkButton(footer, text="🔊 Escuchar", height=45, width=140,
+                                            font=("Segoe UI", 12, "bold"),
+                                            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                            hover_color=COLOR_ACCENT_HOVER,
+                                            command=self._toggle_tts)
+        self.btn_tts_resumen.pack(side="left", padx=(0, 10))
+
+        ctk.CTkButton(footer, text="📄 Guardar en Word", height=45, width=180,
                       fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
                       font=("Segoe UI", 13, "bold"),
                       command=self.exportar_word).pack(side="right")
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_resumen.configure(text="🔊 Escuchar", fg_color=COLOR_BG_CARD)
+        else:
+            texto = self.txt_output.get("1.0", "end-1c").strip()
+            if not texto or "ERROR:" in texto:
+                messagebox.showinfo("Sin resumen", "Primero genera un resumen para escucharlo en voz alta.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_resumen.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_resumen.configure(text="🔊 Escuchar", fg_color=COLOR_BG_CARD)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def iniciar_proceso(self):
         texto = self.txt_input.get("1.0", "end-1c").strip()
@@ -787,9 +930,34 @@ class ModuloExamen(ctk.CTkFrame):
                                          command=self.iniciar_generacion)
         self.btn_generar.pack(fill="x", padx=20, pady=8)
 
+        self.btn_tts_examen = ctk.CTkButton(sidebar, text="🔊 Escuchar Examen", fg_color=COLOR_BG_CARD_LIGHT,
+                                            border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                            hover_color=COLOR_ACCENT_HOVER,
+                                            height=36, font=("Segoe UI", 11, "bold"),
+                                            command=self._toggle_tts)
+        self.btn_tts_examen.pack(fill="x", padx=20, pady=4)
+
         ctk.CTkButton(sidebar, text="📄 Exportar Word", fg_color=COLOR_BG_SURFACE, border_width=1,
                       border_color=COLOR_BORDER, hover_color=COLOR_ACCENT_HOVER,
-                      height=36, command=self.exportar_word).pack(fill="x", padx=20, pady=6)
+                      height=36, command=self.exportar_word).pack(fill="x", padx=20, pady=4)
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_examen.configure(text="🔊 Escuchar Examen", fg_color=COLOR_BG_CARD_LIGHT)
+        else:
+            texto = self.output_text.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("Sin examen", "Primero genera un examen para escucharlo.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_examen.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_examen.configure(text="🔊 Escuchar Examen", fg_color=COLOR_BG_CARD_LIGHT)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
         self.status_label = ctk.CTkLabel(sidebar, text="🟢 Listo para crear",
                                          text_color=COLOR_SUCCESS, font=("Segoe UI", 11))
@@ -990,7 +1158,34 @@ class ModuloAyudador(ctk.CTkFrame):
         ctk.CTkButton(input_frame, text="⚡ Analizar con IA", width=140, height=44,
                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                       font=("Segoe UI", 12, "bold"),
-                      command=self._enviar).grid(row=0, column=1)
+                      command=self._enviar).grid(row=0, column=1, padx=(0, 6))
+
+        self.btn_tts_ayudador = ctk.CTkButton(input_frame, text="🔊 Escuchar", width=110, height=44,
+                                              font=("Segoe UI", 12, "bold"),
+                                              fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                              hover_color=COLOR_ACCENT_HOVER,
+                                              command=self._toggle_tts)
+        self.btn_tts_ayudador.grid(row=0, column=2)
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_ayudador.configure(text="🔊 Escuchar", fg_color=COLOR_BG_CARD)
+        else:
+            texto = getattr(self, "ultima_respuesta_ayudador", "")
+            if not texto:
+                texto = self.txt_chat.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("Sin respuesta", "No hay respuesta para escuchar en voz alta.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_ayudador.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_ayudador.configure(text="🔊 Escuchar", fg_color=COLOR_BG_CARD)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def _cambiar_modelo(self, modelo):
         texto_actual = self.txt_instrucciones.get("1.0", "end-1c").strip()
@@ -1044,6 +1239,7 @@ class ModuloAyudador(ctk.CTkFrame):
                 respuesta_completa = llamar_groq(prompt)
             else:
                 respuesta_completa = llamar_gemini(prompt)
+            self.ultima_respuesta_ayudador = respuesta_completa
             self.historial_conversacion.append({"role": "assistant", "content": respuesta_completa})
             self.after(0, self._stream_update, respuesta_completa)
             self._guardar_historial()
@@ -1420,6 +1616,12 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                                                command=self.generar_solucionario, state="disabled")
         self.btn_solucionario.pack(fill="x", padx=15, pady=2)
 
+        self.btn_tts_ejercicio = ctk.CTkButton(sidebar, text="🔊 Escuchar Ejercicio", height=36,
+                                              fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                              hover_color=COLOR_ACCENT_HOVER,
+                                              command=self._toggle_tts, state="disabled")
+        self.btn_tts_ejercicio.pack(fill="x", padx=15, pady=2)
+
         self.btn_exportar = ctk.CTkButton(sidebar, text="📄 Exportar con solución", height=36,
                                            fg_color=COLOR_BG_CARD_LIGHT, hover_color=COLOR_BG_SURFACE,
                                            command=lambda: self.exportar_word(True), state="disabled")
@@ -1506,8 +1708,26 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.txt_ejercicio.insert("end", texto)
         self.txt_ejercicio.configure(state="disabled")
         for btn in [self.btn_regenerar, self.btn_editar, self.btn_solucionario,
-                    self.btn_exportar]:
+                    self.btn_tts_ejercicio, self.btn_exportar]:
             btn.configure(state="normal")
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_ejercicio.configure(text="🔊 Escuchar Ejercicio", fg_color=COLOR_BG_CARD_LIGHT)
+        else:
+            texto = self.txt_ejercicio.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("Sin ejercicio", "Primero genera un ejercicio para escucharlo.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_ejercicio.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_ejercicio.configure(text="🔊 Escuchar Ejercicio", fg_color=COLOR_BG_CARD_LIGHT)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def activar_edicion(self):
         self.txt_ejercicio.configure(state="normal")
@@ -1706,6 +1926,12 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
                                                  command=self.guardar_alumno, state="disabled")
         self.btn_guardar_alumno.pack(fill="x", padx=15, pady=2)
 
+        self.btn_tts_corrector = ctk.CTkButton(sidebar, text="🔊 Escuchar Corrección", height=36,
+                                              fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                              hover_color=COLOR_ACCENT_HOVER,
+                                              command=self._toggle_tts, state="disabled")
+        self.btn_tts_corrector.pack(fill="x", padx=15, pady=2)
+
         self.btn_exportar_uno = ctk.CTkButton(sidebar, text="📄 Exportar (Word)",
                                                height=36, fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                                command=self.exportar_correccion, state="disabled")
@@ -1820,7 +2046,7 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
                 self.txt_correccion.configure(state="disabled")
                 if nota_str:
                     self.lbl_nota.configure(text=f"Nota: {nota_str}")
-                for btn in [self.btn_guardar_alumno, self.btn_exportar_uno]:
+                for btn in [self.btn_guardar_alumno, self.btn_exportar_uno, self.btn_tts_corrector]:
                     btn.configure(state="normal")
             self.after(0, _mostrar)
         except Exception as e:
@@ -1828,6 +2054,24 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         finally:
             self.after(0, lambda: self.btn_corregir.configure(state="normal"))
             self.after(0, lambda: self.status.configure(text="Listo", text_color="gray"))
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_corrector.configure(text="🔊 Escuchar Corrección", fg_color=COLOR_BG_CARD_LIGHT)
+        else:
+            texto = self.txt_correccion.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("Sin corrección", "Primero realiza una corrección para escucharla en voz alta.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_corrector.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_corrector.configure(text="🔊 Escuchar Corrección", fg_color=COLOR_BG_CARD_LIGHT)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def guardar_alumno(self):
         alumno = self.entry_alumno.get().strip() or "Alumno sin nombre"
@@ -2403,6 +2647,290 @@ class ModuloMapaMental(ctk.CTkFrame):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  VENTANA MODAL: AJUSTES DE LA APLICACIÓN & MODELO DE VOZ IA (TTS)
+# ══════════════════════════════════════════════════════════════════════════════
+class VentanaAjustes(ctk.CTkToplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Ajustes de KernossIA & Voz de IA")
+        self.geometry("540x480")
+        self.minsize(480, 420)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(master)
+        self.grab_set()
+        self._build_ui()
+
+    def _build_ui(self):
+        # Header
+        frame_header = ctk.CTkFrame(self, fg_color="transparent")
+        frame_header.pack(fill="x", padx=25, pady=(20, 10))
+
+        ctk.CTkLabel(frame_header, text="⚙️ Ajustes del Sistema & Voz IA",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
+        ctk.CTkLabel(frame_header, text="Personaliza la voz humana del asistente (masculina/femenina) y la velocidad",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
+
+        # Tarjeta de configuración de voz
+        frame_voz = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=14,
+                                 border_width=1, border_color=COLOR_BORDER)
+        frame_voz.pack(fill="both", expand=True, padx=25, pady=(5, 15))
+
+        ctk.CTkLabel(frame_voz, text="🔊 Modelo de Voz del Asistente (TTS Humano):",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(16, 6))
+
+        voz_actual, vel_actual = obtener_ajustes_tts()
+
+        # Invertir mapeo de voces para mostrar nombres legibles en el ComboBox
+        self.map_voces_a_id = {v: k for k, v in VOICES_DISPONIBLES.items()}
+        nombres_voces = list(VOICES_DISPONIBLES.values())
+        nombre_voz_actual = VOICES_DISPONIBLES.get(voz_actual, nombres_voces[0])
+
+        self.combo_voz = ctk.CTkComboBox(frame_voz, values=nombres_voces, height=36,
+                                         font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT,
+                                         border_color=COLOR_BORDER)
+        self.combo_voz.set(nombre_voz_actual)
+        self.combo_voz.pack(fill="x", padx=18, pady=(0, 14))
+
+        # Velocidad de habla
+        ctk.CTkLabel(frame_voz, text="⚡ Velocidad de Reproducción:",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 6))
+
+        self.map_vel_a_id = {v: k for k, v in VELOCIDADES_DISPONIBLES.items()}
+        nombres_vel = list(VELOCIDADES_DISPONIBLES.values())
+        nombre_vel_actual = VELOCIDADES_DISPONIBLES.get(vel_actual, nombres_vel[1])
+
+        self.combo_vel = ctk.CTkComboBox(frame_voz, values=nombres_vel, height=36,
+                                         font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT,
+                                         border_color=COLOR_BORDER)
+        self.combo_vel.set(nombre_vel_actual)
+        self.combo_vel.pack(fill="x", padx=18, pady=(0, 18))
+
+        # Botón Probar Voz
+        self.btn_probar = ctk.CTkButton(frame_voz, text="🔊 Probar Voz Seleccionada",
+                                        font=("Segoe UI", 12, "bold"), height=36,
+                                        fg_color=COLOR_BG_SURFACE, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                        hover_color=COLOR_ACCENT_PRIMARY,
+                                        command=self._probar_voz)
+        self.btn_probar.pack(fill="x", padx=18, pady=(0, 16))
+
+        # Botones Inferiores: Guardar y Cancelar
+        frame_btns = ctk.CTkFrame(self, fg_color="transparent")
+        frame_btns.pack(fill="x", padx=25, pady=(0, 20))
+
+        ctk.CTkButton(frame_btns, text="💾 Guardar Ajustes", height=40,
+                      font=("Segoe UI", 12, "bold"),
+                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      command=self._guardar).pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        ctk.CTkButton(frame_btns, text="Cerrar", height=40, width=90,
+                      font=("Segoe UI", 12),
+                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_BORDER,
+                      command=self._cerrar).pack(side="right")
+
+    def _probar_voz(self):
+        nombre_voz = self.combo_voz.get()
+        voz_id = self.map_voces_a_id.get(nombre_voz, "es-ES-AlvaroNeural")
+        nombre_vel = self.combo_vel.get()
+        vel_id = self.map_vel_a_id.get(nombre_vel, "+0%")
+
+        # Guardar temporalmente para que el motor use estos valores en la prueba
+        guardar_ajustes_tts(voz_id, vel_id)
+
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_probar.configure(text="🔊 Probar Voz Seleccionada", fg_color=COLOR_BG_SURFACE)
+            return
+
+        def _callback(reproduciendo):
+            if reproduciendo:
+                self.btn_probar.configure(text="⏹️ Detener Prueba", fg_color=COLOR_DANGER)
+            else:
+                self.btn_probar.configure(text="🔊 Probar Voz Seleccionada", fg_color=COLOR_BG_SURFACE)
+
+        tts_engine.hablar(
+            "Hola, esta es una prueba de la voz del asistente en KernossIA. ¿Qué te parece?",
+            callback_estado=lambda r: self.after(0, lambda: _callback(r))
+        )
+
+    def _guardar(self):
+        nombre_voz = self.combo_voz.get()
+        voz_id = self.map_voces_a_id.get(nombre_voz, "es-ES-AlvaroNeural")
+        nombre_vel = self.combo_vel.get()
+        vel_id = self.map_vel_a_id.get(nombre_vel, "+0%")
+
+        guardar_ajustes_tts(voz_id, vel_id)
+        messagebox.showinfo("Ajustes Guardados", "Se han guardado tus preferencias de voz correctamente.")
+        self._cerrar()
+
+    def _cerrar(self):
+        tts_engine.detener()
+        self.destroy()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  MODAL DE NOVEDADES CON RESUMEN INTELIGENTE IA Y LECTOR DE VOZ
+# ══════════════════════════════════════════════════════════════════════════════
+class VentanaNovedadesIA(ctk.CTkToplevel):
+    """Ventana modal interactiva con el resumen de novedades y cambios generado por IA."""
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.title(f"✨ Novedades y Cambios de Versión (v{VERSION_APP})")
+        self.geometry("700x640")
+        self.minsize(580, 520)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+        self.grab_set()
+
+        self._build_ui()
+
+    def _build_ui(self):
+        # Cabecera
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", padx=25, pady=(20, 10))
+
+        ctk.CTkLabel(header, text=f"🎉 Novedades en KernossIA v{VERSION_APP}",
+                     font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
+        ctk.CTkLabel(header, text="Historial de cambios respecto a versiones anteriores y análisis inteligente:",
+                     font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
+
+        # Panel scrollable con tarjeta de resumen IA y lista de cambios
+        self.scroll = ctk.CTkScrollableFrame(self, fg_color=COLOR_BG_CARD,
+                                             border_width=1, border_color=COLOR_BORDER,
+                                             corner_radius=14)
+        self.scroll.pack(fill="both", expand=True, padx=25, pady=(0, 14))
+
+        # Cuadro de Resumen Explicativo Inteligente (IA)
+        frame_ia = ctk.CTkFrame(self.scroll, fg_color=COLOR_BG_CARD_LIGHT, corner_radius=10,
+                                border_width=1, border_color=COLOR_ACCENT_CYAN)
+        frame_ia.pack(fill="x", padx=8, pady=8)
+
+        bar_ia = ctk.CTkFrame(frame_ia, fg_color="transparent")
+        bar_ia.pack(fill="x", padx=12, pady=(10, 4))
+        ctk.CTkLabel(bar_ia, text="🤖 Resumen Inteligente de la IA",
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
+
+        self.btn_resumir_ia = ctk.CTkButton(
+            bar_ia, text="⚡ Analizar con IA", height=28, width=125,
+            font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+            hover_color=COLOR_ACCENT_HOVER, command=self._generar_resumen_ia
+        )
+        self.btn_resumir_ia.pack(side="right", padx=(6, 0))
+
+        self.btn_tts_novedades = ctk.CTkButton(
+            bar_ia, text="🔊 Escuchar", height=28, width=95,
+            font=("Segoe UI", 11, "bold"), fg_color=COLOR_BG_SURFACE,
+            border_width=1, border_color=COLOR_BORDER, hover_color=COLOR_ACCENT_HOVER,
+            command=self._toggle_tts
+        )
+        self.btn_tts_novedades.pack(side="right")
+
+        self.txt_resumen_ia = ctk.CTkTextbox(frame_ia, font=("Segoe UI", 12), height=115, wrap="word",
+                                             fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
+        self.txt_resumen_ia.pack(fill="x", padx=12, pady=(4, 12))
+        
+        texto_inicial = (
+            f"💡 En la versión {VERSION_APP}, KernossIA incorpora síntesis de voz humana ultranatural (TTS) "
+            "en resúmenes, tutor, exámenes, notas y ejercicios con control de velocidad y selector de voces.\n"
+            "Pulsa '⚡ Analizar con IA' para que nuestro modelo te desglose los puntos clave y consejos prácticos."
+        )
+        self.txt_resumen_ia.insert("1.0", texto_inicial)
+        self.txt_resumen_ia.configure(state="disabled")
+
+        # Lista de versiones y cambios detallados
+        ctk.CTkLabel(self.scroll, text="📋 Historial Detallado de Versiones",
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=8, pady=(10, 4))
+
+        versiones = [
+            (f"v{VERSION_APP} (Versión Actual)", [
+                ("🔊 Lectura en Voz Alta con IA (TTS Humano)", "Escucha con entonación natural las respuestas del tutor, resúmenes, ejercicios y exámenes en Windows, macOS y Linux."),
+                ("⚙️ Panel de Ajustes y Selección de Voz", "Elige entre voces masculinas y femeninas (Álvaro, Elvira, Jorge, Dalia, Tomás, Elena), ajusta la velocidad y pruébala en vivo."),
+                ("✨ Botón Permanente de Novedades", "Acceso directo en la esquina superior derecha para consultar qué ha cambiado en cualquier momento con resumen de IA.")
+            ], COLOR_ACCENT_PRIMARY),
+            ("v1.3", [
+                ("🧠 Generador y Editor de Mapas Mentales", "Crea esquemas conceptuales con IA a partir de cualquier tema y nivel, edítalos y expórtalos a Word (.docx) e imagen (.png)."),
+                ("🎨 Estética Cósmica Azul", "Diseño unificado con la nueva web oficial y mayor contraste visual.")
+            ], COLOR_BG_CARD_LIGHT),
+            ("v1.2", [
+                ("💬 Chat Directo de IA con Historial", "Acceso rápido a los modelos de IA desde el inicio con conversaciones guardadas en tu perfil."),
+                ("⚡ Barra de Acceso Rápido", "Navegación instantánea entre tus herramientas de estudio en un solo clic.")
+            ], COLOR_BG_CARD_LIGHT),
+            ("v1.1 / v1.0", [
+                ("📚 Suite Académica Base", "Calculador de medias ponderadas, apuntador de notas, resumidor inteligente, generador de exámenes y panel docente.")
+            ], COLOR_BG_CARD_LIGHT)
+        ]
+
+        for ver_titulo, items, color_bg in versiones:
+            card = ctk.CTkFrame(self.scroll, fg_color=color_bg, corner_radius=10,
+                                border_width=1, border_color=COLOR_BORDER)
+            card.pack(fill="x", padx=8, pady=5)
+            
+            ctk.CTkLabel(card, text=ver_titulo, font=("Segoe UI", 13, "bold"),
+                         text_color=COLOR_ACCENT_CYAN if "Actual" in ver_titulo else COLOR_TEXT_MUTED).pack(anchor="w", padx=14, pady=(8, 4))
+
+            for titulo_cambio, desc in items:
+                ctk.CTkLabel(card, text=f"• {titulo_cambio}: {desc}", font=("Segoe UI", 11),
+                             text_color=COLOR_TEXT_MAIN, wraplength=570, justify="left").pack(anchor="w", padx=14, pady=(1, 5))
+
+        # Botón Cerrar
+        btn_cerrar = ctk.CTkButton(self, text="Entendido", height=38,
+                                   font=("Segoe UI", 12, "bold"),
+                                   fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                   command=self._cerrar)
+        btn_cerrar.pack(fill="x", padx=25, pady=(0, 18))
+
+    def _generar_resumen_ia(self):
+        self.btn_resumir_ia.configure(state="disabled", text="Analizando...")
+        threading.Thread(target=self._thread_ia_resumen, daemon=True).start()
+
+    def _thread_ia_resumen(self):
+        try:
+            prompt = (
+                f"Eres el asistente de estudio de KernossIA. Explica en 3-4 frases claras, directas y entusiastas "
+                f"qué novedades y ventajas tiene la versión v{VERSION_APP} de la plataforma respecto a las versiones anteriores "
+                "(lectura en voz alta natural con selector de voces y velocidades, mapas mentales interactivos con exportación Word, "
+                "chat directo de inicio y mejoras de rendimiento). Da 1 consejo práctico de cómo aprovecharlo."
+            )
+            try:
+                resumen = llamar_gemini(prompt)
+            except Exception:
+                resumen = llamar_groq(prompt)
+
+            def _actualizar():
+                self.txt_resumen_ia.configure(state="normal")
+                self.txt_resumen_ia.delete("1.0", "end")
+                self.txt_resumen_ia.insert("1.0", resumen)
+                self.txt_resumen_ia.configure(state="disabled")
+                self.btn_resumir_ia.configure(state="normal", text="🔄 Reanalizar")
+
+            self.after(0, _actualizar)
+        except Exception as e:
+            self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
+            self.after(0, lambda: self.btn_resumir_ia.configure(state="normal", text="⚡ Analizar con IA"))
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_novedades.configure(text="🔊 Escuchar", fg_color=COLOR_BG_SURFACE)
+        else:
+            texto = self.txt_resumen_ia.get("1.0", "end-1c").strip()
+            if not texto:
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_novedades.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_novedades.configure(text="🔊 Escuchar", fg_color=COLOR_BG_SURFACE)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
+
+    def _cerrar(self):
+        tts_engine.detener()
+        self.destroy()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  DASHBOARD PRINCIPAL (HOME CON CHAT DIRECTO IA, HISTORIAL Y CAMBIO DE MÓDULOS)
 # ══════════════════════════════════════════════════════════════════════════════
 class DashboardEstudios(ctk.CTk):
@@ -2435,6 +2963,9 @@ class DashboardEstudios(ctk.CTk):
         self.frame_banner_update = None
         self._build_ui()
         self._mostrar_home_chat()
+
+        # Sincronizar chats de la nube en segundo plano (Multi-dispositivo)
+        threading.Thread(target=self._sincronizar_chats_cloud, daemon=True).start()
 
         # Comprobar si hay nueva versión de KernossIA en segundo plano
         threading.Thread(target=self._comprobar_actualizaciones, daemon=True).start()
@@ -2521,20 +3052,61 @@ class DashboardEstudios(ctk.CTk):
             self._btn("✏️  Creador de Ejercicios",  "creador",  color=COLOR_BG_SURFACE)
             self._btn("📋  Corrector de Exámenes",  "corrector", color=COLOR_BG_SURFACE)
 
+        # Botón Ajustes / Configuración de Voz IA
+        ctk.CTkButton(self.sidebar, text="⚙️  Ajustes / Voz IA", height=36,
+                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
+                      text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
+                      command=self._abrir_ajustes).pack(fill="x", padx=15, pady=(4, 6), side="bottom")
+
         # Botón Cerrar Sesión fijo abajo
-        ctk.CTkButton(self.sidebar, text="🚪 Cerrar Sesión", height=38,
+        ctk.CTkButton(self.sidebar, text="🚪 Cerrar Sesión", height=36,
                       fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
                       text_color=COLOR_TEXT_MUTED, hover_color=COLOR_DANGER_HOVER,
-                      command=self._cerrar_sesion).pack(fill="x", padx=15, pady=(15, 20), side="bottom")
+                      command=self._cerrar_sesion).pack(fill="x", padx=15, pady=(4, 16), side="bottom")
 
         # ── CONTENEDOR PRINCIPAL DERECHO ──
         self.contenedor = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR_BG_DARK)
         self.contenedor.pack(side="right", fill="both", expand=True)
-        self.contenedor.grid_rowconfigure(0, weight=1)
+        self.contenedor.grid_rowconfigure(1, weight=1)
         self.contenedor.grid_columnconfigure(0, weight=1)
+
+        # Barra Superior Permanente (Siempre visible con Novedades arriba a la derecha)
+        self.header_top = ctk.CTkFrame(self.contenedor, fg_color=COLOR_BG_DARK, height=44)
+        self.header_top.grid(row=0, column=0, sticky="ew", padx=25, pady=(12, 4))
+        self.header_top.grid_columnconfigure(0, weight=1)
+
+        self.lbl_seccion_actual = ctk.CTkLabel(
+            self.header_top, text="🏠 Inicio / Chat Asistente IA",
+            font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MUTED
+        )
+        self.lbl_seccion_actual.grid(row=0, column=0, sticky="w")
+
+        frame_top_derecha = ctk.CTkFrame(self.header_top, fg_color="transparent")
+        frame_top_derecha.grid(row=0, column=1, sticky="e")
+
+        self.btn_novedades_top = ctk.CTkButton(
+            frame_top_derecha, text=f"✨ Novedades v{VERSION_APP}",
+            font=("Segoe UI", 12, "bold"), height=32,
+            fg_color="#0c234a", border_width=1, border_color="#38bdf8",
+            text_color="#38bdf8", hover_color="#0284c7",
+            command=self._abrir_modal_novedades_ia
+        )
+        self.btn_novedades_top.pack(side="right", padx=(6, 0))
+
+        # Frame donde se montan las pantallas y módulos
+        self.frame_contenido = ctk.CTkFrame(self.contenedor, fg_color="transparent")
+        self.frame_contenido.grid(row=1, column=0, sticky="nsew")
+        self.frame_contenido.grid_rowconfigure(0, weight=1)
+        self.frame_contenido.grid_columnconfigure(0, weight=1)
 
         # ── VISTA HOME: CHAT DIRECTO CON IA & ACCESO A MÓDULOS ──
         self._crear_vista_home_chat()
+
+    def _abrir_ajustes(self):
+        VentanaAjustes(self)
+
+    def _abrir_modal_novedades_ia(self):
+        VentanaNovedadesIA(self)
 
     def _btn(self, texto, modulo_id, color=COLOR_BG_SURFACE):
         btn = ctk.CTkButton(
@@ -2547,13 +3119,13 @@ class DashboardEstudios(ctk.CTk):
         self._botones_modulos[modulo_id] = btn
 
     def _crear_vista_home_chat(self):
-        self.frame_home = ctk.CTkFrame(self.contenedor, fg_color="transparent")
+        self.frame_home = ctk.CTkFrame(self.frame_contenido, fg_color="transparent")
         self.frame_home.grid_rowconfigure(2, weight=1)
         self.frame_home.grid_columnconfigure(0, weight=1)
 
         # 1. Header de Bienvenida
         header_home = ctk.CTkFrame(self.frame_home, fg_color="transparent")
-        header_home.grid(row=0, column=0, sticky="ew", padx=25, pady=(20, 10))
+        header_home.grid(row=0, column=0, sticky="ew", padx=25, pady=(10, 10))
 
         saludo = f"¡Hola de nuevo, {self.nombre}!" if self.rol == "Alumno" else f"¡Bienvenido, Profesor {self.nombre}!"
         ctk.CTkLabel(header_home, text=saludo, font=("Segoe UI", 26, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w")
@@ -2627,18 +3199,25 @@ class DashboardEstudios(ctk.CTk):
         self.entry_home_pregunta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_home_pregunta.bind("<Return>", lambda e: self._enviar_chat_home())
 
-        btn_enviar_home = ctk.CTkButton(input_container, text="⚡ Consultar IA", width=140, height=46,
+        btn_enviar_home = ctk.CTkButton(input_container, text="⚡ Consultar IA", width=130, height=46,
                                        font=("Segoe UI", 13, "bold"),
                                        fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                        command=self._enviar_chat_home)
         btn_enviar_home.grid(row=0, column=1, padx=(0, 6))
 
-        btn_word_home = ctk.CTkButton(input_container, text="📄 Word", width=80, height=46,
+        self.btn_tts_home = ctk.CTkButton(input_container, text="🔊 Escuchar", width=105, height=46,
+                                          font=("Segoe UI", 12, "bold"),
+                                          fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                          hover_color=COLOR_ACCENT_HOVER,
+                                          command=self._toggle_tts_home)
+        self.btn_tts_home.grid(row=0, column=2, padx=(0, 6))
+
+        btn_word_home = ctk.CTkButton(input_container, text="📄 Word", width=75, height=46,
                                       font=("Segoe UI", 12, "bold"),
                                       fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
                                       hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                       command=self._exportar_home_word)
-        btn_word_home.grid(row=0, column=2)
+        btn_word_home.grid(row=0, column=3)
 
     def _inicializar_chat_bienvenida_texto(self):
         self.txt_home_chat.configure(state="normal")
@@ -2693,6 +3272,7 @@ class DashboardEstudios(ctk.CTk):
             else:
                 respuesta = llamar_gemini(prompt)
 
+            self.ultima_respuesta_ia_home = respuesta
             self.historial_chat_home.append({"role": "assistant", "content": respuesta})
             self.after(0, self._stream_home_texto, respuesta + "\n")
             self._guardar_historial_home()
@@ -2705,6 +3285,26 @@ class DashboardEstudios(ctk.CTk):
             self.after(0, lambda: self.lbl_estado_ia_home.configure(text="🔴 Error al procesar respuesta", text_color=COLOR_DANGER))
         finally:
             self.after(0, lambda: self.txt_home_chat.configure(state="disabled"))
+
+    def _toggle_tts_home(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_home.configure(text="🔊 Escuchar", fg_color=COLOR_BG_CARD)
+        else:
+            texto = getattr(self, "ultima_respuesta_ia_home", "")
+            if not texto:
+                texto = self.txt_home_chat.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("Sin texto", "No hay respuesta para reproducir en voz alta.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_home.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_home.configure(text="🔊 Escuchar", fg_color=COLOR_BG_CARD)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def _stream_home_texto(self, texto):
         self.txt_home_chat.configure(state="normal")
@@ -2746,6 +3346,24 @@ class DashboardEstudios(ctk.CTk):
                 return {}
         return {}
 
+    def _sincronizar_chats_cloud(self):
+        """Sincroniza en segundo plano las conversaciones guardadas en la nube para acceso multi-dispositivo."""
+        try:
+            chats_remotos = obtener_chats_cloud()
+            if chats_remotos and isinstance(chats_remotos, dict):
+                cambios = False
+                for chat_id, data in chats_remotos.items():
+                    mensajes = data.get("mensajes", [])
+                    if chat_id not in self.todo_el_historial_home and mensajes:
+                        self.todo_el_historial_home[chat_id] = mensajes
+                        cambios = True
+                if cambios:
+                    with open(self.ruta_historial_home, "w", encoding="utf-8") as f:
+                        json.dump(self.todo_el_historial_home, f, ensure_ascii=False, indent=2)
+                    self.after(0, self._actualizar_historial_home_ui)
+        except Exception as e:
+            print(f"[Sync Cloud] {e}")
+
     def _guardar_historial_home(self):
         if not self.historial_chat_home:
             return
@@ -2754,12 +3372,22 @@ class DashboardEstudios(ctk.CTk):
             resumen = primer[:20] + "..." if len(primer) > 20 else primer
             self.chat_home_id_actual = f"[{datetime.now().strftime('%H:%M')}] {resumen}"
         self.todo_el_historial_home[self.chat_home_id_actual] = self.historial_chat_home
+        
+        # 1. Guardar localmente
         try:
             with open(self.ruta_historial_home, "w", encoding="utf-8") as f:
                 json.dump(self.todo_el_historial_home, f, ensure_ascii=False, indent=2)
             self.after(0, self._actualizar_historial_home_ui)
         except Exception as e:
-            print(f"Error guardando historial: {e}")
+            print(f"Error guardando historial local: {e}")
+
+        # 2. Sincronizar en la nube en segundo plano (Multi-dispositivo)
+        chat_id_actual = self.chat_home_id_actual
+        mensajes_actuales = list(self.historial_chat_home)
+        threading.Thread(
+            target=lambda: guardar_chat_cloud(chat_id_actual, chat_id_actual, mensajes_actuales),
+            daemon=True
+        ).start()
 
     def _actualizar_historial_home_ui(self):
         for w in self.scroll_historial_home.winfo_children():
@@ -2804,6 +3432,12 @@ class DashboardEstudios(ctk.CTk):
                     self._nuevo_chat_home()
                 self._actualizar_historial_home_ui()
 
+                # Eliminar de la nube en segundo plano
+                threading.Thread(
+                    target=lambda cid=chat_id: borrar_chat_cloud(cid),
+                    daemon=True
+                ).start()
+
     def _mostrar_home_chat(self):
         # Ocultar cualquier módulo activo
         if self._modulo_activo:
@@ -2814,6 +3448,9 @@ class DashboardEstudios(ctk.CTk):
         self.btn_home.configure(fg_color=COLOR_ACCENT_PRIMARY)
         for btn in self._botones_modulos.values():
             btn.configure(fg_color=COLOR_BG_SURFACE)
+
+        if hasattr(self, "lbl_seccion_actual"):
+            self.lbl_seccion_actual.configure(text="🏠 Inicio / Chat Asistente IA")
 
         self.frame_home.grid(row=0, column=0, sticky="nsew")
 
@@ -2833,26 +3470,41 @@ class DashboardEstudios(ctk.CTk):
             else:
                 btn.configure(fg_color=COLOR_BG_SURFACE)
 
-        # Crear el módulo si no existe todavía (lazy loading)
+        # Actualizar indicador de sección activa en la barra superior
+        nombres_secciones = {
+            "mapa_mental": "🧠 Generador de Mapas Mentales con IA",
+            "calculador": "📊 Calculador de Medias y Ponderaciones",
+            "apuntador": "📝 Apuntador de Notas de Clase",
+            "resumidor": "🔍 Resumidor Inteligente de Textos",
+            "examen": "🎯 Generador y Práctica de Exámenes",
+            "ayudador": "🤖 Tutor y Ayudante de Dudas Académicas",
+            "calendario": "📅 Agenda y Planificador de Estudios",
+            "creador": "✏️ Creador de Ejercicios Didácticos",
+            "corrector": "📋 Corrector Inteligente de Exámenes"
+        }
+        if hasattr(self, "lbl_seccion_actual"):
+            self.lbl_seccion_actual.configure(text=nombres_secciones.get(modulo_id, "📂 Módulo de Estudio"))
+
+        # Crear el módulo si no existe todavía (lazy loading en frame_contenido)
         if modulo_id not in self._modulos:
             if modulo_id == "mapa_mental":
-                self._modulos[modulo_id] = ModuloMapaMental(self.contenedor)
+                self._modulos[modulo_id] = ModuloMapaMental(self.frame_contenido)
             elif modulo_id == "calculador":
-                self._modulos[modulo_id] = ModuloCalculador(self.contenedor)
+                self._modulos[modulo_id] = ModuloCalculador(self.frame_contenido)
             elif modulo_id == "apuntador":
-                self._modulos[modulo_id] = ModuloApuntador(self.contenedor)
+                self._modulos[modulo_id] = ModuloApuntador(self.frame_contenido)
             elif modulo_id == "resumidor":
-                self._modulos[modulo_id] = ModuloResumidor(self.contenedor)
+                self._modulos[modulo_id] = ModuloResumidor(self.frame_contenido)
             elif modulo_id == "examen":
-                self._modulos[modulo_id] = ModuloExamen(self.contenedor)
+                self._modulos[modulo_id] = ModuloExamen(self.frame_contenido)
             elif modulo_id == "ayudador":
-                self._modulos[modulo_id] = ModuloAyudador(self.contenedor, sesion=self.sesion)
+                self._modulos[modulo_id] = ModuloAyudador(self.frame_contenido, sesion=self.sesion)
             elif modulo_id == "calendario":
-                self._modulos[modulo_id] = ModuloCalendario(self.contenedor)
+                self._modulos[modulo_id] = ModuloCalendario(self.frame_contenido)
             elif modulo_id == "creador":
-                self._modulos[modulo_id] = ModuloCreadorEjercicios(self.contenedor)
+                self._modulos[modulo_id] = ModuloCreadorEjercicios(self.frame_contenido)
             elif modulo_id == "corrector":
-                self._modulos[modulo_id] = ModuloCorrectorExamenes(self.contenedor)
+                self._modulos[modulo_id] = ModuloCorrectorExamenes(self.frame_contenido)
 
         modulo = self._modulos[modulo_id]
         modulo.grid(row=0, column=0, sticky="nsew")
@@ -3080,15 +3732,15 @@ class DashboardEstudios(ctk.CTk):
         frame_box.pack(fill="both", expand=True, padx=25, pady=(0, 16))
 
         novedades = [
-            ("🧠 Nuevo Módulo de Mapas Mentales con IA",
-             "Genera mapas conceptuales interactivos a partir de cualquier tema y nivel. Edita la estructura en tiempo real y expórtala directamente a Word (.docx) con gráficos HD e imagen (.png)."),
-            ("💬 Chat Directo de IA en Inicio",
-             "Accede directamente a los motores Groq (LLaMA 3.3 70B) y Gemini desde la pantalla principal sin tener que entrar a otros módulos."),
-            ("🕒 Historial de Chat Persistente",
-             "Tus conversaciones del chat de inicio ahora se guardan automáticamente en tu perfil para que puedas consultarlas y continuarlas cuando quieras."),
-            ("⚡ Barra de Acceso Rápido",
-             "Salta al instante entre tus herramientas favoritas (Mapas, Medias, Apuntes, Resúmenes, Exámenes, Solver y Agenda) en 1 solo clic."),
-            ("🎨 Nueva Estética Cósmica Azul",
+            ("🔊 Lector en Voz Alta con IA (TTS Humano)",
+             "Escucha con voz humana ultranatural los resúmenes, explicaciones del tutor, apuntes, ejercicios y exámenes en Windows, macOS y Linux."),
+            ("⚙️ Panel de Ajustes y Selección de Voz",
+             "Elige entre voces masculinas y femeninas (Álvaro, Elvira, Jorge, Dalia, Tomás, Elena), ajusta la velocidad y pruébala en directo."),
+            ("🧠 Generador y Editor de Mapas Mentales",
+             "Crea esquemas conceptuales con IA a partir de cualquier tema y nivel, edítalos y expórtalos a Word (.docx) e imagen (.png)."),
+            ("💬 Chat Directo de IA con Historial",
+             "Acceso rápido a Groq (LLaMA 3.3 70B) y Gemini desde el inicio con historial guardado en tu perfil."),
+            ("🎨 Estética Cósmica Azul",
              "Diseño unificado con la nueva web oficial, bordes pulidos y mayor contraste visual.")
         ]
 

@@ -661,6 +661,166 @@
       display: block;
     }
 
+    /* Contenedor y Captura Real de la App */
+    .app-screenshot-card {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.18);
+      background: #050811;
+      transition: var(--transition);
+    }
+
+    .app-screenshot-card:hover {
+      border-color: rgba(56, 189, 248, 0.65);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 50px rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .app-real-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      transition: transform 0.4s ease;
+    }
+
+    .screenshot-badge-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(5, 8, 17, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    /* Controles Interactivos de Audio TTS */
+    .tts-interactive-box {
+      background: rgba(10, 17, 36, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tts-input-text {
+      width: 100%;
+      background: rgba(15, 26, 53, 0.9);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #f8fafc;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      transition: var(--transition);
+      line-height: 1.5;
+    }
+
+    .tts-input-text:focus {
+      border-color: var(--accent-sky);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
+
+    .tts-controls-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tts-select {
+      background: #0f1a35;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #cbd5e1;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      transition: var(--transition);
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .tts-select:hover, .tts-select:focus {
+      border-color: var(--accent-sky);
+      color: #fff;
+    }
+
+    .btn-tts-play {
+      background: linear-gradient(135deg, #2563eb, #0284c7);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+      transition: var(--transition);
+      min-width: 140px;
+    }
+
+    .btn-tts-play:hover {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-tts-play:active {
+      transform: scale(0.98);
+    }
+
+    .btn-tts-play.playing {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+    }
+
+    /* Animación de Ondas de Audio */
+    .audio-wave {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 14px;
+    }
+
+    .audio-bar {
+      width: 3px;
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+      animation: wave 0.8s ease-in-out infinite;
+    }
+
+    .audio-bar:nth-child(2) { animation-delay: 0.15s; }
+    .audio-bar:nth-child(3) { animation-delay: 0.3s; }
+    .audio-bar:nth-child(4) { animation-delay: 0.1s; }
+
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 14px; }
+    }
+
     /* Componentes de la vista previa */
     .sim-header {
       display: flex;
@@ -1576,7 +1736,7 @@
   <section class="hero">
     <div class="hero-badge">
       <span class="status-dot"></span>
-      Versión 1.2 Disponible • 100% Gratuito y Libre
+      Versión 1.4 Oficial • Suite Integral de Estudio & Docencia
     </div>
 
     <h1>
@@ -1584,8 +1744,7 @@
     </h1>
 
     <p class="hero-sub">
-      KernossAI reúne en una sola suite ultrarrápida notas, resúmenes con IA de 70B parámetros, generador de exámenes,
-      cálculo de medias ponderadas y agenda inteligente.
+      KernossIA reúne en una suite ultrarrápida mapas mentales interactivos, resúmenes con IA de 70B, lector con voz humana ultranatural, apuntes a Word, sincronización multi-dispositivo y 9 módulos especializados.
     </p>
 
     <div class="hero-actions">
@@ -1609,7 +1768,7 @@
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M5 13l4 4L19 7" />
       </svg>
-      Compatible con <span id="detected-os-name">Windows 10/11</span> • Archivo directo sin instaladores intrusivos
+      Compatible con <span id="detected-os-name">Windows 10/11</span>, macOS y Linux • Sin instaladores intrusivos
     </div>
 
     <!-- Badges de confianza -->
@@ -1618,7 +1777,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
-        100% Privado y Local
+        Privacidad Local + Cloud Sync
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1628,17 +1787,24 @@
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path
-            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 12v-2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z" />
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
         </svg>
-        Sin Coste Ni Suscripciones
+        Lector en Voz Alta (TTS Humano)
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Protección Hogar de Estudio
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path
             d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
         </svg>
-        Exportación Word (.docx)
+        Exportación Word (.docx) & PNG
       </div>
     </div>
   </section>
@@ -1655,41 +1821,68 @@
         </div>
         <div class="window-title">
           <span>KernossIA</span>
-          <span class="window-badge">v1.2 Activo</span>
+          <span class="window-badge">v1.4 Activo</span>
         </div>
-        <div style="font-size: 11px; color: var(--text-muted);">Modo Local Seguro</div>
+        <div style="font-size: 11px; color: var(--text-muted); display:flex; align-items:center; gap:6px;">
+          <span class="status-dot"></span> Sincronización Cloud & Privacidad Local
+        </div>
       </div>
 
       <!-- Navegador de pestañas interactivas -->
       <div class="app-tabs-nav" id="showcaseTabs">
-        <button class="tab-btn active" data-target="panel-resumidor">
+        <button class="tab-btn active" data-target="panel-preview-real">
+          <span class="tab-icon">📸</span> Interfaz Real v1.4
+        </button>
+        <button class="tab-btn" data-target="panel-resumidor">
           <span class="tab-icon">🔍</span> Resumidor IA
         </button>
         <button class="tab-btn" data-target="panel-mapamental">
           <span class="tab-icon">🧠</span> Mapas Mentales
         </button>
+        <button class="tab-btn" data-target="panel-voz">
+          <span class="tab-icon">🔊</span> Voz IA (TTS)
+        </button>
         <button class="tab-btn" data-target="panel-examenes">
-          <span class="tab-icon">🎯</span> Generador de Exámenes
+          <span class="tab-icon">🎯</span> Exámenes
         </button>
         <button class="tab-btn" data-target="panel-medias">
-          <span class="tab-icon">📊</span> Calculador de Medias
+          <span class="tab-icon">📊</span> Medias
         </button>
         <button class="tab-btn" data-target="panel-apuntes">
-          <span class="tab-icon">📝</span> Apuntador de Notas
+          <span class="tab-icon">📝</span> Apuntes Word
         </button>
         <button class="tab-btn" data-target="panel-asistente">
-          <span class="tab-icon">🤖</span> Asistente de Dudas
+          <span class="tab-icon">🤖</span> Asistente
         </button>
         <button class="tab-btn" data-target="panel-agenda">
-          <span class="tab-icon">📅</span> Agenda de Estudio
+          <span class="tab-icon">📅</span> Agenda
         </button>
       </div>
 
       <!-- Cuerpo del simulador con los paneles -->
       <div class="app-body">
 
+        <!-- Panel 0: Captura de Interfaz Real v1.4 -->
+        <div class="sim-panel active" id="panel-preview-real">
+          <div class="sim-header" style="margin-bottom: 16px;">
+            <div class="sim-title">
+              <span>⚡ Dashboard Principal & Suite de Estudio v1.4</span>
+            </div>
+            <div class="sim-badge-model" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
+              Captura Oficial de la App
+            </div>
+          </div>
+          <div class="app-screenshot-card">
+            <img src="assets/app-preview.png" alt="Captura Real de la Aplicación KernossIA v1.4" class="app-real-img" loading="eager" />
+            <div class="screenshot-badge-overlay">
+              <span class="status-dot"></span>
+              <span>Vista Real de la App • v1.4 Multi-modelo (Groq & Gemini)</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Panel 1: Resumidor IA -->
-        <div class="sim-panel active" id="panel-resumidor">
+        <div class="sim-panel" id="panel-resumidor">
           <div class="sim-header">
             <div class="sim-title">
               <span>Resumen Académico Inteligente</span>
@@ -1751,6 +1944,66 @@
                 </div>
                 <div style="background: rgba(10, 17, 36, 0.85); border: 1px dashed rgba(99, 102, 241, 0.5); padding: 6px 14px; border-radius: 14px; font-size: 11px; color: #cbd5e1;">
                   • Mitocondrias & Cloroplastos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2.5: Lector de Voz Humana (TTS) -->
+        <div class="sim-panel" id="panel-voz">
+          <div class="sim-header">
+            <div class="sim-title">
+              <span>🔊 Lector en Voz Alta con IA (TTS Humano)</span>
+            </div>
+            <div class="sim-badge-model">Voces Neuronales HD • Multiplataforma</div>
+          </div>
+          <div class="sim-grid-2col">
+            <div class="sim-box" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div class="sim-box-title">
+                  <span>⚙️ Ajustes de Voz y Velocidad</span>
+                  <span class="sim-highlight-pill">100% Natural</span>
+                </div>
+                <p class="sim-text-content" style="color:var(--text-muted); font-size:12px; line-height:1.6;">
+                  KernossIA incluye síntesis de voz humana ultranatural para escuchar resúmenes, exámenes y explicaciones paso a paso sin cansar la vista. Compatible con Windows, macOS y Linux.
+                </p>
+              </div>
+              <div style="margin-top:14px; padding:10px 14px; background:rgba(6,182,212,0.08); border-radius:8px; border:1px solid rgba(6,182,212,0.2); font-size:11px; color:#38bdf8;">
+                💡 <strong>Pruébalo ahora en directo:</strong> Escribe lo que quieras en el cuadro de la derecha o elige una voz y pulsa <em>"Escuchar Prueba"</em> para oír el sintetizador en tiempo real.
+              </div>
+            </div>
+            
+            <div class="sim-box" style="border-color: rgba(56, 189, 248, 0.4);">
+              <div class="sim-box-title" style="color: var(--accent-sky);">
+                <span>🔊 Prueba Interactiva de Audio en Directo</span>
+                <span id="tts-status-tag" style="font-size:11px; color:#10b981; font-weight:700;">🟢 Listo</span>
+              </div>
+              
+              <div class="tts-interactive-box">
+                <textarea id="tts-web-text" class="tts-input-text" rows="3" placeholder="Escribe cualquier texto aquí...">¡Hola! Soy el asistente inteligente de KernossIA. Ahora puedes escuchar todos tus resúmenes y apuntes con voz humana.</textarea>
+                
+                <div class="tts-controls-row">
+                  <select id="tts-web-voice" class="tts-select" title="Seleccionar Modelo de Voz">
+                    <option value="alvaro" selected>👨 Álvaro (España - Masculino Profundo)</option>
+                    <option value="elvira">👩 Elvira (España - Femenino Expresivo)</option>
+                    <option value="jorge">👨 Jorge (México - Masculino Natural)</option>
+                    <option value="dalia">👩 Dalia (México - Femenino Melódico)</option>
+                    <option value="tomas">👨 Tomás (Argentina - Masculino Pausado)</option>
+                    <option value="elena">👩 Elena (EE.UU. - Femenino Juvenil)</option>
+                  </select>
+                  
+                  <select id="tts-web-speed" class="tts-select" title="Velocidad de Reproducción">
+                    <option value="0.85">Velocidad: -15% (Lenta)</option>
+                    <option value="1.0" selected>Velocidad: Normal (1.0x)</option>
+                    <option value="1.15">Velocidad: +15% (Rápida)</option>
+                    <option value="1.3">Velocidad: +30% (Muy Rápida)</option>
+                  </select>
+                  
+                  <button id="btn-play-tts-web" class="btn-tts-play" type="button">
+                    <span id="tts-btn-icon">🔊</span>
+                    <span id="tts-btn-text">Escuchar Prueba</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1918,20 +2171,20 @@
   <section class="stats-section reveal">
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-number" data-target="7">0</div>
+        <div class="stat-number" data-target="9">0</div>
         <div class="stat-label">Módulos Académicos Integrados</div>
       </div>
       <div class="stat-card">
         <div class="stat-number" data-target="2">0</div>
-        <div class="stat-label">Motores de IA Avanzados</div>
+        <div class="stat-label">Motores de IA (Groq & Gemini)</div>
       </div>
       <div class="stat-card">
         <div class="stat-number" data-target="100" data-suffix="%">0%</div>
-        <div class="stat-label">Gratuito y 100% Privado</div>
+        <div class="stat-label">Gratuito para Alumnos & Profesores</div>
       </div>
       <div class="stat-card">
         <div class="stat-number" data-target="0">0</div>
-        <div class="stat-label">Telemetría / Datos Enviados</div>
+        <div class="stat-label">Publicidad Ni Distracciones</div>
       </div>
     </div>
   </section>
@@ -1939,88 +2192,110 @@
   <!-- SECCIÓN DE CARACTERÍSTICAS / MÓDULOS -->
   <section class="section-wrap reveal" id="features">
     <div class="section-header">
-      <div class="section-badge">Herramientas Incluidas</div>
+      <div class="section-badge">9 Módulos Incluidos</div>
       <h2 class="section-title">Diseñado para <span class="text-gradient">maximizar tu rendimiento</span></h2>
       <p class="section-desc">
-        Todo lo que necesitas en tu rutina académica, organizado en una interfaz limpia, sin anuncios ni distracciones.
+        Todo lo que necesitas en tu rutina académica, organizado en una interfaz limpia con sincronización y privacidad.
       </p>
     </div>
 
     <div class="cards-grid">
       <!-- Card 1 -->
       <div class="feature-card">
-        <div class="card-icon-wrap">📊</div>
-        <div class="card-tag">Rendimiento</div>
-        <h3 class="card-title">Calculador de Medias</h3>
+        <div class="card-icon-wrap">🧠</div>
+        <div class="card-tag">Esquemas Visuales</div>
+        <h3 class="card-title">Mapas Mentales con IA</h3>
         <p class="card-text">
-          Configura ponderaciones por asignatura y trimestre. Proyecta qué nota necesitas en el próximo examen para
-          alcanzar tu meta.
+          Genera mapas conceptuales interactivos en alta resolución, edita sus nodos en tiempo real y expórtalos
+          directamente a Microsoft Word (.docx) e imagen (.png).
         </p>
       </div>
 
       <!-- Card 2 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">🔊</div>
+        <div class="card-tag">Voz Neuronal</div>
+        <h3 class="card-title">Lector en Voz Alta (TTS)</h3>
+        <p class="card-text">
+          Escucha con voces humanas ultranaturales masculinas y femeninas con velocidad ajustable para repasar apuntes,
+          resúmenes y preguntas sin cansar la vista.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
       <div class="feature-card">
         <div class="card-icon-wrap">🔍</div>
         <div class="card-tag">Inteligencia Artificial</div>
         <h3 class="card-title">Resumidor de Textos</h3>
         <p class="card-text">
           Genera síntesis rigurosas con modelos de 70B parámetros. Extrae definiciones clave y esquemas listos para
-          memorizar.
-        </p>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="feature-card">
-        <div class="card-icon-wrap">🎯</div>
-        <div class="card-tag">Evaluación</div>
-        <h3 class="card-title">Generador de Exámenes</h3>
-        <p class="card-text">
-          Crea cuestionarios tipo test o desarrollo a partir de tus propios apuntes con corrección y retroalimentación
-          inmediata.
+          memorizar en segundos.
         </p>
       </div>
 
       <!-- Card 4 -->
       <div class="feature-card">
-        <div class="card-icon-wrap">📝</div>
-        <div class="card-tag">Organización</div>
-        <h3 class="card-title">Apuntador & Word</h3>
+        <div class="card-icon-wrap">🎯</div>
+        <div class="card-tag">Evaluación</div>
+        <h3 class="card-title">Generador de Exámenes</h3>
         <p class="card-text">
-          Toma notas con formato enriquecido y expórtalas directamente a Microsoft Word (.docx) con encabezados y
-          estructura perfecta.
+          Crea cuestionarios tipo test o desarrollo a partir de tus propios apuntes con corrección y explicaciones paso
+          a paso inmediatas.
         </p>
       </div>
 
       <!-- Card 5 -->
       <div class="feature-card">
-        <div class="card-icon-wrap">🤖</div>
-        <div class="card-tag">Tutoría</div>
-        <h3 class="card-title">Ayudante de Dudas</h3>
+        <div class="card-icon-wrap">📊</div>
+        <div class="card-tag">Rendimiento</div>
+        <h3 class="card-title">Calculador de Medias</h3>
         <p class="card-text">
-          IA conversacional con memoria contextual para resolver ejercicios paso a paso en ciencias, historia, idiomas y
-          más.
+          Configura ponderaciones por asignatura y trimestre. Proyecta qué nota necesitas en el próximo examen para
+          alcanzar tu calificación objetivo.
         </p>
       </div>
 
       <!-- Card 6 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">🤖</div>
+        <div class="card-tag">Tutoría & Solver</div>
+        <h3 class="card-title">Ayudante de Dudas</h3>
+        <p class="card-text">
+          IA conversacional con memoria contextual para resolver dudas complejas y ejercicios paso a paso en ciencias,
+          historia, idiomas y más.
+        </p>
+      </div>
+
+      <!-- Card 7 -->
+      <div class="feature-card">
+        <div class="card-icon-wrap">📝</div>
+        <div class="card-tag">Organización</div>
+        <h3 class="card-title">Apuntador & Word</h3>
+        <p class="card-text">
+          Toma notas con formato enriquecido y expórtalas directamente a Microsoft Word (.docx) con tipografía, tablas
+          y estructura académica limpia.
+        </p>
+      </div>
+
+      <!-- Card 8 -->
       <div class="feature-card">
         <div class="card-icon-wrap">📅</div>
         <div class="card-tag">Planificación</div>
         <h3 class="card-title">Agenda de Estudios</h3>
         <p class="card-text">
           Calendario interactivo para organizar entregas y repasos diarios, garantizando que nunca se te pase una fecha
-          límite.
+          límite de examen.
         </p>
       </div>
 
-      <!-- Card 7: Mapas Mentales -->
+      <!-- Card 9 -->
       <div class="feature-card">
-        <div class="card-icon-wrap">🧠</div>
-        <div class="card-tag">Esquemas Visuales</div>
-        <h3 class="card-title">Mapas Mentales con IA</h3>
+        <div class="card-icon-wrap">☁️</div>
+        <div class="card-tag">Multi-dispositivo</div>
+        <h3 class="card-title">Sincronización Cloud & Hogar</h3>
         <p class="card-text">
-          Genera mapas conceptuales interactivos en alta resolución, edita sus nodos y ramas en tiempo real y expórtalos
-          directamente a Microsoft Word (.docx) e imagen (.png).
+          Tus conversaciones y perfil se sincronizan en la nube para estudiar desde cualquier equipo, con protección de
+          Hogar Principal y privacidad local de tus apuntes.
         </p>
       </div>
     </div>
@@ -2232,14 +2507,13 @@
 
       <div class="faq-item">
         <div class="faq-question">
-          <span>¿Mis datos y exámenes son privados?</span>
+          <span>¿Mis datos y exámenes son privados y cómo funciona la sincronización?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
         <div class="faq-answer">
-          Absolutamente. Tus notas, exámenes, calificaciones y configuraciones se almacenan localmente en tu propio
-          dispositivo. La aplicación no recopila telemetría ni comparte tu información con terceros.
+          Tus apuntes de clase, exámenes generados, ponderaciones y esquemas se almacenan de forma 100% privada y local en tu propio disco duro. Al mismo tiempo, tu cuenta y tu historial de consultas con la IA se sincronizan de forma segura en la nube para que puedas estudiar en cualquier ordenador o portátil, contando además con protección de Hogar Principal para resguardar tu cuenta.
         </div>
       </div>
 
@@ -2422,15 +2696,230 @@
       });
     });
 
+    // Detener rotación si el usuario pasa el ratón o interactúa con el simulador
+    const appWindow = document.querySelector('.app-window');
+    if (appWindow) {
+      appWindow.addEventListener('mouseenter', () => clearInterval(autoRotateInterval));
+      appWindow.addEventListener('focusin', () => clearInterval(autoRotateInterval));
+    }
+
     // Rotación automática suave si el usuario no interactúa
     function startTabAutoRotation() {
       autoRotateInterval = setInterval(() => {
         currentTabIndex = (currentTabIndex + 1) % tabButtons.length;
         const targetId = tabButtons[currentTabIndex].dataset.target;
         switchTab(targetId);
-      }, 5000);
+      }, 6000);
     }
     startTabAutoRotation();
+
+    /* ── 3.1 SÍNTESIS DE VOZ REAL EN EL NAVEGADOR (OPTIMIZADO PARA GOOGLE CHROME & EDGE) ── */
+    (function initWebTTS() {
+      const btnPlay = document.getElementById('btn-play-tts-web');
+      const txtInput = document.getElementById('tts-web-text');
+      const voiceSelect = document.getElementById('tts-web-voice');
+      const speedSelect = document.getElementById('tts-web-speed');
+      const statusTag = document.getElementById('tts-status-tag');
+      const btnText = document.getElementById('tts-btn-text');
+      const btnIcon = document.getElementById('tts-btn-icon');
+
+      if (!btnPlay || !txtInput || !voiceSelect) return;
+
+      const PRESETS = {
+        "alvaro": { name: "👨 Álvaro (España - Masculino Grave)", gender: "male", lang: "es-ES", pitch: 0.55, rateMult: 0.88, kw: ["alvaro", "pablo", "david", "raul", "manuel", "male", "hombre", "es-es"] },
+        "elvira": { name: "👩 Elvira (España - Femenino Agudo)", gender: "female", lang: "es-ES", pitch: 1.75, rateMult: 1.20, kw: ["elvira", "helena", "laura", "lucia", "monica", "paloma", "female", "mujer", "es-es"] },
+        "jorge":  { name: "👨 Jorge (México - Masculino Natural)", gender: "male", lang: "es-MX", pitch: 0.85, rateMult: 1.00, kw: ["jorge", "gerardo", "carlos", "mexico", "mx", "male"] },
+        "dalia":  { name: "👩 Dalia (México - Femenino Melódico)", gender: "female", lang: "es-MX", pitch: 1.45, rateMult: 1.05, kw: ["dalia", "sabina", "mia", "paulina", "hilda", "sofia", "mexico", "mx", "female"] },
+        "tomas":  { name: "👨 Tomás (Argentina - Masculino Lento)", gender: "male", lang: "es-AR", pitch: 0.40, rateMult: 0.72, kw: ["tomas", "diego", "argentina", "ar", "male"] },
+        "elena":  { name: "👩 Elena (EE.UU. - Femenino Rápido)", gender: "female", lang: "es-US", pitch: 1.90, rateMult: 1.35, kw: ["elena", "united states", "us", "zira", "female"] }
+      };
+
+      let synthVoices = [];
+
+      function populateVoiceDropdown() {
+        if (!('speechSynthesis' in window)) return;
+        synthVoices = window.speechSynthesis.getVoices() || [];
+        
+        const currentValue = voiceSelect.value || 'alvaro';
+        
+        // Limpiar opciones previas
+        voiceSelect.innerHTML = '';
+
+        // Grupo 1: Modelos de KernossIA con modulación de frecuencia
+        const groupPresets = document.createElement('optgroup');
+        groupPresets.label = '⚡ Modelos Inteligentes KernossIA';
+        for (const [key, p] of Object.entries(PRESETS)) {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = p.name;
+          if (key === currentValue) opt.selected = true;
+          groupPresets.appendChild(opt);
+        }
+        voiceSelect.appendChild(groupPresets);
+
+        // Grupo 2: Voces reales detectadas en Google Chrome
+        const spanishBrowserVoices = synthVoices.filter(v => 
+          v.lang && (v.lang.toLowerCase().startsWith('es') || v.lang.includes('ES') || v.lang.includes('MX') || v.lang.includes('419'))
+        );
+
+        if (spanishBrowserVoices.length > 0) {
+          const groupNative = document.createElement('optgroup');
+          groupNative.label = '🎙️ Voces de tu Navegador Chrome / Sistema';
+          spanishBrowserVoices.forEach((v, idx) => {
+            const opt = document.createElement('option');
+            opt.value = `native_${idx}`;
+            opt.textContent = `${v.name} (${v.lang})`;
+            groupNative.appendChild(opt);
+          });
+          voiceSelect.appendChild(groupNative);
+        }
+      }
+
+      // Cargar voces en Chrome (inmediato y asíncrono)
+      populateVoiceDropdown();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          populateVoiceDropdown();
+        };
+      }
+
+      function resolveVoiceAndParams() {
+        const val = voiceSelect.value || 'alvaro';
+        const baseSpeed = parseFloat(speedSelect.value) || 1.0;
+
+        if (val.startsWith('native_')) {
+          const idx = parseInt(val.replace('native_', ''), 10);
+          const spanishBrowserVoices = synthVoices.filter(v => 
+            v.lang && (v.lang.toLowerCase().startsWith('es') || v.lang.includes('ES') || v.lang.includes('MX') || v.lang.includes('419'))
+          );
+          const nativeVoice = spanishBrowserVoices[idx] || synthVoices[idx];
+          return {
+            voice: nativeVoice,
+            lang: nativeVoice ? nativeVoice.lang : 'es-ES',
+            pitch: 1.0,
+            rate: baseSpeed
+          };
+        }
+
+        // Es un preset de modelo
+        const p = PRESETS[val] || PRESETS['alvaro'];
+        
+        // En Chrome, buscar preferiblemente una voz local/sistémica para que acepte modulación de pitch
+        let candidateVoice = null;
+        if (synthVoices.length > 0) {
+          const spanish = synthVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+          
+          // Buscar coincidencia por palabra clave
+          for (const kw of p.kw) {
+            const m = spanish.find(v => (v.name || '').toLowerCase().includes(kw));
+            if (m) { candidateVoice = m; break; }
+          }
+
+          // Si no, buscar por género
+          if (!candidateVoice && spanish.length > 0) {
+            if (p.gender === 'female') {
+              candidateVoice = spanish.find(v => {
+                const n = (v.name || '').toLowerCase();
+                return n.includes('female') || n.includes('helena') || n.includes('laura') || n.includes('sabina') || n.includes('elena') || n.includes('dalia') || n.includes('mujer');
+              });
+            } else {
+              candidateVoice = spanish.find(v => {
+                const n = (v.name || '').toLowerCase();
+                return n.includes('male') || n.includes('raul') || n.includes('pablo') || n.includes('jorge') || n.includes('david') || n.includes('hombre');
+              });
+            }
+          }
+
+          if (!candidateVoice) {
+            candidateVoice = spanish[0] || synthVoices[0];
+          }
+        }
+
+        return {
+          voice: candidateVoice,
+          lang: p.lang,
+          pitch: p.pitch,
+          rate: Math.max(0.4, Math.min(2.5, baseSpeed * p.rateMult))
+        };
+      }
+
+      function speakCurrent() {
+        if (!('speechSynthesis' in window)) {
+          alert('Tu navegador no soporta Web Speech API.');
+          return;
+        }
+
+        const text = txtInput.value.trim();
+        if (!text) {
+          txtInput.focus();
+          return;
+        }
+
+        // Cancelar inmediatamente cualquier audio anterior
+        window.speechSynthesis.cancel();
+
+        const config = resolveVoiceAndParams();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = config.lang;
+        utterance.pitch = config.pitch;
+        utterance.rate = config.rate;
+        if (config.voice) {
+          utterance.voice = config.voice;
+        }
+
+        // Estado visual
+        btnPlay.classList.add('playing');
+        if (statusTag) {
+          statusTag.textContent = `🔊 Hablando (${config.rate.toFixed(2)}x / Pitch ${config.pitch.toFixed(2)})`;
+          statusTag.style.color = '#38bdf8';
+        }
+        btnText.textContent = 'Detener';
+        btnIcon.innerHTML = '<span class="audio-wave"><span class="audio-bar"></span><span class="audio-bar"></span><span class="audio-bar"></span><span class="audio-bar"></span></span>';
+
+        utterance.onend = resetButton;
+        utterance.onerror = resetButton;
+
+        // En Google Chrome es indispensable un pequeño timeout tras cancel() para evitar el bug de bloqueo
+        setTimeout(() => {
+          window.speechSynthesis.speak(utterance);
+        }, 50);
+      }
+
+      function resetButton() {
+        btnPlay.classList.remove('playing');
+        if (statusTag) {
+          statusTag.textContent = '🟢 Listo';
+          statusTag.style.color = '#10b981';
+        }
+        btnText.textContent = 'Escuchar Prueba';
+        btnIcon.textContent = '🔊';
+      }
+
+      btnPlay.addEventListener('click', () => {
+        clearInterval(autoRotateInterval);
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+          resetButton();
+        } else {
+          speakCurrent();
+        }
+      });
+
+      voiceSelect.addEventListener('change', () => {
+        clearInterval(autoRotateInterval);
+        if (window.speechSynthesis.speaking) {
+          speakCurrent();
+        }
+      });
+
+      speedSelect.addEventListener('change', () => {
+        clearInterval(autoRotateInterval);
+        if (window.speechSynthesis.speaking) {
+          speakCurrent();
+        }
+      });
+    })();
 
     /* ── 4. ACORDEÓN DE PREGUNTAS FRECUENTES (FAQ) ── */
     document.querySelectorAll('.faq-item').forEach(item => {
