@@ -1316,6 +1316,12 @@
       border-radius: var(--radius-full);
     }
 
+    .rec-badge.badge-soon {
+      background: rgba(234, 179, 8, 0.15);
+      color: #facc15;
+      border: 1px solid rgba(234, 179, 8, 0.35);
+    }
+
     .os-card-title {
       font-size: 20px;
       font-weight: 600;
@@ -1348,6 +1354,20 @@
       transition: var(--transition);
     }
 
+    .btn-os-download.btn-soon {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-os-download.btn-soon:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: none;
+      box-shadow: none;
+    }
+
     .os-card-box.recommended .btn-os-download {
       background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
       border-color: rgba(255, 255, 255, 0.2);
@@ -1358,6 +1378,38 @@
       background: linear-gradient(135deg, #60a5fa 0%, var(--accent-blue) 100%);
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
+    }
+
+    .os-download-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-os-download-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-os-download-secondary:hover {
+      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
     }
 
     /* ── SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) ── */
@@ -1736,7 +1788,7 @@
   <section class="hero">
     <div class="hero-badge">
       <span class="status-dot"></span>
-      Versión 1.4 Oficial • Suite Integral de Estudio & Docencia
+      Versión 1.5 Oficial • Suite Multi-idioma de Estudio & Docencia
     </div>
 
     <h1>
@@ -1821,17 +1873,17 @@
         </div>
         <div class="window-title">
           <span>KernossIA</span>
-          <span class="window-badge">v1.4 Activo</span>
+          <span class="window-badge">v1.5 Activo</span>
         </div>
         <div style="font-size: 11px; color: var(--text-muted); display:flex; align-items:center; gap:6px;">
-          <span class="status-dot"></span> Sincronización Cloud & Privacidad Local
+          <span class="status-dot"></span> Sincronización Cloud & Multi-idioma
         </div>
       </div>
 
       <!-- Navegador de pestañas interactivas -->
       <div class="app-tabs-nav" id="showcaseTabs">
         <button class="tab-btn active" data-target="panel-preview-real">
-          <span class="tab-icon">📸</span> Interfaz Real v1.4
+          <span class="tab-icon">📸</span> Interfaz Real v1.5
         </button>
         <button class="tab-btn" data-target="panel-resumidor">
           <span class="tab-icon">🔍</span> Resumidor IA
@@ -1862,21 +1914,21 @@
       <!-- Cuerpo del simulador con los paneles -->
       <div class="app-body">
 
-        <!-- Panel 0: Captura de Interfaz Real v1.4 -->
+        <!-- Panel 0: Captura de Interfaz Real v1.5 -->
         <div class="sim-panel active" id="panel-preview-real">
           <div class="sim-header" style="margin-bottom: 16px;">
             <div class="sim-title">
-              <span>⚡ Dashboard Principal & Suite de Estudio v1.4</span>
+              <span>⚡ Dashboard Principal & Suite de Estudio v1.5</span>
             </div>
             <div class="sim-badge-model" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
               Captura Oficial de la App
             </div>
           </div>
           <div class="app-screenshot-card">
-            <img src="assets/app-preview.png" alt="Captura Real de la Aplicación KernossIA v1.4" class="app-real-img" loading="eager" />
+            <img src="assets/app-preview.png" alt="Captura Real de la Aplicación KernossIA v1.5" class="app-real-img" loading="eager" />
             <div class="screenshot-badge-overlay">
               <span class="status-dot"></span>
-              <span>Vista Real de la App • v1.4 Multi-modelo (Groq & Gemini)</span>
+              <span>Vista Real de la App • v1.5 Multi-idioma (ES, EN, DE, FR)</span>
             </div>
           </div>
         </div>
@@ -2418,48 +2470,67 @@
           <span class="rec-badge" id="badge-windows" style="display:none;">Recomendado</span>
         </div>
         <h3 class="os-card-title">Windows</h3>
-        <p class="os-card-desc">Windows 10 / 11 de 64 bits. Ejecutable .exe autónomo listo para usar.</p>
-        <a href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_Windows.exe"
-          class="btn-os-download" id="btn-dl-windows" target="_blank" rel="noopener">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
-          </svg>
-          Descargar .exe
-        </a>
+        <p class="os-card-desc">Windows 10 / 11 (64-bit). Elige el instalador con acceso directo o la versión portable lista para USB.</p>
+        
+        <div class="os-download-group">
+          <!-- Setup Installer -->
+          <a href="https://github.com/LDPCICNM2012/KernossAI/releases/latest"
+            class="btn-os-download" id="btn-dl-windows" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
+            </svg>
+            Instalador (Kernoss_Setup.exe)
+          </a>
+
+          <!-- Portable Executable -->
+          <a href="https://github.com/LDPCICNM2012/KernossAI/releases/latest"
+            class="btn-os-download-secondary" id="btn-dl-windows-portable" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            Portable USB (Kernoss_Portable.exe)
+          </a>
+        </div>
       </div>
 
       <!-- macOS -->
       <div class="os-card-box" id="card-mac">
         <div class="os-card-header">
           <div class="os-icon-large">🍎</div>
-          <span class="rec-badge" id="badge-mac" style="display:none;">Recomendado</span>
+          <span class="rec-badge badge-soon" id="badge-mac">Próximamente</span>
         </div>
         <h3 class="os-card-title">macOS</h3>
-        <p class="os-card-desc">macOS 12 (Monterey) o superior. Compatible con procesadores Intel y Apple Silicon.</p>
-        <a href="https://github.com/LDPCICNM2012/KernossAI/releases/download/v1.1/KernossAI_MacOS.zip"
-          class="btn-os-download" id="btn-dl-mac" target="_blank" rel="noopener">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
-          </svg>
-          Descargar .zip
-        </a>
+        <p class="os-card-desc">macOS 12+ (Intel y Apple Silicon M1/M2/M3/M4). Paquete .DMG e instalador en preparación.</p>
+        <div class="os-download-group">
+          <a href="https://github.com/LDPCICNM2012/KernossAI/releases"
+            class="btn-os-download btn-soon" id="btn-dl-mac" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+            </svg>
+            <span id="btn-dl-mac-text">Próximamente (Kernoss_MacOS.dmg)</span>
+          </a>
+        </div>
       </div>
 
       <!-- Linux -->
       <div class="os-card-box" id="card-linux">
         <div class="os-card-header">
           <div class="os-icon-large">🐧</div>
-          <span class="rec-badge" id="badge-linux" style="display:none;">Recomendado</span>
+          <span class="rec-badge badge-soon" id="badge-linux">Próximamente</span>
         </div>
         <h3 class="os-card-title">Linux</h3>
-        <p class="os-card-desc">Paquete x86_64 para distribuciones basadas en Debian, Ubuntu, Arch y Fedora.</p>
-        <a href="https://github.com/LDPCICNM2012/KernossAI/releases" class="btn-os-download" id="btn-dl-linux"
-          target="_blank" rel="noopener">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21H19.44a2 2 0 0 0 1.94-1.515L22 17" />
-          </svg>
-          Ver Releases en GitHub
-        </a>
+        <p class="os-card-desc">Paquetes universales .AppImage y .deb para Ubuntu, Debian, Arch y Fedora en preparación.</p>
+        <div class="os-download-group">
+          <a href="https://github.com/LDPCICNM2012/KernossAI/releases"
+            class="btn-os-download btn-soon" id="btn-dl-linux" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+            </svg>
+            <span id="btn-dl-linux-text">Próximamente (Kernoss_Linux.AppImage)</span>
+          </a>
+        </div>
       </div>
     </div>
 
@@ -2568,7 +2639,7 @@
         </li>
         <li><a href="https://github.com/LDPCICNM2012/KernossAI/issues" target="_blank" rel="noopener">Reportar Bug</a>
         </li>
-        <li><a href="downloads-section.html" target="_blank">Todas las Descargas</a></li>
+        <li><a href="#downloads">Todas las Descargas</a></li>
       </ul>
     </div>
   </footer>
@@ -3056,45 +3127,118 @@
       if (targetBadge) targetBadge.style.display = 'inline-block';
     }
 
-    // Consultar automáticamente la última versión (latest release) de GitHub
+    // Consultar automáticamente la última versión (latest release) de GitHub / Render Backend
     async function syncLatestGithubRelease() {
+      let tag = 'v1.5';
+      let cleanVer = '1.5';
+      let releaseData = null;
+
       try {
+        // 1. Intentar obtener release oficial de GitHub
         const res = await fetch('https://api.github.com/repos/LDPCICNM2012/KernossAI/releases/latest');
-        if (!res.ok) return;
-        const data = await res.json();
-        const tag = data.tag_name || 'v1.1';
-        const cleanVer = tag.replace(/^v/, '');
-
-        // 1. Actualizar badges de versión visibles en el Hero y simulador
-        const heroBadge = document.querySelector('.hero-badge');
-        if (heroBadge) {
-          heroBadge.innerHTML = `<span class="status-dot"></span> Versión ${cleanVer} Disponible • 100% Gratuito y Libre`;
+        if (res.ok) {
+          releaseData = await res.json();
+          tag = releaseData.tag_name || 'v1.5';
+          cleanVer = tag.replace(/^v/, '');
+        } else {
+          // Fallback al backend en Render
+          const resBack = await fetch('https://kernosai-backend.onrender.com/api/version');
+          if (resBack.ok) {
+            const dataBack = await resBack.json();
+            tag = dataBack.version_tag || 'v1.5';
+            cleanVer = dataBack.version || '1.5';
+          }
         }
-        const winBadge = document.querySelector('.window-badge');
-        if (winBadge) {
-          winBadge.textContent = `${tag} Activo`;
-        }
+      } catch (err) {
+        console.log('Sincronización de versión online:', err);
+      }
 
-        // 2. Extraer los links directos de descarga de los assets subidos a GitHub
-        const assets = data.assets || [];
-        const winAsset = assets.find(a => a.name.toLowerCase().endsWith('.exe'));
+      // 1. Actualizar badges y textos visibles en Hero y Simulador
+      const heroBadge = document.querySelector('.hero-badge');
+      if (heroBadge) {
+        heroBadge.innerHTML = `<span class="status-dot"></span> Versión ${cleanVer} Oficial • Suite Multi-idioma de Estudio & Docencia`;
+      }
+      const winBadge = document.querySelector('.window-badge');
+      if (winBadge) {
+        winBadge.textContent = `${tag} Activo`;
+      }
+
+      // Actualizar botones y textos del Showcase
+      const tabPreview = document.querySelector('button[data-target="panel-preview-real"]');
+      if (tabPreview) {
+        tabPreview.innerHTML = `<span class="tab-icon">📸</span> Interfaz Real ${tag}`;
+      }
+      const simTitleReal = document.querySelector('#panel-preview-real .sim-title span');
+      if (simTitleReal) {
+        simTitleReal.textContent = `⚡ Dashboard Principal & Suite de Estudio ${tag}`;
+      }
+
+      // 2. Extraer los links directos de descarga de los assets subidos a GitHub si existen
+      if (releaseData && releaseData.assets) {
+        const assets = releaseData.assets || [];
+
+        // Buscar Instalador Setup (Kernoss_Setup.exe)
+        const setupAsset = assets.find(a => {
+          const n = a.name.toLowerCase();
+          return n.endsWith('.exe') && (n.includes('setup') || n.includes('install'));
+        });
+
+        // Buscar Versión Portable (Kernoss_Portable.exe)
+        const portableAsset = assets.find(a => {
+          const n = a.name.toLowerCase();
+          return n.endsWith('.exe') && (n.includes('portable') || (setupAsset && a.name !== setupAsset.name));
+        });
+
+        const defaultWinAsset = setupAsset || portableAsset || assets.find(a => a.name.toLowerCase().endsWith('.exe'));
         const macAsset = assets.find(a => a.name.toLowerCase().endsWith('.zip') || a.name.toLowerCase().endsWith('.dmg'));
+        const linuxAsset = assets.find(a => a.name.toLowerCase().endsWith('.appimage') || a.name.toLowerCase().endsWith('.deb') || a.name.toLowerCase().endsWith('.tar.gz'));
 
-        if (winAsset) {
-          DOWNLOAD_CONFIG.windows.url = winAsset.browser_download_url;
+        if (setupAsset || defaultWinAsset) {
+          const winUrl = (setupAsset || defaultWinAsset).browser_download_url;
+          DOWNLOAD_CONFIG.windows.url = winUrl;
           const btnDlWin = document.getElementById('btn-dl-windows');
-          if (btnDlWin) btnDlWin.href = winAsset.browser_download_url;
+          if (btnDlWin) btnDlWin.href = winUrl;
         }
+
+        if (portableAsset) {
+          const btnDlPort = document.getElementById('btn-dl-windows-portable');
+          if (btnDlPort) btnDlPort.href = portableAsset.browser_download_url;
+        }
+
         if (macAsset) {
           DOWNLOAD_CONFIG.mac.url = macAsset.browser_download_url;
           const btnDlMac = document.getElementById('btn-dl-mac');
-          if (btnDlMac) btnDlMac.href = macAsset.browser_download_url;
+          const btnDlMacText = document.getElementById('btn-dl-mac-text');
+          const badgeMac = document.getElementById('badge-mac');
+          if (btnDlMac) {
+            btnDlMac.href = macAsset.browser_download_url;
+            btnDlMac.classList.remove('btn-soon');
+          }
+          if (btnDlMacText) btnDlMacText.textContent = 'Descargar para macOS (' + macAsset.name + ')';
+          if (badgeMac) {
+            badgeMac.textContent = 'Disponible';
+            badgeMac.classList.remove('badge-soon');
+          }
         }
 
-        // 3. Re-aplicar los enlaces a los botones principales
+        if (linuxAsset) {
+          DOWNLOAD_CONFIG.linux.url = linuxAsset.browser_download_url;
+          const btnDlLinux = document.getElementById('btn-dl-linux');
+          const btnDlLinuxText = document.getElementById('btn-dl-linux-text');
+          const badgeLinux = document.getElementById('badge-linux');
+          if (btnDlLinux) {
+            btnDlLinux.href = linuxAsset.browser_download_url;
+            btnDlLinux.classList.remove('btn-soon');
+          }
+          if (btnDlLinuxText) btnDlLinuxText.textContent = 'Descargar para Linux (' + linuxAsset.name + ')';
+          if (badgeLinux) {
+            badgeLinux.textContent = 'Disponible';
+            badgeLinux.classList.remove('badge-soon');
+          }
+        }
+
+        // Re-aplicar los enlaces a los botones principales
         setupOsDownloads();
-      } catch (err) {
-        console.log('Usando configuración por defecto de descargas:', err);
       }
     }
 

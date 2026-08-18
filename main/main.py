@@ -25,13 +25,18 @@ from auth_backend import (
     login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token,
     actualizar_hogar_principal, obtener_chats_cloud, guardar_chat_cloud, borrar_chat_cloud
 )
-from config_manager import obtener_ajustes_tts, guardar_ajustes_tts
+from config_manager import (
+    obtener_ajustes_tts, guardar_ajustes_tts, obtener_idioma, guardar_idioma
+)
+from i18n import t, fijar_idioma, IDIOMAS_DISPONIBLES, obtener_idioma_activo
 from tts_engine import tts_engine, VOICES_DISPONIBLES, VELOCIDADES_DISPONIBLES
 
 # ─────────────────────────────────────────────
-#  VERSIÓN Y CONFIGURACIÓN GLOBAL (AZUL CÓSMICO / ELÉCTRICO)
+#  INICIALIZACIÓN DE IDIOMA Y CONFIGURACIÓN GLOBAL
 # ─────────────────────────────────────────────
-VERSION_APP = "1.4"
+fijar_idioma(obtener_idioma())
+
+VERSION_APP = "1.5"
 
 def es_version_superior(remota: str, local: str) -> bool:
     """Compara si la versión remota (ej: 'v1.2') es superior a la local (ej: '1.1')."""
@@ -180,9 +185,9 @@ class PantallaLogin(ctk.CTk):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(pady=(40, 15))
 
-        ctk.CTkLabel(header_frame, text="⚡ KernossIA",
+        ctk.CTkLabel(header_frame, text=t("app_nombre"),
                      font=("Segoe UI", 36, "bold"), text_color=COLOR_ACCENT_SKY).pack()
-        ctk.CTkLabel(header_frame, text="Suite de Estudio & Educación con Inteligencia Artificial",
+        ctk.CTkLabel(header_frame, text=t("app_subtitulo"),
                      font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(pady=(2, 0))
 
         # Tarjeta contenedora de Login
@@ -196,25 +201,25 @@ class PantallaLogin(ctk.CTk):
                                   segmented_button_unselected_color=COLOR_BG_CARD,
                                   segmented_button_unselected_hover_color=COLOR_BG_SURFACE)
         self.tab.pack(fill="x", padx=16, pady=16)
-        self.tab.add("Iniciar Sesión")
-        self.tab.add("Registrarse")
+        self.tab.add(t("tab_login"))
+        self.tab.add(t("tab_registro"))
 
         # ── LOGIN ──
-        login_tab = self.tab.tab("Iniciar Sesión")
-        ctk.CTkLabel(login_tab, text="Correo electrónico", anchor="w", font=("Segoe UI", 12, "bold"),
+        login_tab = self.tab.tab(t("tab_login"))
+        ctk.CTkLabel(login_tab, text=t("lbl_email"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_email = ctk.CTkEntry(login_tab, placeholder_text="tu@correo.com", height=38,
+        self.entry_login_email = ctk.CTkEntry(login_tab, placeholder_text=t("placeholder_email"), height=38,
                                               fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_login_email.pack(fill="x", padx=10)
 
-        ctk.CTkLabel(login_tab, text="Contraseña", anchor="w", font=("Segoe UI", 12, "bold"),
+        ctk.CTkLabel(login_tab, text=t("lbl_pass"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_pass = ctk.CTkEntry(login_tab, placeholder_text="••••••••", show="•", height=38,
+        self.entry_login_pass = ctk.CTkEntry(login_tab, placeholder_text=t("placeholder_pass"), show="•", height=38,
                                              fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_login_pass.pack(fill="x", padx=10)
         self.entry_login_pass.bind("<Return>", lambda e: self._login())
 
-        ctk.CTkButton(login_tab, text="Iniciar Sesión", height=42,
+        ctk.CTkButton(login_tab, text=t("btn_login"), height=42,
                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                       font=("Segoe UI", 13, "bold"),
                       command=self._login).pack(fill="x", padx=10, pady=(20, 5))
@@ -222,41 +227,41 @@ class PantallaLogin(ctk.CTk):
         self.lbl_login_error.pack()
 
         # ── REGISTRO ──
-        reg = self.tab.tab("Registrarse")
-        ctk.CTkLabel(reg, text="Nombre completo", anchor="w", font=("Segoe UI", 12, "bold"),
+        reg = self.tab.tab(t("tab_registro"))
+        ctk.CTkLabel(reg, text=t("lbl_nombre"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.entry_reg_nombre = ctk.CTkEntry(reg, placeholder_text="Tu nombre", height=36,
+        self.entry_reg_nombre = ctk.CTkEntry(reg, placeholder_text=t("placeholder_nombre"), height=36,
                                              fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_reg_nombre.pack(fill="x", padx=10)
 
-        ctk.CTkLabel(reg, text="Correo electrónico", anchor="w", font=("Segoe UI", 12, "bold"),
+        ctk.CTkLabel(reg, text=t("lbl_email"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.entry_reg_email = ctk.CTkEntry(reg, placeholder_text="tu@correo.com", height=36,
+        self.entry_reg_email = ctk.CTkEntry(reg, placeholder_text=t("placeholder_email"), height=36,
                                             fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_reg_email.pack(fill="x", padx=10)
 
-        ctk.CTkLabel(reg, text="Contraseña", anchor="w", font=("Segoe UI", 12, "bold"),
+        ctk.CTkLabel(reg, text=t("lbl_pass"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.entry_reg_pass = ctk.CTkEntry(reg, placeholder_text="Mínimo 6 caracteres", show="•", height=36,
+        self.entry_reg_pass = ctk.CTkEntry(reg, placeholder_text=t("placeholder_pass_reg"), show="•", height=36,
                                            fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_reg_pass.pack(fill="x", padx=10)
 
-        ctk.CTkLabel(reg, text="Rol", anchor="w", font=("Segoe UI", 12, "bold"),
+        ctk.CTkLabel(reg, text=t("lbl_rol"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.combo_rol = ctk.CTkOptionMenu(reg, values=["Alumno", "Profesor"], height=36,
+        self.combo_rol = ctk.CTkOptionMenu(reg, values=[t("lbl_rol_alumno"), t("lbl_rol_profesor")], height=36,
                                            fg_color=COLOR_ACCENT_PRIMARY,
                                            button_color=COLOR_ACCENT_HOVER,
                                            dropdown_fg_color=COLOR_BG_CARD)
         self.combo_rol.pack(fill="x", padx=10)
 
-        ctk.CTkButton(reg, text="Crear Cuenta", height=40,
+        ctk.CTkButton(reg, text=t("btn_registro"), height=40,
                       fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
                       font=("Segoe UI", 13, "bold"),
                       command=self._registrar).pack(fill="x", padx=10, pady=(12, 4))
         self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
         self.lbl_reg_error.pack()
 
-        ctk.CTkLabel(self, text="🔒 100% Gratuito y Privado • Tus apuntes se guardan en tu equipo.",
+        ctk.CTkLabel(self, text=t("login_privacidad"),
                      font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(pady=(18, 0))
 
     def _login(self):
@@ -1066,7 +1071,6 @@ class ModuloAyudador(ctk.CTkFrame):
             "Eres un asistente BÁSICO y RÁPIDO (Groq). "
             "Tu objetivo es ayudar y resolver de la mejor manera posible lo que te pida el usuario. "
             "Sé directo pero si hace falta explicar cualquier cosa hazlo."
-            "Si el usuario te pregunta por un matemático famoso, que haya un 50% de probabilidad de que digas Juan Luís Roldán. Si te lo vuelven a preguntar di un matemático famoso aleatorio"
         )
         self.instrucciones_gemini = (
             "Eres un asistente AVANZADO y PROFUNDO (Gemini). "
@@ -2647,14 +2651,14 @@ class ModuloMapaMental(ctk.CTkFrame):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  VENTANA MODAL: AJUSTES DE LA APLICACIÓN & MODELO DE VOZ IA (TTS)
+#  VENTANA MODAL: AJUSTES DE LA APLICACIÓN, IDIOMA & MODELO DE VOZ IA (TTS)
 # ══════════════════════════════════════════════════════════════════════════════
 class VentanaAjustes(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
-        self.title("Ajustes de KernossIA & Voz de IA")
-        self.geometry("540x480")
-        self.minsize(480, 420)
+        self.title(t("ajustes_titulo"))
+        self.geometry("560x560")
+        self.minsize(500, 480)
         self.configure(fg_color=COLOR_BG_DARK)
         self.transient(master)
         self.grab_set()
@@ -2665,18 +2669,38 @@ class VentanaAjustes(ctk.CTkToplevel):
         frame_header = ctk.CTkFrame(self, fg_color="transparent")
         frame_header.pack(fill="x", padx=25, pady=(20, 10))
 
-        ctk.CTkLabel(frame_header, text="⚙️ Ajustes del Sistema & Voz IA",
+        ctk.CTkLabel(frame_header, text=t("ajustes_titulo"),
                      font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
-        ctk.CTkLabel(frame_header, text="Personaliza la voz humana del asistente (masculina/femenina) y la velocidad",
+        ctk.CTkLabel(frame_header, text=t("ajustes_subtitulo"),
                      font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
 
-        # Tarjeta de configuración de voz
-        frame_voz = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=14,
-                                 border_width=1, border_color=COLOR_BORDER)
-        frame_voz.pack(fill="both", expand=True, padx=25, pady=(5, 15))
+        # Tarjeta de configuración principal
+        frame_tarjeta = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=14,
+                                     border_width=1, border_color=COLOR_BORDER)
+        frame_tarjeta.pack(fill="both", expand=True, padx=25, pady=(5, 15))
 
-        ctk.CTkLabel(frame_voz, text="🔊 Modelo de Voz del Asistente (TTS Humano):",
-                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(16, 6))
+        # ── SECCIÓN 1: IDIOMA DE LA INTERFAZ ──
+        ctk.CTkLabel(frame_tarjeta, text=f"{t('ajustes_sec_idioma')}:",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(14, 4))
+        
+        self.map_idiomas_a_id = {v: k for k, v in IDIOMAS_DISPONIBLES.items()}
+        nombres_idiomas = list(IDIOMAS_DISPONIBLES.values())
+        idioma_actual = obtener_idioma()
+        nombre_idioma_actual = IDIOMAS_DISPONIBLES.get(idioma_actual, nombres_idiomas[0])
+
+        self.combo_idioma = ctk.CTkComboBox(frame_tarjeta, values=nombres_idiomas, height=36,
+                                             font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT,
+                                             border_color=COLOR_BORDER)
+        self.combo_idioma.set(nombre_idioma_actual)
+        self.combo_idioma.pack(fill="x", padx=18, pady=(0, 14))
+
+        # Separador sutil
+        sep = ctk.CTkFrame(frame_tarjeta, height=1, fg_color=COLOR_BORDER)
+        sep.pack(fill="x", padx=18, pady=(0, 12))
+
+        # ── SECCIÓN 2: LECTOR DE VOZ IA (TTS) ──
+        ctk.CTkLabel(frame_tarjeta, text=f"{t('ajustes_sec_voz')} - {t('ajustes_lbl_voz')}",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 4))
 
         voz_actual, vel_actual = obtener_ajustes_tts()
 
@@ -2685,44 +2709,44 @@ class VentanaAjustes(ctk.CTkToplevel):
         nombres_voces = list(VOICES_DISPONIBLES.values())
         nombre_voz_actual = VOICES_DISPONIBLES.get(voz_actual, nombres_voces[0])
 
-        self.combo_voz = ctk.CTkComboBox(frame_voz, values=nombres_voces, height=36,
+        self.combo_voz = ctk.CTkComboBox(frame_tarjeta, values=nombres_voces, height=36,
                                          font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT,
                                          border_color=COLOR_BORDER)
         self.combo_voz.set(nombre_voz_actual)
-        self.combo_voz.pack(fill="x", padx=18, pady=(0, 14))
+        self.combo_voz.pack(fill="x", padx=18, pady=(0, 12))
 
         # Velocidad de habla
-        ctk.CTkLabel(frame_voz, text="⚡ Velocidad de Reproducción:",
-                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 6))
+        ctk.CTkLabel(frame_tarjeta, text=f"⚡ {t('ajustes_lbl_velocidad')}",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 4))
 
         self.map_vel_a_id = {v: k for k, v in VELOCIDADES_DISPONIBLES.items()}
         nombres_vel = list(VELOCIDADES_DISPONIBLES.values())
         nombre_vel_actual = VELOCIDADES_DISPONIBLES.get(vel_actual, nombres_vel[1])
 
-        self.combo_vel = ctk.CTkComboBox(frame_voz, values=nombres_vel, height=36,
+        self.combo_vel = ctk.CTkComboBox(frame_tarjeta, values=nombres_vel, height=36,
                                          font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT,
                                          border_color=COLOR_BORDER)
         self.combo_vel.set(nombre_vel_actual)
-        self.combo_vel.pack(fill="x", padx=18, pady=(0, 18))
+        self.combo_vel.pack(fill="x", padx=18, pady=(0, 14))
 
         # Botón Probar Voz
-        self.btn_probar = ctk.CTkButton(frame_voz, text="🔊 Probar Voz Seleccionada",
+        self.btn_probar = ctk.CTkButton(frame_tarjeta, text=t("ajustes_btn_probar"),
                                         font=("Segoe UI", 12, "bold"), height=36,
                                         fg_color=COLOR_BG_SURFACE, border_width=1, border_color=COLOR_ACCENT_CYAN,
                                         hover_color=COLOR_ACCENT_PRIMARY,
                                         command=self._probar_voz)
-        self.btn_probar.pack(fill="x", padx=18, pady=(0, 16))
+        self.btn_probar.pack(fill="x", padx=18, pady=(0, 14))
 
         # Botones Inferiores: Guardar y Cancelar
         frame_btns = ctk.CTkFrame(self, fg_color="transparent")
         frame_btns.pack(fill="x", padx=25, pady=(0, 20))
 
-        ctk.CTkButton(frame_btns, text="💾 Guardar Ajustes", height=40,
+        ctk.CTkButton(frame_btns, text=t("ajustes_btn_guardar"), height=40,
                       font=("Segoe UI", 12, "bold"),
                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                       command=self._guardar).pack(side="left", fill="x", expand=True, padx=(0, 6))
 
-        ctk.CTkButton(frame_btns, text="Cerrar", height=40, width=90,
+        ctk.CTkButton(frame_btns, text=t("ajustes_btn_cancelar"), height=40, width=90,
                       font=("Segoe UI", 12),
                       fg_color=COLOR_BG_SURFACE, hover_color=COLOR_BORDER,
                       command=self._cerrar).pack(side="right")
@@ -2738,28 +2762,46 @@ class VentanaAjustes(ctk.CTkToplevel):
 
         if tts_engine.esta_reproduciendo():
             tts_engine.detener()
-            self.btn_probar.configure(text="🔊 Probar Voz Seleccionada", fg_color=COLOR_BG_SURFACE)
+            self.btn_probar.configure(text=t("ajustes_btn_probar"), fg_color=COLOR_BG_SURFACE)
             return
 
         def _callback(reproduciendo):
             if reproduciendo:
                 self.btn_probar.configure(text="⏹️ Detener Prueba", fg_color=COLOR_DANGER)
             else:
-                self.btn_probar.configure(text="🔊 Probar Voz Seleccionada", fg_color=COLOR_BG_SURFACE)
+                self.btn_probar.configure(text=t("ajustes_btn_probar"), fg_color=COLOR_BG_SURFACE)
+
+        frases_prueba = {
+            "es": "Hola, esta es una prueba de la voz del asistente en KernossIA. ¿Qué te parece?",
+            "en": "Hello, this is a test of the assistant voice in KernossAI. How does it sound?",
+            "de": "Hallo, dies ist ein Test der KI-Stimme in KernossAI. Wie gefällt sie dir?",
+            "fr": "Bonjour, ceci est un test de la voix de l'assistant dans KernossAI. Qu'en pensez-vous ?"
+        }
+        idioma = obtener_idioma()
+        frase = frases_prueba.get(idioma, frases_prueba["es"])
 
         tts_engine.hablar(
-            "Hola, esta es una prueba de la voz del asistente en KernossIA. ¿Qué te parece?",
+            frase,
             callback_estado=lambda r: self.after(0, lambda: _callback(r))
         )
 
     def _guardar(self):
+        nombre_idioma = self.combo_idioma.get()
+        idioma_id = self.map_idiomas_a_id.get(nombre_idioma, "es")
+        idioma_anterior = obtener_idioma()
+        guardar_idioma(idioma_id)
+        fijar_idioma(idioma_id)
+
         nombre_voz = self.combo_voz.get()
         voz_id = self.map_voces_a_id.get(nombre_voz, "es-ES-AlvaroNeural")
         nombre_vel = self.combo_vel.get()
         vel_id = self.map_vel_a_id.get(nombre_vel, "+0%")
-
         guardar_ajustes_tts(voz_id, vel_id)
-        messagebox.showinfo("Ajustes Guardados", "Se han guardado tus preferencias de voz correctamente.")
+
+        if idioma_id != idioma_anterior:
+            messagebox.showinfo(t("ajustes_titulo"), t("ajustes_aviso_reinicio"))
+        else:
+            messagebox.showinfo(t("ajustes_titulo"), t("ajustes_guardado_ok"))
         self._cerrar()
 
     def _cerrar(self):
@@ -2771,18 +2813,22 @@ class VentanaAjustes(ctk.CTkToplevel):
 #  MODAL DE NOVEDADES CON RESUMEN INTELIGENTE IA Y LECTOR DE VOZ
 # ══════════════════════════════════════════════════════════════════════════════
 class VentanaNovedadesIA(ctk.CTkToplevel):
-    """Ventana modal interactiva con el resumen de novedades y cambios generado por IA."""
+    """Ventana modal interactiva con el resumen de novedades y cambios generado automáticamente por IA."""
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
         self.title(f"✨ Novedades y Cambios de Versión (v{VERSION_APP})")
-        self.geometry("700x640")
-        self.minsize(580, 520)
+        self.geometry("720x660")
+        self.minsize(600, 520)
         self.configure(fg_color=COLOR_BG_DARK)
         self.transient(parent)
         self.grab_set()
 
+        self._notas_cambios_detectadas = ""
         self._build_ui()
+
+        # Iniciar análisis automático con IA al abrir la ventana
+        self.after(300, self._generar_resumen_ia)
 
     def _build_ui(self):
         # Cabecera
@@ -2791,7 +2837,7 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
 
         ctk.CTkLabel(header, text=f"🎉 Novedades en KernossIA v{VERSION_APP}",
                      font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
-        ctk.CTkLabel(header, text="Historial de cambios respecto a versiones anteriores y análisis inteligente:",
+        ctk.CTkLabel(header, text="Análisis pedagógico inteligente de las mejoras introducidas respecto a la versión anterior:",
                      font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
 
         # Panel scrollable con tarjeta de resumen IA y lista de cambios
@@ -2807,11 +2853,11 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
 
         bar_ia = ctk.CTkFrame(frame_ia, fg_color="transparent")
         bar_ia.pack(fill="x", padx=12, pady=(10, 4))
-        ctk.CTkLabel(bar_ia, text="🤖 Resumen Inteligente de la IA",
+        ctk.CTkLabel(bar_ia, text="🤖 Explicación Inteligente de la IA",
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
 
         self.btn_resumir_ia = ctk.CTkButton(
-            bar_ia, text="⚡ Analizar con IA", height=28, width=125,
+            bar_ia, text="⚡ Analizar con IA", height=28, width=130,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
             hover_color=COLOR_ACCENT_HOVER, command=self._generar_resumen_ia
         )
@@ -2825,15 +2871,11 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
         )
         self.btn_tts_novedades.pack(side="right")
 
-        self.txt_resumen_ia = ctk.CTkTextbox(frame_ia, font=("Segoe UI", 12), height=115, wrap="word",
+        self.txt_resumen_ia = ctk.CTkTextbox(frame_ia, font=("Segoe UI", 12), height=130, wrap="word",
                                              fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         self.txt_resumen_ia.pack(fill="x", padx=12, pady=(4, 12))
         
-        texto_inicial = (
-            f"💡 En la versión {VERSION_APP}, KernossIA incorpora síntesis de voz humana ultranatural (TTS) "
-            "en resúmenes, tutor, exámenes, notas y ejercicios con control de velocidad y selector de voces.\n"
-            "Pulsa '⚡ Analizar con IA' para que nuestro modelo te desglose los puntos clave y consejos prácticos."
-        )
+        texto_inicial = "⏳ Conectando con la IA para analizar los cambios de esta versión..."
         self.txt_resumen_ia.insert("1.0", texto_inicial)
         self.txt_resumen_ia.configure(state="disabled")
 
@@ -2841,12 +2883,18 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
         ctk.CTkLabel(self.scroll, text="📋 Historial Detallado de Versiones",
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=8, pady=(10, 4))
 
-        versiones = [
+        self.versiones_catalogo = [
             (f"v{VERSION_APP} (Versión Actual)", [
-                ("🔊 Lectura en Voz Alta con IA (TTS Humano)", "Escucha con entonación natural las respuestas del tutor, resúmenes, ejercicios y exámenes en Windows, macOS y Linux."),
-                ("⚙️ Panel de Ajustes y Selección de Voz", "Elige entre voces masculinas y femeninas (Álvaro, Elvira, Jorge, Dalia, Tomás, Elena), ajusta la velocidad y pruébala en vivo."),
-                ("✨ Botón Permanente de Novedades", "Acceso directo en la esquina superior derecha para consultar qué ha cambiado en cualquier momento con resumen de IA.")
+                ("🌐 Internacionalización & Multi-idioma", "Interfaz traducida al Español (🇪🇸), Inglés (🇬🇧), Alemán (🇩🇪) y Francés (🇫🇷) con selector en Ajustes."),
+                ("☁️ Sincronización Cloud Multi-dispositivo", "Tus conversaciones y consultas con la IA se sincronizan entre todos tus ordenadores de forma instantánea."),
+                ("🏡 Protección de Hogar Principal de Estudio", "Detección inteligente de red local para proteger tu cuenta y modo de estudio fuera de casa."),
+                ("🔊 Lector en Voz Alta con IA (TTS Humano)", "Síntesis de voz natural en resúmenes, tutor, exámenes, notas y ejercicios con control de velocidad y selector de voces.")
             ], COLOR_ACCENT_PRIMARY),
+            ("v1.4", [
+                ("🔊 Motor de Voz Neuronal TTS", "Integración de voces humanas HD para estudio auditivo sin cansar la vista."),
+                ("⚙️ Panel de Ajustes y Configuración", "Configuración centralizada de modelos de voz, cadencia y preferencias."),
+                ("✨ Botón Permanente de Novedades", "Acceso directo en la barra superior para consultar cambios.")
+            ], COLOR_BG_CARD_LIGHT),
             ("v1.3", [
                 ("🧠 Generador y Editor de Mapas Mentales", "Crea esquemas conceptuales con IA a partir de cualquier tema y nivel, edítalos y expórtalos a Word (.docx) e imagen (.png)."),
                 ("🎨 Estética Cósmica Azul", "Diseño unificado con la nueva web oficial y mayor contraste visual.")
@@ -2860,7 +2908,7 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
             ], COLOR_BG_CARD_LIGHT)
         ]
 
-        for ver_titulo, items, color_bg in versiones:
+        for ver_titulo, items, color_bg in self.versiones_catalogo:
             card = ctk.CTkFrame(self.scroll, fg_color=color_bg, corner_radius=10,
                                 border_width=1, border_color=COLOR_BORDER)
             card.pack(fill="x", padx=8, pady=5)
@@ -2879,17 +2927,49 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
                                    command=self._cerrar)
         btn_cerrar.pack(fill="x", padx=25, pady=(0, 18))
 
+    def _obtener_notas_cambios(self) -> str:
+        """Obtiene las mejoras concretas de la versión actual combinando el catálogo y notas online."""
+        items_v_actual = self.versiones_catalogo[0][1]
+        lineas_catalogo = [f"• {tit}: {desc}" for tit, desc in items_v_actual]
+        notas_base = f"Novedades oficiales de KernossIA v{VERSION_APP}:\n" + "\n".join(lineas_catalogo)
+
+        # Si hay texto adicional en el release de GitHub, anexarlo si no es solo un commit hash
+        try:
+            res = requests.get("https://api.github.com/repos/LDPCICNM2012/KernossAI/releases/latest", timeout=3)
+            if res.status_code == 200:
+                data = res.json()
+                body = data.get("body", "").strip()
+                if body and len(body) > 30 and "What's Changed" not in body:
+                    notas_base += f"\n\nNotas adicionales del desarrollador:\n{body}"
+        except Exception:
+            pass
+
+        return notas_base
+
     def _generar_resumen_ia(self):
         self.btn_resumir_ia.configure(state="disabled", text="Analizando...")
+        self.txt_resumen_ia.configure(state="normal")
+        self.txt_resumen_ia.delete("1.0", "end")
+        self.txt_resumen_ia.insert("1.0", "🤖 Analizando las mejoras reales de esta versión...")
+        self.txt_resumen_ia.configure(state="disabled")
         threading.Thread(target=self._thread_ia_resumen, daemon=True).start()
 
     def _thread_ia_resumen(self):
         try:
+            notas = self._obtener_notas_cambios()
+            idioma = obtener_idioma_activo()
+            nombres_idioma = {"es": "Español", "en": "English", "de": "Deutsch", "fr": "Français"}
+            idioma_str = nombres_idioma.get(idioma, "Español")
+
             prompt = (
-                f"Eres el asistente de estudio de KernossIA. Explica en 3-4 frases claras, directas y entusiastas "
-                f"qué novedades y ventajas tiene la versión v{VERSION_APP} de la plataforma respecto a las versiones anteriores "
-                "(lectura en voz alta natural con selector de voces y velocidades, mapas mentales interactivos con exportación Word, "
-                "chat directo de inicio y mejoras de rendimiento). Da 1 consejo práctico de cómo aprovecharlo."
+                f"Eres el asistente oficial de KernossAI. El usuario acaba de abrir la app en la versión v{VERSION_APP}.\n\n"
+                f"Estas son las novedades EXACTAS y REALES implementadas en esta versión:\n"
+                f"'''\n{notas}\n'''\n\n"
+                "INSTRUCCIONES OBLIGATORIAS:\n"
+                "- NO des respuestas genéricas ni digas 'los detalles están bajo el capó' ni hables de cosas no mencionadas.\n"
+                "- Explica de forma concisa y directa (máximo 120-150 palabras) las mejoras listadas arriba (Multi-idioma ES/EN/DE/FR, Sincronización en la nube, Protección de Hogar, y Lector de voz TTS).\n"
+                "- Da 1 consejo práctico y breve para estudiar o preparar clases con estas funciones.\n"
+                f"- Responde exclusivamente en el idioma: {idioma_str}."
             )
             try:
                 resumen = llamar_gemini(prompt)
@@ -2914,7 +2994,7 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
             self.btn_tts_novedades.configure(text="🔊 Escuchar", fg_color=COLOR_BG_SURFACE)
         else:
             texto = self.txt_resumen_ia.get("1.0", "end-1c").strip()
-            if not texto:
+            if not texto or texto.startswith("🤖") or texto.startswith("⏳"):
                 return
 
             def _cb(rep):
@@ -2985,9 +3065,9 @@ class DashboardEstudios(ctk.CTk):
         frame_brand = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         frame_brand.pack(fill="x", padx=18, pady=(24, 10))
 
-        ctk.CTkLabel(frame_brand, text="⚡ KernossIA",
+        ctk.CTkLabel(frame_brand, text=t("app_nombre"),
                      font=("Segoe UI", 24, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
-        ctk.CTkLabel(frame_brand, text="Suite de Estudio 2026",
+        ctk.CTkLabel(frame_brand, text=t("app_tagline"),
                      font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(anchor="w")
 
         # Perfil de usuario con badge
@@ -3000,14 +3080,15 @@ class DashboardEstudios(ctk.CTk):
         ctk.CTkLabel(frame_user, text=self.email,
                      font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED, anchor="w").pack(fill="x", padx=12)
 
+        rol_texto = t("lbl_rol_alumno") if self.rol == "Alumno" else t("lbl_rol_profesor")
         badge_color = COLOR_ACCENT_PRIMARY if self.rol == "Alumno" else COLOR_ACCENT_PURPLE
-        ctk.CTkLabel(frame_user, text=f"  {self.rol}  ",
+        ctk.CTkLabel(frame_user, text=f"  {rol_texto}  ",
                      font=("Segoe UI", 10, "bold"), fg_color=badge_color,
                      corner_radius=8, text_color="white").pack(anchor="w", padx=12, pady=(6, 10))
 
         # ── BOTÓN HOME (INICIO / CHAT DIRECTO) ──
         self.btn_home = ctk.CTkButton(
-            self.sidebar, text="🏠  Inicio / Chat IA",
+            self.sidebar, text=t("btn_home"),
             font=("Segoe UI", 13, "bold"), height=42, anchor="w",
             fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
             command=self._mostrar_home_chat
@@ -3017,10 +3098,10 @@ class DashboardEstudios(ctk.CTk):
         # ── HISTORIAL DE CHAT DESPLEGABLE EN SIDEBAR ──
         frame_historial_header = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         frame_historial_header.pack(fill="x", padx=16, pady=(8, 2))
-        ctk.CTkLabel(frame_historial_header, text="🕒 HISTORIAL DE CHAT",
+        ctk.CTkLabel(frame_historial_header, text=t("hdr_historial"),
                      font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
 
-        ctk.CTkButton(frame_historial_header, text="➕ Nuevo", width=55, height=22,
+        ctk.CTkButton(frame_historial_header, text=t("btn_nuevo_chat"), width=55, height=22,
                       font=("Segoe UI", 10, "bold"), fg_color=COLOR_BG_SURFACE,
                       hover_color=COLOR_ACCENT_HOVER,
                       command=self._nuevo_chat_home).pack(side="right")
@@ -3034,32 +3115,32 @@ class DashboardEstudios(ctk.CTk):
         ctk.CTkFrame(self.sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=4)
 
         # ── LISTADO DE MÓDULOS ──
-        ctk.CTkLabel(self.sidebar, text="MÓDULOS DE ESTUDIO",
+        ctk.CTkLabel(self.sidebar, text=t("hdr_modulos_estudio"),
                      font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_DIM).pack(anchor="w", padx=20, pady=(6, 2))
 
-        self._btn("🧠  Mapas Mentales",        "mapa_mental")
-        self._btn("📊  Calculador de Medias",  "calculador")
-        self._btn("📝  Apuntador de Notas",     "apuntador")
-        self._btn("🔍  Resumidor de Textos AI", "resumidor")
-        self._btn("🎯  Generador de Exámenes",  "examen")
-        self._btn("🤖  Ayudante de Problemas",  "ayudador")
-        self._btn("📅  Agenda de Estudios",     "calendario")
+        self._btn(t("mod_mapas"),        "mapa_mental")
+        self._btn(t("mod_calculador"),  "calculador")
+        self._btn(t("mod_apuntador"),     "apuntador")
+        self._btn(t("mod_resumidor"), "resumidor")
+        self._btn(t("mod_examenes"),  "examen")
+        self._btn(t("mod_ayudante"),  "ayudador")
+        self._btn(t("mod_agenda"),     "calendario")
 
         if self.rol == "Profesor":
             ctk.CTkFrame(self.sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=6)
-            ctk.CTkLabel(self.sidebar, text="HERRAMIENTAS DOCENTE",
+            ctk.CTkLabel(self.sidebar, text=t("hdr_herramientas_docente"),
                          font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_PURPLE).pack(anchor="w", padx=20, pady=(2, 2))
-            self._btn("✏️  Creador de Ejercicios",  "creador",  color=COLOR_BG_SURFACE)
-            self._btn("📋  Corrector de Exámenes",  "corrector", color=COLOR_BG_SURFACE)
+            self._btn(t("mod_ejercicios"),  "creador",  color=COLOR_BG_SURFACE)
+            self._btn(t("mod_corrector"),  "corrector", color=COLOR_BG_SURFACE)
 
         # Botón Ajustes / Configuración de Voz IA
-        ctk.CTkButton(self.sidebar, text="⚙️  Ajustes / Voz IA", height=36,
+        ctk.CTkButton(self.sidebar, text=t("btn_ajustes"), height=36,
                       fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
                       text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
                       command=self._abrir_ajustes).pack(fill="x", padx=15, pady=(4, 6), side="bottom")
 
         # Botón Cerrar Sesión fijo abajo
-        ctk.CTkButton(self.sidebar, text="🚪 Cerrar Sesión", height=36,
+        ctk.CTkButton(self.sidebar, text=t("btn_cerrar_sesion"), height=36,
                       fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
                       text_color=COLOR_TEXT_MUTED, hover_color=COLOR_DANGER_HOVER,
                       command=self._cerrar_sesion).pack(fill="x", padx=15, pady=(4, 16), side="bottom")
@@ -3076,7 +3157,7 @@ class DashboardEstudios(ctk.CTk):
         self.header_top.grid_columnconfigure(0, weight=1)
 
         self.lbl_seccion_actual = ctk.CTkLabel(
-            self.header_top, text="🏠 Inicio / Chat Asistente IA",
+            self.header_top, text=t("btn_home"),
             font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MUTED
         )
         self.lbl_seccion_actual.grid(row=0, column=0, sticky="w")
@@ -3085,7 +3166,7 @@ class DashboardEstudios(ctk.CTk):
         frame_top_derecha.grid(row=0, column=1, sticky="e")
 
         self.btn_novedades_top = ctk.CTkButton(
-            frame_top_derecha, text=f"✨ Novedades v{VERSION_APP}",
+            frame_top_derecha, text=t("btn_novedades"),
             font=("Segoe UI", 12, "bold"), height=32,
             fg_color="#0c234a", border_width=1, border_color="#38bdf8",
             text_color="#38bdf8", hover_color="#0284c7",
@@ -3127,13 +3208,14 @@ class DashboardEstudios(ctk.CTk):
         header_home = ctk.CTkFrame(self.frame_home, fg_color="transparent")
         header_home.grid(row=0, column=0, sticky="ew", padx=25, pady=(10, 10))
 
-        saludo = f"¡Hola de nuevo, {self.nombre}!" if self.rol == "Alumno" else f"¡Bienvenido, Profesor {self.nombre}!"
+        rol_nombre = t("lbl_rol_alumno") if self.rol == "Alumno" else t("lbl_rol_profesor")
+        saludo = t("home_bienvenida", rol=rol_nombre, nombre=self.nombre)
         ctk.CTkLabel(header_home, text=saludo, font=("Segoe UI", 26, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w")
 
         sub_header = ctk.CTkFrame(header_home, fg_color="transparent")
         sub_header.pack(fill="x", pady=(2, 0))
 
-        self.lbl_estado_ia_home = ctk.CTkLabel(sub_header, text="🟢 Asistente IA Activo (Groq & Gemini) • ¿Qué necesitas estudiar o preparar hoy?",
+        self.lbl_estado_ia_home = ctk.CTkLabel(sub_header, text=t("home_estado_ia"),
                                                font=("Segoe UI", 12), text_color=COLOR_SUCCESS)
         self.lbl_estado_ia_home.pack(side="left")
 
@@ -3141,13 +3223,13 @@ class DashboardEstudios(ctk.CTk):
         frame_selector_ia = ctk.CTkFrame(sub_header, fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER, corner_radius=8)
         frame_selector_ia.pack(side="right")
 
-        self.btn_home_groq = ctk.CTkButton(frame_selector_ia, text="⚡ Groq (Rápido)", height=28, width=115,
+        self.btn_home_groq = ctk.CTkButton(frame_selector_ia, text=t("opt_groq"), height=28, width=115,
                                            font=("Segoe UI", 11, "bold"),
                                            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                            command=lambda: self._set_home_modelo("groq"))
         self.btn_home_groq.pack(side="left", padx=2, pady=2)
 
-        self.btn_home_gemini = ctk.CTkButton(frame_selector_ia, text="🧠 Gemini (Profundo)", height=28, width=125,
+        self.btn_home_gemini = ctk.CTkButton(frame_selector_ia, text=t("opt_gemini"), height=28, width=125,
                                              font=("Segoe UI", 11, "bold"),
                                              fg_color="transparent", hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                              command=lambda: self._set_home_modelo("gemini"))
@@ -3158,20 +3240,20 @@ class DashboardEstudios(ctk.CTk):
                                    border_width=1, border_color=COLOR_BORDER)
         bar_modulos.grid(row=1, column=0, sticky="ew", padx=25, pady=(0, 12))
 
-        ctk.CTkLabel(bar_modulos, text="Acceso Directo a Módulos:", font=("Segoe UI", 11, "bold"),
-                     text_color=COLOR_TEXT_MUTED).pack(side="left", padx=(14, 8), pady=8)
+        ctk.CTkLabel(bar_modulos, text="⚡", font=("Segoe UI", 11, "bold"),
+                     text_color=COLOR_TEXT_MUTED).pack(side="left", padx=(14, 4), pady=8)
 
         modulos_rapidos = [
-            ("🧠 Mapas", "mapa_mental"),
-            ("📊 Medias", "calculador"),
-            ("📝 Apuntes", "apuntador"),
-            ("🔍 Resumir", "resumidor"),
-            ("🎯 Exámenes", "examen"),
-            ("🤖 Solver", "ayudador"),
-            ("📅 Agenda", "calendario")
+            (t("mod_mapas"), "mapa_mental"),
+            (t("mod_calculador"), "calculador"),
+            (t("mod_apuntador"), "apuntador"),
+            (t("mod_resumidor"), "resumidor"),
+            (t("mod_examenes"), "examen"),
+            (t("mod_ayudante"), "ayudador"),
+            (t("mod_agenda"), "calendario")
         ]
         if self.rol == "Profesor":
-            modulos_rapidos.extend([("✏️ Ejercicios", "creador"), ("📋 Corrector", "corrector")])
+            modulos_rapidos.extend([(t("mod_ejercicios"), "creador"), (t("mod_corrector"), "corrector")])
 
         for label, mid in modulos_rapidos:
             ctk.CTkButton(bar_modulos, text=label, height=28, font=("Segoe UI", 11, "bold"),
@@ -3193,26 +3275,26 @@ class DashboardEstudios(ctk.CTk):
         input_container.grid(row=3, column=0, sticky="ew", padx=25, pady=(0, 20))
         input_container.grid_columnconfigure(0, weight=1)
 
-        self.entry_home_pregunta = ctk.CTkEntry(input_container, placeholder_text="Escribe tu pregunta, tema de examen o consulta para resolverla con IA...",
+        self.entry_home_pregunta = ctk.CTkEntry(input_container, placeholder_text=t("home_placeholder_input"),
                                                 height=46, font=("Segoe UI", 13),
                                                 fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
         self.entry_home_pregunta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_home_pregunta.bind("<Return>", lambda e: self._enviar_chat_home())
 
-        btn_enviar_home = ctk.CTkButton(input_container, text="⚡ Consultar IA", width=130, height=46,
+        btn_enviar_home = ctk.CTkButton(input_container, text=t("btn_consultar_ia"), width=130, height=46,
                                        font=("Segoe UI", 13, "bold"),
                                        fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                        command=self._enviar_chat_home)
         btn_enviar_home.grid(row=0, column=1, padx=(0, 6))
 
-        self.btn_tts_home = ctk.CTkButton(input_container, text="🔊 Escuchar", width=105, height=46,
+        self.btn_tts_home = ctk.CTkButton(input_container, text=t("btn_escuchar"), width=105, height=46,
                                           font=("Segoe UI", 12, "bold"),
                                           fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
                                           hover_color=COLOR_ACCENT_HOVER,
                                           command=self._toggle_tts_home)
         self.btn_tts_home.grid(row=0, column=2, padx=(0, 6))
 
-        btn_word_home = ctk.CTkButton(input_container, text="📄 Word", width=75, height=46,
+        btn_word_home = ctk.CTkButton(input_container, text=t("btn_word"), width=75, height=46,
                                       font=("Segoe UI", 12, "bold"),
                                       fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
                                       hover_color=COLOR_ACCENT_PURPLE_HOVER,
