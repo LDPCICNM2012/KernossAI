@@ -23,7 +23,9 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from auth_backend import (
     login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token,
-    actualizar_hogar_principal, obtener_chats_cloud, guardar_chat_cloud, borrar_chat_cloud
+    actualizar_hogar_principal, obtener_chats_cloud, guardar_chat_cloud, borrar_chat_cloud,
+    enviar_mensaje_soporte, obtener_mensajes_soporte, admin_listar_usuarios,
+    admin_aplicar_ban, admin_desbanear, admin_ver_mensajes_raw
 )
 from config_manager import (
     obtener_ajustes_tts, guardar_ajustes_tts, obtener_idioma, guardar_idioma
@@ -36,7 +38,7 @@ from tts_engine import tts_engine, VOICES_DISPONIBLES, VELOCIDADES_DISPONIBLES
 # ─────────────────────────────────────────────
 fijar_idioma(obtener_idioma())
 
-VERSION_APP = "1.5"
+VERSION_APP = "1.6"
 
 def es_version_superior(remota: str, local: str) -> bool:
     """Compara si la versión remota (ej: 'v1.2') es superior a la local (ej: '1.1')."""
@@ -2885,11 +2887,17 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
 
         self.versiones_catalogo = [
             (f"v{VERSION_APP} (Versión Actual)", [
+                ("🛡️ Soporte Técnico Oficial Cifrado E2EE", "Canal de chat directo con kernossai@support.com para resolución de incidencias con cifrado de extremo a extremo."),
+                ("🔒 Mensajería Privada E2EE (Cero Conocimiento)", "Cifrado criptográfico local con PBKDF2 y HMAC-SHA256. Nadie en el medio ni en el servidor puede leer tus mensajes."),
+                ("💻 Protección Anti-Fraude de Hardware (HWID)", "Identificación única de dispositivo físico y blindaje de cuentas."),
+                ("👑 Panel Maestro de Moderación y Bans", "Gestión en tiempo real de baneos de cuenta, IP-Ban y Hardware-Ban para administradores.")
+            ], COLOR_ACCENT_PRIMARY),
+            ("v1.5", [
                 ("🌐 Internacionalización & Multi-idioma", "Interfaz traducida al Español (🇪🇸), Inglés (🇬🇧), Alemán (🇩🇪) y Francés (🇫🇷) con selector en Ajustes."),
                 ("☁️ Sincronización Cloud Multi-dispositivo", "Tus conversaciones y consultas con la IA se sincronizan entre todos tus ordenadores de forma instantánea."),
                 ("🏡 Protección de Hogar Principal de Estudio", "Detección inteligente de red local para proteger tu cuenta y modo de estudio fuera de casa."),
-                ("🔊 Lector en Voz Alta con IA (TTS Humano)", "Síntesis de voz natural en resúmenes, tutor, exámenes, notas y ejercicios con control de velocidad y selector de voces.")
-            ], COLOR_ACCENT_PRIMARY),
+                ("🔊 Lector en Voz Alta con IA (TTS Humano)", "Síntesis de voz natural en resúmenes, tutor, exámenes, notas y ejercicios.")
+            ], COLOR_BG_CARD_LIGHT),
             ("v1.4", [
                 ("🔊 Motor de Voz Neuronal TTS", "Integración de voces humanas HD para estudio auditivo sin cansar la vista."),
                 ("⚙️ Panel de Ajustes y Configuración", "Configuración centralizada de modelos de voz, cadencia y preferencias."),
@@ -3008,6 +3016,355 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
     def _cerrar(self):
         tts_engine.detener()
         self.destroy()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  VENTANA MODAL DE SOPORTE TÉCNICO CON CIFRADO E2EE
+# ══════════════════════════════════════════════════════════════════════════════
+class VentanaSoporteE2EE(ctk.CTkToplevel):
+    """Canal oficial de atención al usuario y soporte técnico con cifrado de extremo a extremo (E2EE)."""
+    def __init__(self, parent, sesion):
+        super().__init__(parent)
+        self.parent = parent
+        self.sesion = sesion
+        self.email = sesion.get("email", "")
+        self.nombre = sesion.get("nombre", "Usuario")
+        self.title("🛡️ Soporte Oficial KernossAI — Chat Cifrado E2EE")
+        self.geometry("780x680")
+        self.minsize(640, 520)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+
+        self._mensajes = []
+        self._polling_activo = True
+        self._build_ui()
+        self._iniciar_polling()
+
+    def _build_ui(self):
+        # Header con candado de seguridad
+        header = ctk.CTkFrame(self, fg_color=COLOR_BG_SURFACE, height=75, corner_radius=0)
+        header.pack(fill="x")
+        
+        frame_h_info = ctk.CTkFrame(header, fg_color="transparent")
+        frame_h_info.pack(side="left", padx=20, pady=12)
+        
+        ctk.CTkLabel(frame_h_info, text="🛡️ Soporte Oficial KernossAI (kernossai@support.com)",
+                     font=("Segoe UI", 14, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w")
+        
+        badge_sec = ctk.CTkLabel(frame_h_info, text="🔒 Cifrado de Extremo a Extremo (E2EE) Activo • Cero Conocimiento en Servidor",
+                                 font=("Segoe UI", 10, "bold"), text_color=COLOR_SUCCESS)
+        badge_sec.pack(anchor="w")
+
+        btn_cerrar = ctk.CTkButton(header, text="✕", width=36, height=36, fg_color=COLOR_BG_CARD,
+                                   hover_color=COLOR_DANGER, font=("Segoe UI", 14, "bold"), command=self._cerrar)
+        btn_cerrar.pack(side="right", padx=16)
+
+        # Scroll de mensajes
+        self.scroll_chat = ctk.CTkScrollableFrame(self, fg_color=COLOR_BG_DARK)
+        self.scroll_chat.pack(fill="both", expand=True, padx=20, pady=(12, 10))
+
+        # Barra de entrada de texto
+        barra_input = ctk.CTkFrame(self, fg_color=COLOR_BG_SURFACE, height=65, corner_radius=0)
+        barra_input.pack(fill="x", side="bottom")
+
+        self.entry_msg = ctk.CTkEntry(
+            barra_input, font=("Segoe UI", 12), height=42,
+            placeholder_text="Escribe tu mensaje a soporte (se cifrará antes de enviarse)...",
+            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
+        )
+        self.entry_msg.pack(side="left", fill="x", expand=True, padx=(18, 10), pady=12)
+        self.entry_msg.bind("<Return>", lambda e: self._enviar())
+
+        self.btn_enviar = ctk.CTkButton(
+            barra_input, text="Enviar 📤", width=110, height=42,
+            font=("Segoe UI", 12, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+            hover_color=COLOR_ACCENT_HOVER, command=self._enviar
+        )
+        self.btn_enviar.pack(side="right", padx=(0, 18), pady=12)
+
+    def _iniciar_polling(self):
+        def _loop():
+            while self._polling_activo:
+                try:
+                    ok, msgs = obtener_mensajes_soporte()
+                    if ok:
+                        if len(msgs) != len(self._mensajes):
+                            self._mensajes = msgs
+                            self.after(0, self._renderizar_mensajes)
+                except Exception:
+                    pass
+                threading.Event().wait(3.0)
+
+        threading.Thread(target=_loop, daemon=True).start()
+
+    def _renderizar_mensajes(self):
+        for w in self.scroll_chat.winfo_children():
+            w.destroy()
+
+        if not self._mensajes:
+            card_empty = ctk.CTkFrame(self.scroll_chat, fg_color=COLOR_BG_CARD, corner_radius=12, border_width=1, border_color=COLOR_BORDER)
+            card_empty.pack(fill="x", padx=10, pady=20)
+            ctk.CTkLabel(card_empty, text="👋 ¡Bienvenido al Canal Directo de Soporte Oficial!", font=("Segoe UI", 14, "bold"), text_color=COLOR_TEXT_MAIN).pack(padx=20, pady=(15, 4))
+            ctk.CTkLabel(card_empty, text="¿Tienes alguna duda académica, sugerencia o problema técnico?\nEscribe tu mensaje a continuación. Tu consulta viajará 100% cifrada hacia nuestro equipo.",
+                         font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED, justify="center").pack(padx=20, pady=(0, 15))
+            return
+
+        for m in self._mensajes:
+            es_mio = m.get("es_mio", False)
+            emisor = "Tú" if es_mio else m.get("emisor_nombre", "Soporte KernossAI")
+            hora = m.get("timestamp", "")[11:16] if m.get("timestamp") else ""
+            texto = m.get("texto", "")
+
+            frame_burbuja = ctk.CTkFrame(
+                self.scroll_chat,
+                fg_color=COLOR_ACCENT_PRIMARY if es_mio else COLOR_BG_SURFACE,
+                corner_radius=12,
+                border_width=0 if es_mio else 1,
+                border_color=COLOR_BORDER
+            )
+            side_align = "e" if es_mio else "w"
+            frame_burbuja.pack(anchor=side_align, padx=10, pady=4)
+
+            hdr_txt = f"{emisor} • {hora}" if not es_mio else f"Tú • {hora}"
+            ctk.CTkLabel(frame_burbuja, text=hdr_txt, font=("Segoe UI", 9, "bold"),
+                         text_color="#93c5fd" if es_mio else COLOR_TEXT_MUTED).pack(anchor="w", padx=12, pady=(6, 1))
+
+            ctk.CTkLabel(frame_burbuja, text=texto, font=("Segoe UI", 11),
+                         text_color="#ffffff" if es_mio else COLOR_TEXT_MAIN,
+                         wraplength=480, justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+
+        self.scroll_chat._parent_canvas.yview_moveto(1.0)
+
+    def _enviar(self):
+        txt = self.entry_msg.get().strip()
+        if not txt:
+            return
+        self.entry_msg.delete(0, "end")
+        self.btn_enviar.configure(state="disabled")
+
+        def _thread():
+            ok, res = enviar_mensaje_soporte(txt)
+            if ok:
+                ok2, msgs = obtener_mensajes_soporte()
+                if ok2:
+                    self._mensajes = msgs
+                    self.after(0, self._renderizar_mensajes)
+            else:
+                self.after(0, lambda: messagebox.showerror("Error Soporte", res))
+            self.after(0, lambda: self.btn_enviar.configure(state="normal"))
+
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _cerrar(self):
+        self._polling_activo = False
+        self.destroy()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  VENTANA MODAL DE ADMINISTRACIÓN, HARDWARE-BAN & VISUALIZADOR DE RENDER
+# ══════════════════════════════════════════════════════════════════════════════
+class VentanaAdminModeracion(ctk.CTkToplevel):
+    """Panel de Control de Moderación, Hardware-Ban, IP-Ban y visualizador de Base de Datos Cifrada en Render."""
+    def __init__(self, parent, sesion):
+        super().__init__(parent)
+        self.parent = parent
+        self.sesion = sesion
+        self.title("👑 Panel Maestro de Administración & Moderación (Render)")
+        self.geometry("980x740")
+        self.minsize(800, 600)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+
+        self._build_ui()
+        self._cargar_usuarios()
+
+    def _build_ui(self):
+        header = ctk.CTkFrame(self, fg_color=COLOR_BG_SURFACE, height=65, corner_radius=0)
+        header.pack(fill="x")
+        
+        ctk.CTkLabel(header, text="👑 Panel Maestro de Administración & Moderación",
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left", padx=20, pady=16)
+
+        btn_refrescar = ctk.CTkButton(header, text="🔄 Recargar Servidor", width=140, height=32,
+                                      font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+                                      hover_color=COLOR_ACCENT_HOVER, command=self._cargar_usuarios)
+        btn_refrescar.pack(side="right", padx=(10, 20))
+
+        self.tabview = ctk.CTkTabview(self, fg_color=COLOR_BG_DARK)
+        self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
+
+        self.tab_usuarios = self.tabview.add("👥 Usuarios & Bans")
+        self.tab_db_raw = self.tabview.add("🔒 Ver Base de Datos Cifrada (Render)")
+        self.tab_ban_manual = self.tabview.add("🚫 Aplicar Ban Manual (IP / HWID)")
+
+        self._build_tab_usuarios()
+        self._build_tab_db_raw()
+        self._build_tab_ban_manual()
+
+    def _build_tab_usuarios(self):
+        self.scroll_usr = ctk.CTkScrollableFrame(self.tab_usuarios, fg_color=COLOR_BG_DARK)
+        self.scroll_usr.pack(fill="both", expand=True, padx=4, pady=4)
+
+    def _build_tab_db_raw(self):
+        frame_top = ctk.CTkFrame(self.tab_db_raw, fg_color="transparent")
+        frame_top.pack(fill="x", padx=10, pady=(10, 6))
+
+        ctk.CTkLabel(frame_top, text="🔍 Contenido en bruto de 'mensajes.json' almacenado en Render:",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left")
+
+        btn_ver_raw = ctk.CTkButton(frame_top, text="📡 Consultar Render Raw", width=160, height=30,
+                                    font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_CYAN,
+                                    text_color="#000", hover_color="#38bdf8", command=self._cargar_raw_db)
+        btn_ver_raw.pack(side="right")
+
+        self.txt_raw = ctk.CTkTextbox(self.tab_db_raw, font=("Consolas", 11), wrap="word",
+                                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
+        self.txt_raw.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        self.txt_raw.insert("1.0", "Haz clic en 'Consultar Render Raw' para comprobar en vivo que los mensajes están cifrados en el servidor.")
+
+    def _build_tab_ban_manual(self):
+        frame = ctk.CTkFrame(self.tab_ban_manual, fg_color=COLOR_BG_SURFACE, corner_radius=12, border_width=1, border_color=COLOR_BORDER)
+        frame.pack(fill="x", padx=30, pady=25)
+
+        ctk.CTkLabel(frame, text="🚫 Bloqueo Manual de Usuarios, IP o Dispositivo Físico (HWID)",
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=20, pady=(15, 10))
+
+        ctk.CTkLabel(frame, text="Tipo de Sanción:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
+        self.combo_tipo_ban = ctk.CTkComboBox(frame, values=["usuario", "ip", "hwid"], font=("Segoe UI", 11))
+        self.combo_tipo_ban.pack(fill="x", padx=20, pady=(2, 10))
+
+        ctk.CTkLabel(frame, text="Objetivo (Email / Dirección IP / HWID Hexadecimal):", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
+        self.entry_ban_obj = ctk.CTkEntry(frame, font=("Segoe UI", 11), placeholder_text="ej: usuario@correo.com o 192.168.1.1 o 657ed7dbd298...")
+        self.entry_ban_obj.pack(fill="x", padx=20, pady=(2, 10))
+
+        ctk.CTkLabel(frame, text="Motivo del Baneo:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
+        self.entry_ban_motivo = ctk.CTkEntry(frame, font=("Segoe UI", 11), placeholder_text="ej: Uso indebido del sistema o multicuentas")
+        self.entry_ban_motivo.pack(fill="x", padx=20, pady=(2, 15))
+
+        btn_ejecutar_ban = ctk.CTkButton(frame, text="⛔ Ejecutar Baneo Inmediato", height=38,
+                                         font=("Segoe UI", 12, "bold"), fg_color=COLOR_DANGER,
+                                         hover_color="#b91c1c", command=self._aplicar_ban_manual)
+        btn_ejecutar_ban.pack(fill="x", padx=20, pady=(0, 20))
+
+    def _cargar_usuarios(self):
+        for w in self.scroll_usr.winfo_children():
+            w.destroy()
+        
+        def _thread():
+            ok, usuarios = admin_listar_usuarios()
+            if not ok:
+                self.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar con el servidor."))
+                return
+
+            def _render():
+                if not usuarios:
+                    ctk.CTkLabel(self.scroll_usr, text="No hay usuarios registrados aún.", font=("Segoe UI", 12)).pack(pady=20)
+                    return
+
+                for u in usuarios:
+                    email = u.get("email", "")
+                    nombre = u.get("nombre", "")
+                    rol = u.get("rol", "Alumno")
+                    ip = u.get("ip", "N/D")
+                    hwid = u.get("hwid", "N/D")
+                    baneado = u.get("baneado", False)
+                    ip_baneada = u.get("ip_baneada", False)
+                    hwid_baneado = u.get("hwid_baneado", False)
+
+                    card = ctk.CTkFrame(self.scroll_usr, fg_color=COLOR_BG_CARD, corner_radius=10, border_width=1,
+                                        border_color=COLOR_DANGER if (baneado or ip_baneada or hwid_baneado) else COLOR_BORDER)
+                    card.pack(fill="x", padx=6, pady=4)
+
+                    f_info = ctk.CTkFrame(card, fg_color="transparent")
+                    f_info.pack(side="left", padx=12, pady=10, fill="x", expand=True)
+
+                    status_str = "⛔ BANEADO" if baneado else "🟢 ACTIVO"
+                    ctk.CTkLabel(f_info, text=f"{nombre} ({email}) — {rol} [{status_str}]",
+                                 font=("Segoe UI", 12, "bold"),
+                                 text_color=COLOR_DANGER if baneado else COLOR_TEXT_MAIN).pack(anchor="w")
+
+                    det = f"🌐 IP: {ip} {'(IP-BANEADA)' if ip_baneada else ''}  |  💻 HWID: {hwid[:16]}... {'(HWID-BANEADO)' if hwid_baneado else ''}"
+                    ctk.CTkLabel(f_info, text=det, font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
+
+                    f_actions = ctk.CTkFrame(card, fg_color="transparent")
+                    f_actions.pack(side="right", padx=10, pady=10)
+
+                    if not baneado:
+                        ctk.CTkButton(f_actions, text="🚫 Ban Cuenta", width=95, height=28,
+                                      font=("Segoe UI", 10, "bold"), fg_color=COLOR_DANGER, hover_color="#b91c1c",
+                                      command=lambda em=email: self._ban_quick(em, "usuario")).pack(side="left", padx=2)
+                    else:
+                        ctk.CTkButton(f_actions, text="✅ Desban Cuenta", width=110, height=28,
+                                      font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
+                                      command=lambda em=email: self._desban_quick(em, "usuario")).pack(side="left", padx=2)
+
+                    if not ip_baneada and ip != "N/D":
+                        ctk.CTkButton(f_actions, text="🌐 IP-Ban", width=75, height=28,
+                                      font=("Segoe UI", 10, "bold"), fg_color="#7c3aed", hover_color="#6d28d9",
+                                      command=lambda ip_val=ip: self._ban_quick(ip_val, "ip")).pack(side="left", padx=2)
+                    elif ip_baneada:
+                        ctk.CTkButton(f_actions, text="✅ Desban IP", width=85, height=28,
+                                      font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
+                                      command=lambda ip_val=ip: self._desban_quick(ip_val, "ip")).pack(side="left", padx=2)
+
+                    if not hwid_baneado and hwid != "N/D" and hwid != "HWID_NO_REPORTADO":
+                        ctk.CTkButton(f_actions, text="💻 HW-Ban", width=80, height=28,
+                                      font=("Segoe UI", 10, "bold"), fg_color="#b45309", hover_color="#92400e",
+                                      command=lambda hw=hwid: self._ban_quick(hw, "hwid")).pack(side="left", padx=2)
+                    elif hwid_baneado:
+                        ctk.CTkButton(f_actions, text="✅ Desban HW", width=90, height=28,
+                                      font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
+                                      command=lambda hw=hwid: self._desban_quick(hw, "hwid")).pack(side="left", padx=2)
+
+            self.after(0, _render)
+
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _ban_quick(self, objetivo, tipo):
+        ok, res = admin_aplicar_ban(objetivo, tipo, "Baneo aplicado desde Panel de Administración")
+        if ok:
+            messagebox.showinfo("Baneo Aplicado", res)
+            self._cargar_usuarios()
+        else:
+            messagebox.showerror("Error", res)
+
+    def _desban_quick(self, objetivo, tipo):
+        ok, res = admin_desbanear(objetivo, tipo)
+        if ok:
+            messagebox.showinfo("Desbaneo Aplicado", res)
+            self._cargar_usuarios()
+        else:
+            messagebox.showerror("Error", res)
+
+    def _aplicar_ban_manual(self):
+        tipo = self.combo_tipo_ban.get()
+        obj = self.entry_ban_obj.get().strip()
+        motivo = self.entry_ban_motivo.get().strip() or "Infracción de normas"
+        if not obj:
+            messagebox.showwarning("Atención", "Escribe el objetivo a banear.")
+            return
+
+        ok, res = admin_aplicar_ban(obj, tipo, motivo)
+        if ok:
+            messagebox.showinfo("Baneo Exitoso", res)
+            self.entry_ban_obj.delete(0, "end")
+            self._cargar_usuarios()
+        else:
+            messagebox.showerror("Error", res)
+
+    def _cargar_raw_db(self):
+        self.txt_raw.delete("1.0", "end")
+        self.txt_raw.insert("1.0", "⏳ Consultando base de datos en Render...")
+
+        def _thread():
+            ok, res = admin_ver_mensajes_raw()
+            if ok:
+                txt = json.dumps(res, ensure_ascii=False, indent=2)
+                self.after(0, lambda: (self.txt_raw.delete("1.0", "end"), self.txt_raw.insert("1.0", txt)))
+            else:
+                self.after(0, lambda: (self.txt_raw.delete("1.0", "end"), self.txt_raw.insert("1.0", "Error al consultar Render.")))
+
+        threading.Thread(target=_thread, daemon=True).start()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -3165,9 +3522,31 @@ class DashboardEstudios(ctk.CTk):
         frame_top_derecha = ctk.CTkFrame(self.header_top, fg_color="transparent")
         frame_top_derecha.grid(row=0, column=1, sticky="e")
 
+        # Botón Maestro de Administración (Solo para landeritopro@gmail.com o admin)
+        es_admin = (self.email.lower() in ["landeritopro@gmail.com", "admin@kernosai.com", "soporte@kernosai.com"]) or self.sesion.get("is_premium", False)
+        if es_admin:
+            self.btn_admin_top = ctk.CTkButton(
+                frame_top_derecha, text="👑 Moderación & Bans",
+                font=("Segoe UI", 11, "bold"), height=32,
+                fg_color="#3b0764", border_width=1, border_color="#c084fc",
+                text_color="#f3e8ff", hover_color="#6b21a8",
+                command=self._abrir_admin_moderacion
+            )
+            self.btn_admin_top.pack(side="right", padx=(6, 0))
+
+        # Botón Soporte Oficial con Cifrado E2EE
+        self.btn_soporte_top = ctk.CTkButton(
+            frame_top_derecha, text="🛡️ Soporte Oficial",
+            font=("Segoe UI", 11, "bold"), height=32,
+            fg_color="#064e3b", border_width=1, border_color="#34d399",
+            text_color="#a7f3d0", hover_color="#059669",
+            command=self._abrir_soporte_e2ee
+        )
+        self.btn_soporte_top.pack(side="right", padx=(6, 0))
+
         self.btn_novedades_top = ctk.CTkButton(
             frame_top_derecha, text=t("btn_novedades"),
-            font=("Segoe UI", 12, "bold"), height=32,
+            font=("Segoe UI", 11, "bold"), height=32,
             fg_color="#0c234a", border_width=1, border_color="#38bdf8",
             text_color="#38bdf8", hover_color="#0284c7",
             command=self._abrir_modal_novedades_ia
@@ -3188,6 +3567,12 @@ class DashboardEstudios(ctk.CTk):
 
     def _abrir_modal_novedades_ia(self):
         VentanaNovedadesIA(self)
+
+    def _abrir_soporte_e2ee(self):
+        VentanaSoporteE2EE(self, self.sesion)
+
+    def _abrir_admin_moderacion(self):
+        VentanaAdminModeracion(self, self.sesion)
 
     def _btn(self, texto, modulo_id, color=COLOR_BG_SURFACE):
         btn = ctk.CTkButton(

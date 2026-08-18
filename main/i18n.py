@@ -65,6 +65,8 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "mod_agenda": "📅 Agenda de Estudios",
         "mod_ejercicios": "✏️ Creador de Ejercicios",
         "mod_corrector": "📋 Corrector de Exámenes",
+        "mod_soporte": "🛡️ Soporte Oficial & Mensajes E2EE",
+        "btn_admin_panel": "👑 Panel de Moderación & Bans",
         
         # Home & Chat
         "home_bienvenida": "¡Bienvenido, {rol} {nombre}!",
