@@ -22,7 +22,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "app_nombre": "⚡ KernossIA",
         "app_subtitulo": "Suite de Estudio & Educación con Inteligencia Artificial",
         "app_tagline": "Suite de Estudio 2026",
-        "btn_novedades": "✨ Novedades v1.4",
+        "btn_novedades": "✨ Novedades v1.6",
         "btn_ajustes": "⚙️ Ajustes / Configuración",
         "btn_cerrar_sesion": "🚪 Cerrar Sesión",
         "lbl_rol_alumno": "Alumno",
@@ -362,7 +362,7 @@ def obtener_idioma_activo() -> str:
 def t(clave: str, **kwargs) -> str:
     """
     Obtiene la traducción de una clave en el idioma activo.
-    Permite formatear variables (ej: t('home_bienvenida', rol='Alumno', nombre='Lander')).
+    Permite formatear variables (ej: t('home_bienvenida', rol='Alumno', nombre='Usuario')).
     """
     lang_dict = TRADUCCIONES.get(_IDIOMA_ACTUAL, TRADUCCIONES["es"])
     texto = lang_dict.get(clave, TRADUCCIONES["es"].get(clave, clave))
