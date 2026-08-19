@@ -2247,42 +2247,40 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
 #  MÓDULO: GENERADOR Y EDITOR DE MAPAS MENTALES CON IA
 # ══════════════════════════════════════════════════════════════════════════════
 INSTRUCCIONES_MAPA_MENTAL = """
-Eres un pedagogo experto en síntesis visual y mapas conceptuales educativos.
-Tu objetivo es transformar el tema académico en una estructura de Mapa Mental jerárquica, clara y visualmente estructurada.
+Eres un pedagogo experto en síntesis visual avanzada, mapas conceptuales educativos y pensamiento sistémico.
+Tu objetivo es transformar el tema académico en una estructura de Mapa Mental COMPLETA, EXTENSA, PROFUNDA, JERÁRQUICA Y GRANDE.
 
-Debes responder ÚNICAMENTE con un objeto JSON válido (sin texto antes ni después) estructurado de la siguiente forma:
+CRITERIOS OBLIGATORIOS PARA EL MAPA MENTAL:
+1. Genera entre 6 y 8 RAMAS PRINCIPALES exhaustivas que cubran todos los ángulos del tema (ej: Origen e Historia, Conceptos Fundamentales, Mecanismos/Funcionamiento, Clasificación y Tipos, Aplicaciones Prácticas, Ventajas y Desafíos, Ejemplos Reales, Futuro/Tendencias).
+2. Para CADA rama principal, incluye entre 3 y 5 SUBCONCEPTOS específicos, con nombres concisos y detalles explicativos enriquecedores.
+3. El resultado debe ser amplio, formativo y de alto valor pedagógico.
+
+Debes responder ÚNICAMENTE con un objeto JSON válido (sin explicaciones previas ni posteriores, sin bloques de razonamiento):
 {
   "tema_central": "Título conciso del tema central",
   "descripcion_general": "Resumen conceptual sintético de 2-3 frases.",
   "ramas": [
     {
-      "titulo": "Rama 1 (ej: Origen, Definición, Fases, etc.)",
-      "descripcion": "Explicación breve de la rama.",
+      "titulo": "1. Fundamentos & Origen",
+      "descripcion": "Base conceptual y antecedentes históricos.",
       "sub_conceptos": [
-        {
-          "nombre": "Subconcepto 1.1",
-          "detalle": "Dato o definición clave."
-        },
-        {
-          "nombre": "Subconcepto 1.2",
-          "detalle": "Dato o definición clave."
-        }
+        { "nombre": "Definición Clave", "detalle": "Explicación exacta y formal del concepto." },
+        { "nombre": "Antecedentes", "detalle": "Origen histórico y evolución." },
+        { "nombre": "Principios Básicos", "detalle": "Leyes o axiomas que lo rigen." },
+        { "nombre": "Contexto", "detalle": "Marco de aplicación." }
       ]
     },
     {
-      "titulo": "Rama 2",
-      "descripcion": "Explicación breve.",
+      "titulo": "2. Estructura & Componentes",
+      "descripcion": "Partes y elementos constitutivos.",
       "sub_conceptos": [
-        {
-          "nombre": "Subconcepto 2.1",
-          "detalle": "Dato o definición clave."
-        }
+        { "nombre": "Elemento Principal", "detalle": "Función del componente núcleo." },
+        { "nombre": "Elementos Secundarios", "detalle": "Interacción entre subsistemas." },
+        { "nombre": "Métricas", "detalle": "Parámetros de medición." }
       ]
     }
   ]
 }
-
-Genera entre 4 y 6 ramas principales coherentes con el nivel educativo indicado. Asegúrate de que las definiciones sean precisas y claras.
 """
 
 class ModuloMapaMental(ctk.CTkFrame):
@@ -2314,13 +2312,13 @@ class ModuloMapaMental(ctk.CTkFrame):
 
         ctk.CTkLabel(frame_header, text=t("mapa_titulo"),
                      font=("Segoe UI", 18, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
-        ctk.CTkLabel(frame_header, text=t("mapa_subtitulo"),
+        ctk.CTkLabel(frame_header, text="Genera mapas mentales grandes, estructurados y profundos con IA.",
                      font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
 
         # Campo: Tema Principal
         ctk.CTkLabel(panel_izq, text=t("mapa_lbl_tema"),
                      font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=1, column=0, sticky="w", padx=18, pady=(4, 2))
-        self.entry_tema = ctk.CTkEntry(panel_izq, placeholder_text="...",
+        self.entry_tema = ctk.CTkEntry(panel_izq, placeholder_text="Ej: Fotosíntesis, Revolución Industrial, Redes Neuronales...",
                                        height=38, font=("Segoe UI", 12),
                                        fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_tema.grid(row=2, column=0, sticky="ew", padx=18, pady=(0, 10))
@@ -2341,7 +2339,7 @@ class ModuloMapaMental(ctk.CTkFrame):
 
         ctk.CTkLabel(frame_opts, text="Focus / Enfoque:", font=("Segoe UI", 11, "bold"),
                      text_color=COLOR_TEXT_MUTED).grid(row=0, column=1, sticky="w", padx=(6, 0), pady=(0, 2))
-        self.entry_enfoque = ctk.CTkEntry(frame_opts, placeholder_text="...",
+        self.entry_enfoque = ctk.CTkEntry(frame_opts, placeholder_text="Puntos clave opcionales...",
                                           font=("Segoe UI", 11), height=34,
                                           fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
         self.entry_enfoque.grid(row=1, column=1, sticky="ew", padx=(6, 0))
@@ -2367,14 +2365,14 @@ class ModuloMapaMental(ctk.CTkFrame):
                                         command=lambda: self._set_modelo("gemini"))
         self.btn_gemini.pack(side="left", padx=2, pady=2)
 
-        self.btn_generar = ctk.CTkButton(frame_ia_bar, text=t("mapa_btn_generar"), height=34,
+        self.btn_generar = ctk.CTkButton(frame_ia_bar, text="🧠 Generar Mapa Extenso", height=34,
                                          font=("Segoe UI", 12, "bold"),
                                          fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                          command=self.generar_mapa_mental)
         self.btn_generar.pack(side="right", fill="x", expand=True, padx=(10, 0))
 
         # Estado
-        self.lbl_status = ctk.CTkLabel(panel_izq, text="Listo para generar", font=("Segoe UI", 11),
+        self.lbl_status = ctk.CTkLabel(panel_izq, text="Listo para generar mapa conceptual profundo", font=("Segoe UI", 11),
                                        text_color=COLOR_TEXT_DIM)
         self.lbl_status.grid(row=5, column=0, sticky="w", padx=18, pady=(0, 6))
 
@@ -2435,7 +2433,7 @@ class ModuloMapaMental(ctk.CTkFrame):
         self.lbl_info_ramas.pack(side="right")
 
         # Contenedor del Canvas de Matplotlib
-        self.frame_canvas = ctk.CTkFrame(self.panel_der, fg_color="#070c18", corner_radius=10,
+        self.frame_canvas = ctk.CTkFrame(self.panel_der, fg_color="#060a14", corner_radius=10,
                                          border_width=1, border_color=COLOR_BORDER)
         self.frame_canvas.grid(row=1, column=0, sticky="nsew", padx=18, pady=(0, 18))
         self.frame_canvas.grid_rowconfigure(0, weight=1)
@@ -2455,13 +2453,13 @@ class ModuloMapaMental(ctk.CTkFrame):
 
     def _inicializar_canvas_vacio(self):
         plt.style.use("dark_background")
-        self.fig, self.ax = plt.subplots(figsize=(8, 7), facecolor="#070c18")
-        self.ax.set_facecolor("#070c18")
-        self.ax.text(0, 0, "🧠 Escribe un tema y haz clic en\n'✨ Generar con IA' para crear tu mapa",
-                     color="#64748b", fontsize=12, ha="center", va="center",
-                     bbox=dict(boxstyle="round,pad=0.8", facecolor="#0a1124", edgecolor="#1e3a6a", lw=1.5))
-        self.ax.set_xlim(-6, 6)
-        self.ax.set_ylim(-6, 6)
+        self.fig, self.ax = plt.subplots(figsize=(9, 8), facecolor="#060a14")
+        self.ax.set_facecolor("#060a14")
+        self.ax.text(0, 0, "🧠 Escribe un tema y haz clic en\n'🧠 Generar Mapa Extenso' para crear un mapa mental grande y completo",
+                     color="#94a3b8", fontsize=12, ha="center", va="center",
+                     bbox=dict(boxstyle="round,pad=0.9", facecolor="#0b1329", edgecolor="#1e3a6a", lw=1.5))
+        self.ax.set_xlim(-8, 8)
+        self.ax.set_ylim(-8, 8)
         self.ax.axis("off")
 
         self.canvas_grafico = FigureCanvasTkAgg(self.fig, master=self.frame_canvas)
@@ -2478,7 +2476,7 @@ class ModuloMapaMental(ctk.CTkFrame):
         enfoque = self.entry_enfoque.get().strip()
 
         self.btn_generar.configure(state="disabled")
-        self.lbl_status.configure(text="✨ Creando estructura con IA...", text_color=COLOR_ACCENT_SKY)
+        self.lbl_status.configure(text="✨ Creando estructura grande con IA...", text_color=COLOR_ACCENT_SKY)
 
         prompt = f"TEMA PRINCIPAL: {tema}\nNIVEL EDUCATIVO: {nivel}\n"
         if enfoque:
@@ -2496,13 +2494,17 @@ class ModuloMapaMental(ctk.CTkFrame):
 
             datos = self._extraer_json(respuesta)
             if not datos:
+                t_nombre = self.entry_tema.get().strip() or "Tema Principal"
                 datos = {
-                    "tema_central": self.entry_tema.get().strip() or "Tema Principal",
-                    "descripcion_general": "Esquema conceptual estructurado.",
+                    "tema_central": t_nombre,
+                    "descripcion_general": f"Mapa conceptual completo y sistemático sobre {t_nombre}.",
                     "ramas": [
-                        {"titulo": "Conceptos Clave", "descripcion": "Puntos esenciales.", "sub_conceptos": [{"nombre": "Definición", "detalle": "Concepto central."}]},
-                        {"titulo": "Características", "descripcion": "Propiedades fundamentales.", "sub_conceptos": [{"nombre": "Propiedad 1", "detalle": "Detalle explicativo."}]},
-                        {"titulo": "Aplicaciones", "descripcion": "Uso práctico.", "sub_conceptos": [{"nombre": "Ejemplo práctico", "detalle": "Demostración."}]}
+                        {"titulo": "1. Fundamentos & Origen", "descripcion": "Bases teóricas y antecedentes.", "sub_conceptos": [{"nombre": "Definición Formal", "detalle": "Concepto central y significado."}, {"nombre": "Marco Histórico", "detalle": "Evolución y descubrimiento."}, {"nombre": "Principios Básicos", "detalle": "Reglas y leyes esenciales."}]},
+                        {"titulo": "2. Estructura & Componentes", "descripcion": "Arquitectura y partes constitutivas.", "sub_conceptos": [{"nombre": "Elemento Núcleo", "detalle": "Módulo principal."}, {"nombre": "Subsistemas", "detalle": "Componentes de apoyo."}, {"nombre": "Interrelaciones", "detalle": "Flujos de comunicación."}]},
+                        {"titulo": "3. Metodología & Fases", "descripcion": "Etapas y procedimientos de aplicación.", "sub_conceptos": [{"nombre": "Fase Inicial", "detalle": "Preparación y análisis."}, {"nombre": "Desarrollo", "detalle": "Ejecución técnica."}, {"nombre": "Evaluación", "detalle": "Control y validación."}]},
+                        {"titulo": "4. Tipos & Clasificación", "descripcion": "Taxonomía y categorías principales.", "sub_conceptos": [{"nombre": "Variante Principal", "detalle": "Características estándar."}, {"nombre": "Variante Avanzada", "detalle": "Propiedades extendidas."}, {"nombre": "Modelos Híbridos", "detalle": "Combinaciones prácticas."}]},
+                        {"titulo": "5. Aplicaciones Prácticas", "descripcion": "Casos de uso e impacto real.", "sub_conceptos": [{"nombre": "Ámbito Educativo", "detalle": "Investigación y pedagogía."}, {"nombre": "Sector Profesional", "detalle": "Implementación práctica."}, {"nombre": "Casos Demostrados", "detalle": "Ejemplos reales de éxito."}]},
+                        {"titulo": "6. Retos & Futuro", "descripcion": "Perspectivas y áreas de innovación.", "sub_conceptos": [{"nombre": "Desafíos Actuales", "detalle": "Limitaciones y soluciones."}, {"nombre": "Nuevas Tendencias", "detalle": "Evolución tecnológica."}, {"nombre": "Impacto Global", "detalle": "Proyección a largo plazo."}]}
                     ]
                 }
 
@@ -2516,16 +2518,36 @@ class ModuloMapaMental(ctk.CTkFrame):
             ])
 
     def _extraer_json(self, texto):
-        try:
-            match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", texto, re.DOTALL)
-            if match:
-                return json.loads(match.group(1))
-            start = texto.find("{")
-            end = texto.rfind("}")
-            if start != -1 and end != -1:
-                return json.loads(texto[start:end+1])
-        except Exception:
-            pass
+        if not texto:
+            return None
+        # Limpiar tags de razonamiento y bloques de código
+        texto = re.sub(r'<think>.*?</think>', '', texto, flags=re.DOTALL)
+        texto = re.sub(r'```(?:think|thought).*?```', '', texto, flags=re.DOTALL)
+
+        match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", texto, re.DOTALL)
+        if match:
+            candidato = match.group(1)
+            try:
+                return json.loads(candidato)
+            except Exception:
+                try:
+                    c_limpio = re.sub(r',\s*([\]}])', r'\1', candidato)
+                    return json.loads(c_limpio)
+                except Exception:
+                    pass
+
+        start = texto.find("{")
+        end = texto.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            candidato = texto[start:end+1]
+            try:
+                return json.loads(candidato)
+            except Exception:
+                try:
+                    c_limpio = re.sub(r',\s*([\]}])', r'\1', candidato)
+                    return json.loads(c_limpio)
+                except Exception:
+                    pass
         return None
 
     def _mostrar_mapa_generado(self, datos):
@@ -2539,7 +2561,11 @@ class ModuloMapaMental(ctk.CTkFrame):
         self.btn_exportar_word.configure(state="normal")
         self.btn_exportar_img.configure(state="normal")
         ramas_count = len(datos.get("ramas", []))
-        self.lbl_info_ramas.configure(text=f"✨ {ramas_count} Ramas Principales Generadas", text_color=COLOR_ACCENT_CYAN)
+        total_subs = sum(len(r.get("sub_conceptos", [])) for r in datos.get("ramas", []))
+        self.lbl_info_ramas.configure(
+            text=f"🧠 {ramas_count} Ramas Principales • {total_subs} Subconceptos Generados",
+            text_color=COLOR_ACCENT_CYAN
+        )
 
     def redibujar_desde_editor(self):
         contenido = self.txt_estructura.get("1.0", "end-1c").strip()
@@ -2557,7 +2583,7 @@ class ModuloMapaMental(ctk.CTkFrame):
         import numpy as np
 
         self.ax.clear()
-        self.ax.set_facecolor("#070c18")
+        self.ax.set_facecolor("#060a14")
 
         tema_central = datos.get("tema_central", "Tema Central")
         ramas = datos.get("ramas", [])
@@ -2567,29 +2593,31 @@ class ModuloMapaMental(ctk.CTkFrame):
             self._inicializar_canvas_vacio()
             return
 
-        paleta_colores = ["#06b6d4", "#38bdf8", "#6366f1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"]
+        paleta_colores = [
+            "#06b6d4", "#38bdf8", "#6366f1", "#10b981",
+            "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6", "#f43f5e"
+        ]
 
         # 1. Dibujar Nodo Central
-        tema_fmt = "\n".join([tema_central[i:i+16] for i in range(0, len(tema_central), 16)])
+        tema_fmt = "\n".join([tema_central[i:i+18] for i in range(0, len(tema_central), 18)])
         self.ax.text(0, 0, f"🌟\n{tema_fmt}",
                      color="#ffffff", fontsize=11, fontweight="bold", ha="center", va="center",
-                     bbox=dict(boxstyle="round,pad=0.7", facecolor="#2563eb", edgecolor="#38bdf8", lw=2.5, alpha=0.95))
+                     bbox=dict(boxstyle="round,pad=0.75", facecolor="#1e3a8a", edgecolor="#38bdf8", lw=2.5, alpha=0.96))
 
-        # 2. Dibujar Ramas y Subconceptos
-        r_rama = 3.2
-        r_sub = 5.2
-
+        # 2. Dibujar Ramas y Subconceptos con geometría extendida y sin solapamiento
         for i, rama in enumerate(ramas):
             color = paleta_colores[i % len(paleta_colores)]
             angulo = (2 * np.pi * i / num_ramas) + (np.pi / (num_ramas * 2))
 
+            # Radio alternado entre ramas pares e impares para evitar colisiones
+            r_rama = 4.1 if (i % 2 == 0) else 4.7
             x_rama = r_rama * np.cos(angulo)
             y_rama = r_rama * np.sin(angulo)
 
-            # Conector Centro -> Rama (Curva suave)
+            # Conector Centro -> Rama (Curva suave con grosor dinámico)
             self.ax.annotate("", xy=(x_rama, y_rama), xytext=(0, 0),
-                             arrowprops=dict(arrowstyle="-", color=color, lw=2.2, alpha=0.85,
-                                             connectionstyle="arc3,rad=0.1"))
+                             arrowprops=dict(arrowstyle="-", color=color, lw=2.4, alpha=0.85,
+                                             connectionstyle="arc3,rad=0.08"))
 
             # Nodo Rama
             titulo_rama = rama.get("titulo", f"Rama {i+1}")
@@ -2597,34 +2625,38 @@ class ModuloMapaMental(ctk.CTkFrame):
 
             self.ax.text(x_rama, y_rama, titulo_fmt,
                          color="#f8fafc", fontsize=9.5, fontweight="bold", ha="center", va="center",
-                         bbox=dict(boxstyle="round,pad=0.5", facecolor="#0f1a35", edgecolor=color, lw=2.0, alpha=0.95))
+                         bbox=dict(boxstyle="round,pad=0.5", facecolor="#0c162c", edgecolor=color, lw=2.0, alpha=0.96))
 
-            # Sub-conceptos
+            # Sub-conceptos (Nivel 2 extendido)
             subs = rama.get("sub_conceptos", [])
             num_subs = len(subs)
 
             for j, sub in enumerate(subs):
-                offset_ang = (j - (num_subs - 1) / 2) * (0.35 if num_subs > 1 else 0)
+                # Ángulo en abanico
+                offset_ang = (j - (num_subs - 1) / 2) * (0.30 if num_subs > 1 else 0)
                 sub_ang = angulo + offset_ang
 
+                # Radio alternado para subconceptos adyacentes
+                r_sub = 7.1 if (j % 2 == 0) else 7.9
                 x_sub = r_sub * np.cos(sub_ang)
                 y_sub = r_sub * np.sin(sub_ang)
 
                 # Conector Rama -> Subconcepto
                 self.ax.annotate("", xy=(x_sub, y_sub), xytext=(x_rama, y_rama),
-                                 arrowprops=dict(arrowstyle="-", color=color, lw=1.2, ls="--", alpha=0.6,
-                                                 connectionstyle="arc3,rad=-0.08"))
+                                 arrowprops=dict(arrowstyle="-", color=color, lw=1.3, ls="--", alpha=0.65,
+                                                 connectionstyle="arc3,rad=-0.06"))
 
                 # Nodo Subconcepto
                 nombre_sub = sub.get("nombre", f"Punto {j+1}")
-                nombre_fmt = "\n".join([nombre_sub[k:k+16] for k in range(0, len(nombre_sub), 16)])
+                nombre_fmt = "\n".join([nombre_sub[k:k+15] for k in range(0, len(nombre_sub), 15)])
 
                 self.ax.text(x_sub, y_sub, nombre_fmt,
-                             color="#cbd5e1", fontsize=8, ha="center", va="center",
-                             bbox=dict(boxstyle="round,pad=0.35", facecolor="#070c18", edgecolor=color, lw=1.0, alpha=0.9))
+                             color="#e2e8f0", fontsize=8, ha="center", va="center",
+                             bbox=dict(boxstyle="round,pad=0.35", facecolor="#060d1d", edgecolor=color, lw=1.1, alpha=0.92))
 
-        self.ax.set_xlim(-6.8, 6.8)
-        self.ax.set_ylim(-6.8, 6.8)
+        # Límites del lienzo ampliados para dar espacio al mapa grande
+        self.ax.set_xlim(-9.8, 9.8)
+        self.ax.set_ylim(-9.8, 9.8)
         self.ax.set_aspect("equal")
         self.ax.axis("off")
         self.canvas_grafico.draw()
