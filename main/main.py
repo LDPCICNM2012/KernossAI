@@ -5383,10 +5383,6 @@ class DashboardEstudios(ctk.CTk):
         VentanaAdminModeracion(self, self.sesion)
 
     def _comprobar_politica_hogar_inicio(self):
-        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"])
-        if es_admin:
-            return  # Administrador exento de bloqueo obligatorio
-
         def _thread():
             _, dias_transcurridos, dias_restantes_gracia = obtener_fecha_instalacion()
             codigo, texto, detalles = obtener_estado_casa(self.email)

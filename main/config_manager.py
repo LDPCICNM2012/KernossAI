@@ -138,7 +138,7 @@ def obtener_pase_temporal(email: str = "") -> Tuple[bool, int, str, int]:
         data = {}
 
     pases = data.get("pases_temporales", {})
-    usr_pase = pases.get(em_key, {})
+    usr_pase = pases.get(em_key) or pases.get("global", {})
 
     ultimo_uso_str = usr_pase.get("ultimo_uso")
     expira_str = usr_pase.get("expira")
@@ -196,10 +196,12 @@ def guardar_activacion_pase_temporal(email: str = "") -> Tuple[bool, str]:
     if "pases_temporales" not in data:
         data["pases_temporales"] = {}
 
-    data["pases_temporales"][em_key] = {
+    pase_entry = {
         "ultimo_uso": now.isoformat(),
         "expira": expira.isoformat()
     }
+    data["pases_temporales"][em_key] = pase_entry
+    data["pases_temporales"]["global"] = pase_entry
 
     try:
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:

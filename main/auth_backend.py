@@ -1048,13 +1048,15 @@ def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
         "dias_para_disp": dias_para_disp
     }
     
+    # Si tiene pase temporal activo por 7 días, siempre es VÁLIDO (Modo Vacaciones/Viaje)
+    if pase_activo:
+        return "si_temporal", "SI", detalles
+
     if not hogar_ip or hogar_ip in ("N/D", "", "127.0.0.1") or ip_actual in ("N/D", "", "127.0.0.1"):
         return "desconocido", "No se sabe", detalles
         
     if ip_actual == hogar_ip or (ip_actual.split(".")[:3] == hogar_ip.split(".")[:3] and len(ip_actual.split(".")) == 4):
         return "si", "SI", detalles
-    elif pase_activo:
-        return "si_temporal", "SI", detalles
     else:
         return "no", "NO", detalles
 
@@ -1373,6 +1375,19 @@ def borrar_chat_cloud(chat_id: str) -> bool:
 
 # ── Llamada a la IA (Proxy Seguro con Bloqueo de Baneados) ───
 
+def limpiar_respuesta_ia(texto: str) -> str:
+    """Elimina etiquetas de razonamiento interno como <think>...</think> para una respuesta completamente limpia y natural."""
+    if not isinstance(texto, str):
+        return str(texto)
+    # Eliminar bloques completos <think>...</think>
+    texto_limpio = re.sub(r'<think>.*?</think>', '', texto, flags=re.DOTALL)
+    # Eliminar bloques ```think...``` o ```thought...``` si los hubiera
+    texto_limpio = re.sub(r'```(?:think|thought).*?```', '', texto_limpio, flags=re.DOTALL)
+    # Eliminar tags huérfanos
+    texto_limpio = texto_limpio.replace('<think>', '').replace('</think>', '')
+    return texto_limpio.strip()
+
+
 def consultar_ia(prompt: str, modelo: str = "groq") -> str:
     token, sesion = _leer_token()
     if not token:
@@ -1392,7 +1407,8 @@ def consultar_ia(prompt: str, modelo: str = "groq") -> str:
             timeout=60
         )
         if r.status_code == 200:
-            return r.json().get("resultado", "Sin respuesta.")
+            raw_res = r.json().get("resultado", "Sin respuesta.")
+            return limpiar_respuesta_ia(raw_res)
         if r.status_code == 401:
             borrar_token()
             return "Sesión expirada o iniciada en otro dispositivo. Vuelve a iniciar sesión."
