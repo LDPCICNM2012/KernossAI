@@ -180,16 +180,48 @@ class PantallaLogin(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("KernossIA – Acceso")
-        self.geometry("520x660")
+        self.geometry("520x680")
         self.resizable(False, False)
         self.configure(fg_color=COLOR_BG_DARK)
         self.usuario_autenticado = None
         self._build_ui()
 
+    def _al_cambiar_idioma(self, nombre_idioma):
+        for code, name in IDIOMAS_DISPONIBLES.items():
+            if name == nombre_idioma:
+                fijar_idioma(code)
+                guardar_idioma(code)
+                break
+        # Reconstruir la UI en el nuevo idioma seleccionado
+        for w in self.winfo_children():
+            w.destroy()
+        self._build_ui()
+
     def _build_ui(self):
+        # Barra superior con Selector de Idioma visible antes de iniciar sesión o registrarse
+        bar_top_lang = ctk.CTkFrame(self, fg_color="transparent")
+        bar_top_lang.pack(fill="x", padx=35, pady=(15, 0))
+
+        ctk.CTkLabel(
+            bar_top_lang, text=t("lbl_selecciona_idioma"),
+            font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED
+        ).pack(side="left")
+
+        idiomas_nombres = list(IDIOMAS_DISPONIBLES.values())
+        idioma_actual = IDIOMAS_DISPONIBLES.get(obtener_idioma_activo(), "🇪🇸 Español")
+
+        self.combo_idioma_login = ctk.CTkComboBox(
+            bar_top_lang, values=idiomas_nombres,
+            font=("Segoe UI", 11), width=150, height=28,
+            fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER,
+            command=self._al_cambiar_idioma
+        )
+        self.combo_idioma_login.set(idioma_actual)
+        self.combo_idioma_login.pack(side="right")
+
         # Header con logo
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        header_frame.pack(pady=(40, 15))
+        header_frame.pack(pady=(20, 15))
 
         ctk.CTkLabel(header_frame, text=t("app_nombre"),
                      font=("Segoe UI", 36, "bold"), text_color=COLOR_ACCENT_SKY).pack()
@@ -268,15 +300,15 @@ class PantallaLogin(ctk.CTk):
         self.lbl_reg_error.pack()
 
         ctk.CTkLabel(self, text=t("login_privacidad"),
-                     font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(pady=(18, 0))
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_DIM).pack(pady=(16, 0))
 
     def _login(self):
         email    = self.entry_login_email.get().strip().lower()
         password = self.entry_login_pass.get()
         if not email or not password:
-            self.lbl_login_error.configure(text="Completa todos los campos.")
+            self.lbl_login_error.configure(text=t("login_error_campos"))
             return
-        self.lbl_login_error.configure(text="Conectando con el servidor...", text_color=COLOR_ACCENT_SKY)
+        self.lbl_login_error.configure(text=t("login_conectando"), text_color=COLOR_ACCENT_SKY)
         self.update()
         exito, error, sesion, hogar_info = login(email, password)
         if not exito:
@@ -297,17 +329,20 @@ class PantallaLogin(ctk.CTk):
         nombre   = self.entry_reg_nombre.get().strip()
         email    = self.entry_reg_email.get().strip().lower()
         password = self.entry_reg_pass.get()
-        rol      = self.combo_rol.get()
+        rol_txt  = self.combo_rol.get()
+        # Mapear rol si está en otro idioma
+        rol = "Profesor" if rol_txt in [t("lbl_rol_profesor"), "Profesor", "Teacher", "Lehrer / Dozent"] else "Alumno"
+
         if not nombre or not email or not password:
-            self.lbl_reg_error.configure(text="Completa todos los campos.")
+            self.lbl_reg_error.configure(text=t("login_error_campos"))
             return
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            self.lbl_reg_error.configure(text="Correo inválido.")
+            self.lbl_reg_error.configure(text=t("login_error_correo"))
             return
         if len(password) < 6:
-            self.lbl_reg_error.configure(text="La contraseña debe tener al menos 6 caracteres.")
+            self.lbl_reg_error.configure(text=t("login_error_pass_len"))
             return
-        self.lbl_reg_error.configure(text="Creando cuenta en el servidor...", text_color=COLOR_ACCENT_SKY)
+        self.lbl_reg_error.configure(text=t("reg_creando"), text_color=COLOR_ACCENT_SKY)
         self.update()
         exito, error, sesion = registro(nombre, email, password, rol)
         if not exito:
@@ -3070,9 +3105,9 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=25, pady=(20, 10))
 
-        ctk.CTkLabel(header, text=f"🎉 Novedades en KernossIA v{VERSION_APP}",
+        ctk.CTkLabel(header, text=t("modal_novedades_titulo", version=VERSION_APP),
                      font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
-        ctk.CTkLabel(header, text="Análisis pedagógico inteligente de las mejoras introducidas respecto a la versión anterior:",
+        ctk.CTkLabel(header, text=t("modal_novedades_subtitulo"),
                      font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
 
         # Panel scrollable con tarjeta de resumen IA y lista de cambios
@@ -3088,18 +3123,24 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
 
         bar_ia = ctk.CTkFrame(frame_ia, fg_color="transparent")
         bar_ia.pack(fill="x", padx=12, pady=(10, 4))
-        ctk.CTkLabel(bar_ia, text="🤖 Explicación Inteligente de la IA",
+        
+        lbl_ia_title = "🤖 Explicación Inteligente de la IA" if obtener_idioma_activo() == "es" else (
+            "🤖 AI Smart Summary" if obtener_idioma_activo() == "en" else (
+                "🤖 KI-Zusammenfassung" if obtener_idioma_activo() == "de" else "🤖 Résumé Intelligent IA"
+            )
+        )
+        ctk.CTkLabel(bar_ia, text=lbl_ia_title,
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
 
         self.btn_resumir_ia = ctk.CTkButton(
-            bar_ia, text="⚡ Analizar con IA", height=28, width=130,
+            bar_ia, text=t("btn_consultar_ia"), height=28, width=130,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
             hover_color=COLOR_ACCENT_HOVER, command=self._generar_resumen_ia
         )
         self.btn_resumir_ia.pack(side="right", padx=(6, 0))
 
         self.btn_tts_novedades = ctk.CTkButton(
-            bar_ia, text="🔊 Escuchar", height=28, width=95,
+            bar_ia, text=t("btn_escuchar"), height=28, width=95,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_BG_SURFACE,
             border_width=1, border_color=COLOR_BORDER, hover_color=COLOR_ACCENT_HOVER,
             command=self._toggle_tts
@@ -3110,23 +3151,36 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
                                              fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         self.txt_resumen_ia.pack(fill="x", padx=12, pady=(4, 12))
         
-        texto_inicial = "⏳ Conectando con la IA para analizar los cambios de esta versión..."
+        texto_inicial = "⏳ Conectando con la IA..." if obtener_idioma_activo() == "es" else (
+            "⏳ Connecting to AI..." if obtener_idioma_activo() == "en" else (
+                "⏳ Verbindung zur KI..." if obtener_idioma_activo() == "de" else "⏳ Connexion à l'IA..."
+            )
+        )
         self.txt_resumen_ia.insert("1.0", texto_inicial)
         self.txt_resumen_ia.configure(state="disabled")
 
         # Lista de versiones y cambios detallados
-        ctk.CTkLabel(self.scroll, text="📋 Historial Detallado de Versiones",
+        lbl_hist_title = "📋 Historial Detallado de Versiones" if obtener_idioma_activo() == "es" else (
+            "📋 Version History & Changelog" if obtener_idioma_activo() == "en" else (
+                "📋 Versionsverlauf" if obtener_idioma_activo() == "de" else "📋 Historique des Versions"
+            )
+        )
+        ctk.CTkLabel(self.scroll, text=lbl_hist_title,
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=8, pady=(10, 4))
 
+        tag_actual = "Versión Actual" if obtener_idioma_activo() == "es" else (
+            "Current Version" if obtener_idioma_activo() == "en" else (
+                "Aktuelle Version" if obtener_idioma_activo() == "de" else "Version Actuelle"
+            )
+        )
         self.versiones_catalogo = [
-            (f"v{VERSION_APP} (Versión Actual)", [
-                ("🛡️ Soporte Técnico Oficial E2EE con Categorización", "Canal de chat cifrado de extremo a extremo (E2EE) con selector de motivo (dudas, IA, bugs, cuentas) y respuestas en vivo."),
-                ("👥 Gestor de Multicuentas en Ajustes", "Inicia sesión con múltiples cuentas en el mismo equipo y alterna entre ellas con 1 solo clic (🔄 Cambiar) sin volver a escribir contraseñas."),
-                ("🎓 Selector de Rol Académico (Alumno / Profesor)", "Cambia tu modalidad en cualquier momento desde Ajustes para desbloquear el Creador de Ejercicios y Corrector Automático."),
-                ("⛔ Vigilante de Moderación en Vivo & Pantalla de Bloqueo", "Detección instantánea de sanciones con cierre automático de sesión, revocación total de acceso a la IA y pantalla roja informativa."),
-                ("🗑️ Vaciado y Eliminación de Chats de Tickets", "Panel de administración con opción para limpiar o eliminar tickets cerrados directamente en la base de datos permanente."),
-                ("⚡ Persistencia de Sesión & Cloud Storage Supabase", "Conexión segura con la nube de Supabase para evitar deslogueos al cerrar la aplicación y almacenar datos de forma perpetua."),
-                ("💻 Blindaje Anti-Fraude de Hardware (HWID)", "Identificación criptográfica de dispositivos para garantizar la seguridad de cuentas y prevenir el abuso de accesos.")
+            (f"v{VERSION_APP} ({tag_actual})", [
+                (t("nov_item_soporte_tit"), t("nov_item_soporte_desc")),
+                (t("nov_item_multi_tit"), t("nov_item_multi_desc")),
+                (t("nov_item_rol_tit"), t("nov_item_rol_desc")),
+                (t("nov_item_mod_tit"), t("nov_item_mod_desc")),
+                (t("nov_item_cloud_tit"), t("nov_item_cloud_desc")),
+                (t("nov_item_hwid_tit"), t("nov_item_hwid_desc"))
             ], COLOR_ACCENT_PRIMARY),
             ("v1.5", [
                 ("🌐 Internacionalización & Multi-idioma", "Interfaz traducida al Español (🇪🇸), Inglés (🇬🇧), Alemán (🇩🇪) y Francés (🇫🇷) con selector en Ajustes."),
@@ -3158,14 +3212,19 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
             card.pack(fill="x", padx=8, pady=5)
             
             ctk.CTkLabel(card, text=ver_titulo, font=("Segoe UI", 13, "bold"),
-                         text_color=COLOR_ACCENT_CYAN if "Actual" in ver_titulo else COLOR_TEXT_MUTED).pack(anchor="w", padx=14, pady=(8, 4))
+                         text_color=COLOR_ACCENT_CYAN if tag_actual in ver_titulo else COLOR_TEXT_MUTED).pack(anchor="w", padx=14, pady=(8, 4))
 
             for titulo_cambio, desc in items:
                 ctk.CTkLabel(card, text=f"• {titulo_cambio}: {desc}", font=("Segoe UI", 11),
                              text_color=COLOR_TEXT_MAIN, wraplength=570, justify="left").pack(anchor="w", padx=14, pady=(1, 5))
 
         # Botón Cerrar
-        btn_cerrar = ctk.CTkButton(self, text="Entendido", height=38,
+        btn_txt = "Entendido" if obtener_idioma_activo() == "es" else (
+            "Got it" if obtener_idioma_activo() == "en" else (
+                "Verstanden" if obtener_idioma_activo() == "de" else "Compris"
+            )
+        )
+        btn_cerrar = ctk.CTkButton(self, text=btn_txt, height=38,
                                    font=("Segoe UI", 12, "bold"),
                                    fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                                    command=self._cerrar)
@@ -4821,17 +4880,17 @@ class DashboardEstudios(ctk.CTk):
     def _mostrar_modal_bienvenida_changelog(self):
         """Ventana modal elegante con el changelog de la nueva versión."""
         modal = ctk.CTkToplevel(self)
-        modal.title(f"¡Novedades en KernossIA v{VERSION_APP}!")
-        modal.geometry("580x500")
-        modal.minsize(520, 440)
+        modal.title(t("modal_novedades_titulo", version=VERSION_APP))
+        modal.geometry("620x540")
+        modal.minsize(540, 460)
         modal.configure(fg_color=COLOR_BG_DARK)
         modal.transient(self)
         modal.grab_set()
 
         # Header
-        ctk.CTkLabel(modal, text=f"🎉 ¡Bienvenido a KernossIA v{VERSION_APP}!",
+        ctk.CTkLabel(modal, text=t("modal_novedades_titulo", version=VERSION_APP),
                      font=("Segoe UI", 20, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(22, 4))
-        ctk.CTkLabel(modal, text="Descubre las nuevas funciones y mejoras añadidas en esta versión:",
+        ctk.CTkLabel(modal, text=t("modal_novedades_subtitulo"),
                      font=("Segoe UI", 12), text_color=COLOR_TEXT_MUTED).pack(pady=(0, 14))
 
         # Tarjeta de novedades
@@ -4841,16 +4900,12 @@ class DashboardEstudios(ctk.CTk):
         frame_box.pack(fill="both", expand=True, padx=25, pady=(0, 16))
 
         novedades = [
-            ("🔊 Lector en Voz Alta con IA (TTS Humano)",
-             "Escucha con voz humana ultranatural los resúmenes, explicaciones del tutor, apuntes, ejercicios y exámenes en Windows, macOS y Linux."),
-            ("⚙️ Panel de Ajustes y Selección de Voz",
-             "Elige entre voces masculinas y femeninas (Álvaro, Elvira, Jorge, Dalia, Tomás, Elena), ajusta la velocidad y pruébala en directo."),
-            ("🧠 Generador y Editor de Mapas Mentales",
-             "Crea esquemas conceptuales con IA a partir de cualquier tema y nivel, edítalos y expórtalos a Word (.docx) e imagen (.png)."),
-            ("💬 Chat Directo de IA con Historial",
-             "Acceso rápido a Groq (LLaMA 3.3 70B) y Gemini desde el inicio con historial guardado en tu perfil."),
-            ("🎨 Estética Cósmica Azul",
-             "Diseño unificado con la nueva web oficial, bordes pulidos y mayor contraste visual.")
+            (t("nov_item_soporte_tit"), t("nov_item_soporte_desc")),
+            (t("nov_item_multi_tit"), t("nov_item_multi_desc")),
+            (t("nov_item_rol_tit"), t("nov_item_rol_desc")),
+            (t("nov_item_mod_tit"), t("nov_item_mod_desc")),
+            (t("nov_item_cloud_tit"), t("nov_item_cloud_desc")),
+            (t("nov_item_hwid_tit"), t("nov_item_hwid_desc")),
         ]
 
         for titulo, desc in novedades:
@@ -4860,10 +4915,10 @@ class DashboardEstudios(ctk.CTk):
             ctk.CTkLabel(item, text=titulo, font=("Segoe UI", 12, "bold"),
                          text_color=COLOR_ACCENT_CYAN).pack(anchor="w", padx=12, pady=(8, 2))
             ctk.CTkLabel(item, text=desc, font=("Segoe UI", 11),
-                         text_color=COLOR_TEXT_MAIN, wraplength=480, justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+                         text_color=COLOR_TEXT_MAIN, wraplength=500, justify="left").pack(anchor="w", padx=12, pady=(0, 8))
 
         # Botón Empezar
-        ctk.CTkButton(modal, text="🚀 ¡Empezar a Usar KernossIA!",
+        ctk.CTkButton(modal, text=t("modal_novedades_btn_empezar"),
                       font=("Segoe UI", 13, "bold"), height=42,
                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
                       command=modal.destroy).pack(fill="x", padx=25, pady=(0, 20))
