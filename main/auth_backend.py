@@ -999,18 +999,29 @@ def obtener_ip_publica() -> str:
 
 def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
     """
-    Comprueba si el usuario está actualmente en su Hogar Principal de Estudio.
+    Comprueba si el usuario está actualmente en su Hogar Principal de Estudio o con un pase temporal de 7 días.
     Devuelve:
-      - codigo: "si" | "no" | "desconocido"
-      - texto: "SI" | "NO" | "No se sabe"
-      - detalles: dict(ip_actual, hogar_ip, hogar_nombre)
+      - codigo: "si" | "si_temporal" | "no" | "desconocido"
+      - texto: "SI" | "No se sabe" | "NO"
+      - detalles: dict(ip_actual, hogar_ip, hogar_nombre, pase_activo, dias_restantes_pase, fecha_disp_pase, dias_para_disp)
     """
+    from config_manager import obtener_pase_temporal
     token, sesion = _leer_token()
     em = (email or sesion.get("email", "")).strip().lower()
     ip_actual = obtener_ip_publica()
     
+    pase_activo, dias_restantes_pase, fecha_disp_pase, dias_para_disp = obtener_pase_temporal(em)
+    
     if not em:
-        return "desconocido", "No se sabe", {"ip_actual": ip_actual, "hogar_ip": "", "hogar_nombre": "Desconocido"}
+        return "desconocido", "No se sabe", {
+            "ip_actual": ip_actual,
+            "hogar_ip": "",
+            "hogar_nombre": "Desconocido",
+            "pase_activo": pase_activo,
+            "dias_restantes_pase": dias_restantes_pase,
+            "fecha_disp_pase": fecha_disp_pase,
+            "dias_para_disp": dias_para_disp
+        }
         
     hogar_ip = ""
     hogar_nombre = "Hogar Principal de Estudio"
@@ -1030,7 +1041,11 @@ def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
     detalles = {
         "ip_actual": ip_actual,
         "hogar_ip": hogar_ip,
-        "hogar_nombre": hogar_nombre
+        "hogar_nombre": hogar_nombre,
+        "pase_activo": pase_activo,
+        "dias_restantes_pase": dias_restantes_pase,
+        "fecha_disp_pase": fecha_disp_pase,
+        "dias_para_disp": dias_para_disp
     }
     
     if not hogar_ip or hogar_ip in ("N/D", "", "127.0.0.1") or ip_actual in ("N/D", "", "127.0.0.1"):
@@ -1038,8 +1053,31 @@ def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
         
     if ip_actual == hogar_ip or (ip_actual.split(".")[:3] == hogar_ip.split(".")[:3] and len(ip_actual.split(".")) == 4):
         return "si", "SI", detalles
+    elif pase_activo:
+        return "si_temporal", "SI", detalles
     else:
         return "no", "NO", detalles
+
+
+def activar_pase_hogar_temporal(email: Optional[str] = None) -> Tuple[bool, str]:
+    """Activa el pase de Hogar Temporal por 7 días (limitado a 1 vez cada 30 días)."""
+    from config_manager import guardar_activacion_pase_temporal
+    token, sesion = _leer_token()
+    em = (email or sesion.get("email", "")).strip().lower()
+    if not em:
+        return False, "Sin sesión activa."
+        
+    ok, msg = guardar_activacion_pase_temporal(em)
+    if ok:
+        try:
+            sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+            sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+            sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}", "Content-Type": "application/json"}
+            patch_data = {"pase_temporal_activo": True, "ultimo_pase_temporal": datetime.now().isoformat()}
+            requests.patch(f"{sb_url}/usuarios?email=eq.{em}", json=patch_data, headers=sb_headers, timeout=6)
+        except Exception:
+            pass
+    return ok, msg
 
 
 def fijar_red_hogar_actual(email: Optional[str] = None) -> Tuple[bool, str]:

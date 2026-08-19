@@ -35,10 +35,11 @@ from auth_backend import (
     tutoria_listar_profesores, tutoria_enviar_solicitud, tutoria_obtener_estado_alumno,
     tutoria_profesor_obtener_solicitudes_y_alumnos, tutoria_profesor_responder_solicitud,
     tutoria_enviar_mensaje, tutoria_obtener_mensajes_chat, tutoria_desvincular,
-    obtener_estado_casa, fijar_red_hogar_actual
+    obtener_estado_casa, fijar_red_hogar_actual, activar_pase_hogar_temporal
 )
 from config_manager import (
-    obtener_ajustes_tts, guardar_ajustes_tts, obtener_idioma, guardar_idioma
+    obtener_ajustes_tts, guardar_ajustes_tts, obtener_idioma, guardar_idioma,
+    obtener_fecha_instalacion, obtener_pase_temporal, guardar_activacion_pase_temporal
 )
 from i18n import t, fijar_idioma, IDIOMAS_DISPONIBLES, obtener_idioma_activo
 from tts_engine import tts_engine, VOICES_DISPONIBLES, VELOCIDADES_DISPONIBLES
@@ -2945,7 +2946,7 @@ class VentanaAjustes(ctk.CTkToplevel):
         self.lbl_detalles_casa.pack(anchor="w", padx=14, pady=(0, 8))
 
         row_casa_actions = ctk.CTkFrame(card_casa, fg_color="transparent")
-        row_casa_actions.pack(fill="x", padx=14, pady=(0, 10))
+        row_casa_actions.pack(fill="x", padx=14, pady=(0, 6))
 
         self.btn_fijar_casa = ctk.CTkButton(
             row_casa_actions, text="🏡 Establecer Esta Red como mi Casa",
@@ -2962,6 +2963,19 @@ class VentanaAjustes(ctk.CTkToplevel):
             command=self._comprobar_estado_casa
         )
         self.btn_refrescar_casa.pack(side="right")
+
+        # Botón de activación temporal de 7 días (1 vez al mes)
+        row_casa_temp = ctk.CTkFrame(card_casa, fg_color="transparent")
+        row_casa_temp.pack(fill="x", padx=14, pady=(0, 10))
+
+        self.btn_activar_temp = ctk.CTkButton(
+            row_casa_temp, text="✈️ Establecer Casa solo por 7 Días (Modo Viaje • 1 vez al mes)",
+            font=("Segoe UI", 10, "bold"), height=30,
+            fg_color="#1e1b4b", border_width=1, border_color="#818cf8",
+            text_color="#e0e7ff", hover_color="#4338ca",
+            command=self._activar_casa_temporal_7dias
+        )
+        self.btn_activar_temp.pack(fill="x")
 
         self._comprobar_estado_casa()
 
@@ -3063,6 +3077,10 @@ class VentanaAjustes(ctk.CTkToplevel):
                     return
                 ip_act = detalles.get("ip_actual", "N/D")
                 ip_hog = detalles.get("hogar_ip", "Sin registrar")
+                pase_act = detalles.get("pase_activo", False)
+                dias_rest = detalles.get("dias_restantes_pase", 0)
+                fecha_disp = detalles.get("fecha_disp_pase", "Disponible")
+                dias_falta = detalles.get("dias_para_disp", 0)
                 
                 if codigo == "si":
                     # [VERDE] SI
@@ -3074,6 +3092,16 @@ class VentanaAjustes(ctk.CTkToplevel):
                     self.lbl_detalles_casa.configure(
                         text=f"✅ Conectado en tu Hogar Principal de Estudio.\n🌐 IP Actual: {ip_act}  |  🏡 IP Hogar Registrada: {ip_hog}"
                     )
+                elif codigo == "si_temporal":
+                    # [VERDE] SI (Pase Temporal)
+                    self.lbl_badge_casa.configure(
+                        text=f"  Casa: 🟢 SI (Temporal {dias_rest}d)  ",
+                        fg_color="#059669",
+                        text_color="#ffffff"
+                    )
+                    self.lbl_detalles_casa.configure(
+                        text=f"✈️ Pase de Hogar Temporal de 7 días activo ({dias_rest} días restantes).\n🌐 IP Actual: {ip_act}  |  🏡 IP Hogar: {ip_hog}"
+                    )
                 elif codigo == "no":
                     # [ROJO] NO
                     self.lbl_badge_casa.configure(
@@ -3081,8 +3109,9 @@ class VentanaAjustes(ctk.CTkToplevel):
                         fg_color="#ef4444",
                         text_color="#ffffff"
                     )
+                    info_disp = "Pase temporal disponible ahora" if dias_falta == 0 else f"Pase temporal disponible el {fecha_disp}"
                     self.lbl_detalles_casa.configure(
-                        text=f"⚠️ Conexión fuera de tu Hogar Principal (Modo viaje / red externa).\n🌐 IP Actual: {ip_act}  |  🏡 IP Hogar Registrada: {ip_hog}"
+                        text=f"⚠️ Conexión fuera de tu Hogar Principal (Modo viaje / red externa).\n🌐 IP Actual: {ip_act}  |  🏡 IP Hogar Registrada: {ip_hog}\n✈️ {info_disp}"
                     )
                 else:
                     # [Naranja] No se sabe
@@ -3105,8 +3134,42 @@ class VentanaAjustes(ctk.CTkToplevel):
             if ok:
                 self.after(0, lambda: messagebox.showinfo("Hogar Principal", msg))
                 self.after(0, self._comprobar_estado_casa)
+                if hasattr(self.master, "_desbloquear_dashboard"):
+                    self.after(0, self.master._desbloquear_dashboard)
             else:
                 self.after(0, lambda: messagebox.showerror("Error", msg))
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _activar_casa_temporal_7dias(self):
+        activo, dias_rest, fecha_disp, dias_falta = obtener_pase_temporal(self.email_actual)
+        if dias_falta > 0 and not activo:
+            messagebox.showwarning(
+                "Límite Mensual Alcanzado",
+                f"Solo puedes activar el Hogar Temporal de 7 días 1 vez al mes.\n\n"
+                f"📅 Próxima fecha disponible: {fecha_disp} (en {dias_falta} días)."
+            )
+            return
+
+        confirm = messagebox.askyesno(
+            "✈️ Activar Hogar Temporal por 7 Días",
+            "¿Deseas activar el pase de Hogar Temporal por 7 días?\n\n"
+            "• Te permitirá utilizar todos los servicios de KernossAI fuera de tu casa durante 7 días continuos.\n"
+            "• Recuerda que esta opción solo se puede activar 1 vez al mes (cada 30 días).\n\n"
+            "¿Deseas activarlo ahora?"
+        )
+        if not confirm:
+            return
+
+        def _thread():
+            ok, msg = activar_pase_hogar_temporal(self.email_actual)
+            if ok:
+                self.after(0, lambda: messagebox.showinfo("Hogar Temporal Activo", msg))
+                self.after(0, self._comprobar_estado_casa)
+                if hasattr(self.master, "_desbloquear_dashboard"):
+                    self.after(0, self.master._desbloquear_dashboard)
+            else:
+                self.after(0, lambda: messagebox.showerror("Error", msg))
+
         threading.Thread(target=_thread, daemon=True).start()
 
     def _probar_voz(self):
@@ -3206,6 +3269,134 @@ class VentanaAjustes(ctk.CTkToplevel):
     def _cerrar(self):
         tts_engine.detener()
         self.destroy()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  MODAL DE ADVERTENCIA / CONFIGURACIÓN DE CASA (POPUP AL INICIAR)
+# ══════════════════════════════════════════════════════════════════════════════
+class ModalAlertaCasa(ctk.CTkToplevel):
+    """Popup centrado y cerrable que aparece al iniciar si no hay casa establecida o está fuera de ella durante los primeros 15 días."""
+    def __init__(self, parent, tipo: str = "sin_casa", dias_restantes: int = 15, on_casa_establecida=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.tipo = tipo
+        self.dias_restantes = dias_restantes
+        self.on_casa_establecida = on_casa_establecida
+        
+        self.title("🏡 Configuración de Red Hogar — KernossAI")
+        self.geometry("540x370")
+        self.resizable(False, False)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+        self._centrar_ventana(540, 370)
+        self._build_ui()
+
+    def _centrar_ventana(self, ancho, alto):
+        self.update_idletasks()
+        pantalla_ancho = self.winfo_screenwidth()
+        pantalla_alto = self.winfo_screenheight()
+        x = (pantalla_ancho // 2) - (ancho // 2)
+        y = (pantalla_alto // 2) - (alto // 2)
+        self.geometry(f"{ancho}x{alto}+{x}+{y}")
+
+    def _build_ui(self):
+        card = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=14, border_width=1, border_color=COLOR_BORDER)
+        card.pack(fill="both", expand=True, padx=16, pady=16)
+
+        # Encabezado
+        if self.tipo == "sin_casa":
+            icono = "🏡"
+            titulo = "No hay casa establecida"
+            subtitulo = f"Te quedan {self.dias_restantes} días de margen desde la instalación."
+            color_icono = COLOR_ACCENT_SKY
+        else:
+            icono = "⚠️"
+            titulo = "Conexión fuera de tu Hogar Principal"
+            subtitulo = f"Te quedan {self.dias_restantes} días de período inicial antes del bloqueo."
+            color_icono = "#f59e0b"
+
+        f_hdr = ctk.CTkFrame(card, fg_color="transparent")
+        f_hdr.pack(fill="x", padx=18, pady=(16, 6))
+
+        ctk.CTkLabel(f_hdr, text=icono, font=("Segoe UI", 28)).pack(side="left", padx=(0, 10))
+
+        f_txts = ctk.CTkFrame(f_hdr, fg_color="transparent")
+        f_txts.pack(side="left", fill="x", expand=True)
+
+        ctk.CTkLabel(f_txts, text=titulo, font=("Segoe UI", 14, "bold"), text_color=COLOR_TEXT_MAIN, anchor="w").pack(fill="x")
+        ctk.CTkLabel(f_txts, text=subtitulo, font=("Segoe UI", 10, "bold"), text_color=color_icono, anchor="w").pack(fill="x")
+
+        # Separador
+        ctk.CTkFrame(card, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=18, pady=(4, 10))
+
+        # Mensaje explicativo
+        if self.tipo == "sin_casa":
+            cuerpo = (
+                "No has registrado tu red de Hogar Principal de Estudio aún.\n\n"
+                f"• Puedes usar KernossAI normalmente durante los 15 días posteriores a la instalación (quedan {self.dias_restantes} días).\n"
+                "• A partir del día 15, todos los servicios y módulos quedarán cerrados hasta que establezcas tu casa."
+            )
+        else:
+            cuerpo = (
+                "Estás conectado a una red diferente a tu Hogar Principal de Estudio.\n\n"
+                f"• Período de gracia restante: {self.dias_restantes} días.\n"
+                "• Al vencer el plazo de 15 días, el acceso fuera de casa requerirá activar el pase temporal de 7 días "
+                "(disponible 1 vez al mes) o registrar esta red como tu casa."
+            )
+
+        ctk.CTkLabel(card, text=cuerpo, font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED,
+                     wraplength=470, justify="left").pack(fill="x", padx=18, pady=(0, 12))
+
+        # Botones de acción
+        f_btns = ctk.CTkFrame(card, fg_color="transparent")
+        f_btns.pack(fill="x", padx=18, pady=(0, 10))
+
+        btn_establecer = ctk.CTkButton(
+            f_btns, text="🏡 Establecer Esta Red como mi Casa", height=38,
+            font=("Segoe UI", 11, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
+            command=self._establecer_casa
+        )
+        btn_establecer.pack(fill="x", pady=(0, 6))
+
+        if self.tipo != "sin_casa":
+            btn_temporal = ctk.CTkButton(
+                f_btns, text="✈️ Activar Hogar Temporal (7 Días)", height=32,
+                font=("Segoe UI", 10, "bold"), fg_color="#1e1b4b", border_width=1, border_color="#818cf8",
+                text_color="#e0e7ff", hover_color="#4338ca",
+                command=self._activar_temporal
+            )
+            btn_temporal.pack(fill="x", pady=(0, 6))
+
+        btn_posponer = ctk.CTkButton(
+            f_btns, text="✕ Posponer / Cerrar", height=30,
+            font=("Segoe UI", 10), fg_color=COLOR_BG_SURFACE, hover_color=COLOR_BORDER,
+            command=self.destroy
+        )
+        btn_posponer.pack(fill="x")
+
+    def _establecer_casa(self):
+        def _thread():
+            em = getattr(self.parent, "email", "")
+            ok, msg = fijar_red_hogar_actual(em)
+            if ok:
+                self.after(0, lambda: messagebox.showinfo("Hogar Principal Registrado", msg))
+                if callable(self.on_casa_establecida):
+                    self.after(0, self.on_casa_establecida)
+                self.after(0, self.destroy)
+            else:
+                self.after(0, lambda: messagebox.showerror("Error", msg))
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _activar_temporal(self):
+        em = getattr(self.parent, "email", "")
+        ok, msg = activar_pase_hogar_temporal(em)
+        if ok:
+            messagebox.showinfo("Pase Temporal Activo", msg)
+            if callable(self.on_casa_establecida):
+                self.on_casa_establecida()
+            self.destroy()
+        else:
+            messagebox.showwarning("Aviso", msg)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -4861,6 +5052,9 @@ class DashboardEstudios(ctk.CTk):
         # Comprobar si corresponde mostrar el Changelog de actualización (Solo 1 vez tras actualizar)
         self.after(600, self._comprobar_changelog_post_actualizacion)
 
+        # Comprobar política de Hogar / Casa y período de gracia de 15 días
+        self.after(900, self._comprobar_politica_hogar_inicio)
+
     def _build_ui(self):
         # ── SIDEBAR LATERAL ──
         self.sidebar = ctk.CTkFrame(self, width=285, corner_radius=0,
@@ -5187,6 +5381,113 @@ class DashboardEstudios(ctk.CTk):
 
     def _abrir_admin_moderacion(self):
         VentanaAdminModeracion(self, self.sesion)
+
+    def _comprobar_politica_hogar_inicio(self):
+        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"])
+        if es_admin:
+            return  # Administrador exento de bloqueo obligatorio
+
+        def _thread():
+            _, dias_transcurridos, dias_restantes_gracia = obtener_fecha_instalacion()
+            codigo, texto, detalles = obtener_estado_casa(self.email)
+
+            def _evaluar():
+                if not self.winfo_exists():
+                    return
+                if codigo == "desconocido":
+                    # No hay casa establecida
+                    if dias_restantes_gracia > 0:
+                        ModalAlertaCasa(self, tipo="sin_casa", dias_restantes=dias_restantes_gracia, on_casa_establecida=self._al_establecer_casa)
+                    else:
+                        self._bloquear_dashboard_por_casa("sin_casa")
+                elif codigo == "no":
+                    # Fuera de casa
+                    if dias_restantes_gracia > 0:
+                        ModalAlertaCasa(self, tipo="fuera_de_casa", dias_restantes=dias_restantes_gracia, on_casa_establecida=self._al_establecer_casa)
+                    else:
+                        self._bloquear_dashboard_por_casa("fuera_de_casa")
+
+            self.after(0, _evaluar)
+
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _al_establecer_casa(self):
+        self._desbloquear_dashboard()
+
+    def _bloquear_dashboard_por_casa(self, motivo: str):
+        # Deshabilitar botones de módulos en la barra lateral
+        for mid, btn in self._botones_modulos.items():
+            btn.configure(state="disabled")
+
+        for child in self.frame_contenido.winfo_children():
+            child.grid_forget()
+
+        if hasattr(self, "frame_bloqueo_casa") and self.frame_bloqueo_casa:
+            self.frame_bloqueo_casa.destroy()
+
+        self.frame_bloqueo_casa = ctk.CTkFrame(self.frame_contenido, fg_color=COLOR_BG_DARK)
+        self.frame_bloqueo_casa.grid(row=0, column=0, sticky="nsew")
+        self.frame_bloqueo_casa.grid_rowconfigure(0, weight=1)
+        self.frame_bloqueo_casa.grid_columnconfigure(0, weight=1)
+
+        card_bloqueo = ctk.CTkFrame(self.frame_bloqueo_casa, fg_color=COLOR_BG_CARD, corner_radius=16,
+                                    border_width=2, border_color=COLOR_DANGER)
+        card_bloqueo.grid(row=0, column=0, padx=40, pady=40)
+
+        ctk.CTkLabel(card_bloqueo, text="🚫", font=("Segoe UI", 48)).pack(pady=(24, 6))
+
+        if motivo == "sin_casa":
+            titulo_b = "Servicios Bloqueados: No hay Casa Establecida"
+            desc_b = (
+                "Han transcurrido los 15 días de gracia desde la instalación de KernossAI.\n\n"
+                "Para desbloquear todos los servicios y módulos, debes registrar tu conexión\n"
+                "actual como tu Hogar Principal de Estudio."
+            )
+        else:
+            titulo_b = "Servicios Bloqueados: Fuera de tu Hogar Principal"
+            desc_b = (
+                "No estás conectado en tu red de Hogar Principal de Estudio registrada.\n\n"
+                "Para desbloquear el acceso puedes:\n"
+                "• Establecer esta red como tu nuevo Hogar Principal.\n"
+                "• O activar el Pase de Hogar Temporal por 7 días (disponible 1 vez al mes desde Ajustes)."
+            )
+
+        ctk.CTkLabel(card_bloqueo, text=titulo_b, font=("Segoe UI", 16, "bold"), text_color=COLOR_DANGER).pack(padx=24, pady=(0, 8))
+        ctk.CTkLabel(card_bloqueo, text=desc_b, font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED, justify="center").pack(padx=28, pady=(0, 20))
+
+        btn_desbloquear = ctk.CTkButton(
+            card_bloqueo, text="🏡 Establecer Esta Red como mi Casa y Desbloquear", height=42,
+            font=("Segoe UI", 12, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
+            command=self._desbloquear_fijando_casa
+        )
+        btn_desbloquear.pack(fill="x", padx=28, pady=(0, 8))
+
+        btn_ir_ajustes = ctk.CTkButton(
+            card_bloqueo, text="⚙️ Abrir Ajustes de Red & Pases", height=36,
+            font=("Segoe UI", 11, "bold"), fg_color=COLOR_BG_SURFACE, border_width=1, border_color=COLOR_BORDER,
+            hover_color=COLOR_BORDER, command=self._abrir_ajustes
+        )
+        btn_ir_ajustes.pack(fill="x", padx=28, pady=(0, 24))
+
+    def _desbloquear_fijando_casa(self):
+        def _thread():
+            ok, msg = fijar_red_hogar_actual(self.email)
+            if ok:
+                self.after(0, lambda: messagebox.showinfo("Hogar Actualizado", msg))
+                self.after(0, self._desbloquear_dashboard)
+            else:
+                self.after(0, lambda: messagebox.showerror("Error", msg))
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _desbloquear_dashboard(self):
+        for mid, btn in self._botones_modulos.items():
+            btn.configure(state="normal")
+
+        if hasattr(self, "frame_bloqueo_casa") and self.frame_bloqueo_casa:
+            self.frame_bloqueo_casa.destroy()
+            self.frame_bloqueo_casa = None
+
+        self._mostrar_home_chat()
 
     def _btn(self, texto, modulo_id, color=COLOR_BG_SURFACE):
         btn = ctk.CTkButton(
