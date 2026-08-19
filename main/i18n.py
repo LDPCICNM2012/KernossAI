@@ -56,7 +56,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "hdr_modulos_estudio": "MÓDULOS DE ESTUDIO",
         "hdr_herramientas_docente": "HERRAMIENTAS DOCENTE",
         
-        # Módulos
+        # Módulos Sidebar
         "mod_mapas": "🧠 Mapas Mentales",
         "mod_calculador": "📊 Calculador de Medias",
         "mod_apuntador": "📝 Apuntador de Notas",
@@ -85,10 +85,16 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ajustes_subtitulo": "Personaliza el idioma, lector de voz (TTS) y preferencias",
         "ajustes_sec_idioma": "🌐 Idioma de la Aplicación",
         "ajustes_lbl_idioma": "Selecciona el idioma de la interfaz:",
+        "ajustes_sec_rol": "🎓 Modalidad y Rol de Cuenta",
+        "ajustes_lbl_rol": "Modalidad de trabajo activa:",
+        "ajustes_sec_multi": "👥 Gestor de Multicuentas",
+        "ajustes_btn_agregar_cuenta": "➕ Iniciar Sesión en Otra Cuenta",
         "ajustes_sec_voz": "🔊 Lector en Voz Alta con IA (TTS)",
         "ajustes_lbl_voz": "Voz de Lectura:",
         "ajustes_lbl_velocidad": "Velocidad:",
         "ajustes_btn_probar": "🔊 Probar Voz",
+        "ajustes_sec_privacidad": "⚠️ Zona de Privacidad — Cuenta",
+        "ajustes_btn_borrar_cuenta": "🗑️ Borrar Mi Cuenta Definitivamente",
         "ajustes_btn_guardar": "💾 Guardar Ajustes",
         "ajustes_btn_cancelar": "Cancelar",
         "ajustes_guardado_ok": "Ajustes guardados correctamente.",
@@ -134,11 +140,92 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "tutoria_tab_solicitudes": "🔔 Solicitudes Pendientes",
         "tutoria_tab_alumnos": "👥 Mis Alumnos Vinculados",
         "tutoria_btn_solicitar": "📨 Solicitar Vinculación",
-        "tutoria_btn_aceptar": "✅ Aceptar",
+        "tutoria_btn_aceptar": "✅ Aceptar Alumno",
         "tutoria_btn_rechazar": "❌ Rechazar",
         "tutoria_btn_desvincular": "⚠️ Desvincular",
         "tutoria_sin_profes": "No hay profesores registrados en este momento.",
-        "tutoria_solicitud_pendiente": "⏳ Solicitud pendiente de confirmación con el profesor {nombre} ({email})"
+        "tutoria_solicitud_pendiente": "⏳ Solicitud pendiente de confirmación con el profesor {nombre} ({email})",
+
+        # Soporte E2EE
+        "sop_titulo_ventana": "🛡️ Soporte Oficial KernossAI — Chat Cifrado E2EE",
+        "sop_subtitulo": "🔒 Cifrado de Extremo a Extremo (E2EE) Activo • Cero Conocimiento en Servidor",
+        "sop_aviso_beta": "🧪 Función beta • Cualquier error, comuníquelo en GitHub",
+        "sop_lbl_motivo": "📌 Motivo:",
+        "sop_plh_input": "Escribe tu mensaje a soporte (se cifrará antes de enviarse)...",
+        "sop_btn_enviar": "Enviar 📤",
+
+        # Módulo: Calculador de Medias
+        "calc_titulo": "📊 Calculadora de Medias Ponderadas",
+        "calc_subtitulo": "Organiza, pondera y visualiza el progreso de tus calificaciones",
+        "calc_lbl_materia": "Materia o Asignatura",
+        "calc_plh_materia": "Ej: Matemáticas, Física...",
+        "calc_lbl_nota": "Nota Directa (0-10)",
+        "calc_plh_nota": "Ej: 9.5",
+        "calc_lbl_pct": "% del Total (Ponderación)",
+        "calc_plh_pct": "Ej: 40",
+        "calc_btn_guardar_nota": "➕ Guardar Nota Directa",
+        "calc_btn_bloques": "📂 Agregar Bloques / Subnotas",
+        "calc_hdr_registro": "Registro Detallado",
+        "calc_hdr_grafica": "Gráfica de Rendimiento",
+        "calc_btn_calcular": "⚡ Calcular Media Final",
+        "calc_btn_limpiar": "🗑️ Limpiar Todo",
+        "calc_btn_exportar": "📄 Exportar Informe",
+
+        # Módulo: Apuntador de Notas
+        "apunt_titulo": "📝 Apuntador de Notas & Exportación Word",
+        "apunt_subtitulo": "Tus notas académicas privadas y redactadas con asistencia IA",
+        "apunt_btn_nueva": "➕ Nueva Nota",
+        "apunt_btn_leer": "🔊 Leer",
+        "apunt_btn_guardar": "💾 Guardar",
+        "apunt_btn_word": "📄 Word",
+        "apunt_btn_borrar": "🗑️ Borrar",
+        "apunt_lbl_sin_nota": "Seleccione una nota",
+
+        # Módulo: Resumidor de Textos
+        "resum_titulo": "🔍 Resumidor de Textos con IA",
+        "resum_subtitulo": "Genera síntesis rigurosas y esquemáticas de cualquier temario",
+        "resum_lbl_entrada": "Pega tus apuntes o tema aquí:",
+        "resum_lbl_salida": "Resumen Riguroso Generado por IA:",
+        "resum_btn_resumir": "⚡ Generar Resumen con IA",
+        "resum_btn_limpiar": "🗑️ Limpiar",
+        "resum_btn_copiar": "📋 Copiar",
+
+        # Módulo: Generador de Exámenes
+        "exam_titulo": "🎯 Generador de Exámenes Tipo Test & Desarrollo",
+        "exam_subtitulo": "Crea pruebas de evaluación a partir de tus temas de estudio",
+        "exam_lbl_tema": "Tema o Contenido del Examen:",
+        "exam_lbl_tipo": "Tipo de Examen:",
+        "exam_lbl_preguntas": "Número de Preguntas:",
+        "exam_lbl_dificultad": "Dificultad:",
+        "exam_btn_generar": "⚡ Generar Examen con IA",
+
+        # Módulo: Ayudante de Problemas
+        "ayud_titulo": "🤖 Ayudante y Resolutor de Problemas con IA",
+        "ayud_subtitulo": "Explicaciones paso a paso de matemáticas, ciencias, sintaxis y programación",
+        "ayud_lbl_enunciado": "Escribe el enunciado de tu problema o ejercicio:",
+        "ayud_lbl_solucion": "Solución y Explicación Paso a Paso:",
+        "ayud_btn_resolver": "⚡ Resolver Paso a Paso",
+
+        # Módulo: Mapas Mentales
+        "mapa_titulo": "🧠 Generador de Mapas Mentales con IA",
+        "mapa_subtitulo": "Visualiza la jerarquía conceptual de cualquier tema académico",
+        "mapa_lbl_tema": "Concepto Principal o Tema de Estudio:",
+        "mapa_btn_generar": "⚡ Generar Mapa Mental",
+
+        # Módulo: Agenda de Estudios
+        "agenda_titulo": "📅 Planificador y Agenda de Estudio",
+        "agenda_subtitulo": "Organiza tus entregas, exámenes y sesiones de repaso",
+        "agenda_btn_anadir": "➕ Añadir Tarea / Examen",
+
+        # Módulo Docente: Creador de Ejercicios
+        "cread_titulo": "✏️ Creador de Ejercicios y Rúbricas Docentes",
+        "cread_subtitulo": "Diseña actividades personalizadas con soluciones para tus alumnos",
+        "cread_btn_generar": "⚡ Generar Ejercicios",
+
+        # Módulo Docente: Corrector de Exámenes
+        "corr_titulo": "📋 Corrector Automático y Evaluador Docente",
+        "corr_subtitulo": "Analiza respuestas de alumnos y genera feedback pedagógico",
+        "corr_btn_corregir": "⚡ Corregir y Evaluar"
     },
 
     "en": {
@@ -180,7 +267,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "hdr_modulos_estudio": "STUDY MODULES",
         "hdr_herramientas_docente": "TEACHER TOOLS",
         
-        # Modules
+        # Modules Sidebar
         "mod_mapas": "🧠 Mind Maps",
         "mod_calculador": "📊 Grade Calculator",
         "mod_apuntador": "📝 Class Notes & Word",
@@ -209,10 +296,16 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ajustes_subtitulo": "Customize language, AI voice reader (TTS) and preferences",
         "ajustes_sec_idioma": "🌐 Application Language",
         "ajustes_lbl_idioma": "Select interface language:",
+        "ajustes_sec_rol": "🎓 Account Role & Mode",
+        "ajustes_lbl_rol": "Active working mode:",
+        "ajustes_sec_multi": "👥 Multi-Account Switcher",
+        "ajustes_btn_agregar_cuenta": "➕ Sign in to Another Account",
         "ajustes_sec_voz": "🔊 AI Voice Reader (TTS)",
         "ajustes_lbl_voz": "Reading Voice:",
         "ajustes_lbl_velocidad": "Speed:",
         "ajustes_btn_probar": "🔊 Test Voice",
+        "ajustes_sec_privacidad": "⚠️ Privacy Zone — Account",
+        "ajustes_btn_borrar_cuenta": "🗑️ Permanently Delete My Account",
         "ajustes_btn_guardar": "💾 Save Settings",
         "ajustes_btn_cancelar": "Cancel",
         "ajustes_guardado_ok": "Settings saved successfully.",
@@ -258,11 +351,92 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "tutoria_tab_solicitudes": "🔔 Pending Requests",
         "tutoria_tab_alumnos": "👥 My Connected Students",
         "tutoria_btn_solicitar": "📨 Request Connection",
-        "tutoria_btn_aceptar": "✅ Accept",
+        "tutoria_btn_aceptar": "✅ Accept Student",
         "tutoria_btn_rechazar": "❌ Reject",
         "tutoria_btn_desvincular": "⚠️ Disconnect",
         "tutoria_sin_profes": "No teachers registered at this time.",
-        "tutoria_solicitud_pendiente": "⏳ Connection request pending with teacher {nombre} ({email})"
+        "tutoria_solicitud_pendiente": "⏳ Connection request pending with teacher {nombre} ({email})",
+
+        # Support E2EE
+        "sop_titulo_ventana": "🛡️ Official Support KernossAI — E2EE Encrypted Chat",
+        "sop_subtitulo": "🔒 End-to-End Encryption (E2EE) Active • Zero Knowledge on Server",
+        "sop_aviso_beta": "🧪 Beta feature • Report any issues on GitHub",
+        "sop_lbl_motivo": "📌 Reason / Topic:",
+        "sop_plh_input": "Type your message to support (encrypted before sending)...",
+        "sop_btn_enviar": "Send 📤",
+
+        # Module: Grade Calculator
+        "calc_titulo": "📊 Weighted Grade Calculator",
+        "calc_subtitulo": "Organize, weight and track your academic grades progress",
+        "calc_lbl_materia": "Subject or Course",
+        "calc_plh_materia": "e.g.: Mathematics, Physics...",
+        "calc_lbl_nota": "Direct Grade (0-10)",
+        "calc_plh_nota": "e.g.: 9.5",
+        "calc_lbl_pct": "% of Total (Weighting)",
+        "calc_plh_pct": "e.g.: 40",
+        "calc_btn_guardar_nota": "➕ Save Direct Grade",
+        "calc_btn_bloques": "📂 Add Sub-grades / Blocks",
+        "calc_hdr_registro": "Detailed Grade Log",
+        "calc_hdr_grafica": "Performance Chart",
+        "calc_btn_calcular": "⚡ Calculate Final Average",
+        "calc_btn_limpiar": "🗑️ Clear All",
+        "calc_btn_exportar": "📄 Export Report",
+
+        # Module: Class Notes
+        "apunt_titulo": "📝 Class Notes & Word Export",
+        "apunt_subtitulo": "Your private class notes drafted with AI assistance",
+        "apunt_btn_nueva": "➕ New Note",
+        "apunt_btn_leer": "🔊 Listen",
+        "apunt_btn_guardar": "💾 Save",
+        "apunt_btn_word": "📄 Word",
+        "apunt_btn_borrar": "🗑️ Delete",
+        "apunt_lbl_sin_nota": "Select a note",
+
+        # Module: AI Summarizer
+        "resum_titulo": "🔍 AI Text Summarizer",
+        "resum_subtitulo": "Generate rigorous and structured summaries of any syllabus",
+        "resum_lbl_entrada": "Paste your notes or text here:",
+        "resum_lbl_salida": "AI-Generated Rigorous Summary:",
+        "resum_btn_resumir": "⚡ Generate Summary with AI",
+        "resum_btn_limpiar": "🗑️ Clear",
+        "resum_btn_copiar": "📋 Copy",
+
+        # Module: Exam Generator
+        "exam_titulo": "🎯 Exam & Quiz Generator",
+        "exam_subtitulo": "Create evaluation exams and quizzes from your study topics",
+        "exam_lbl_tema": "Exam Topic or Content:",
+        "exam_lbl_tipo": "Exam Format:",
+        "exam_lbl_preguntas": "Number of Questions:",
+        "exam_lbl_dificultad": "Difficulty:",
+        "exam_btn_generar": "⚡ Generate Exam with AI",
+
+        # Module: Problem Solver
+        "ayud_titulo": "🤖 AI Problem Solver & Academic Assistant",
+        "ayud_subtitulo": "Step-by-step solutions for math, science, syntax, and coding",
+        "ayud_lbl_enunciado": "Enter your problem or exercise prompt:",
+        "ayud_lbl_solucion": "Solution & Step-by-Step Explanation:",
+        "ayud_btn_resolver": "⚡ Solve Step by Step",
+
+        # Module: Mind Maps
+        "mapa_titulo": "🧠 AI Mind Map Generator",
+        "mapa_subtitulo": "Visualize the conceptual hierarchy of any academic topic",
+        "mapa_lbl_tema": "Main Concept or Study Topic:",
+        "mapa_btn_generar": "⚡ Generate Mind Map",
+
+        # Module: Study Planner
+        "agenda_titulo": "📅 Study Planner & Calendar",
+        "agenda_subtitulo": "Organize your deadlines, exams and revision sessions",
+        "agenda_btn_anadir": "➕ Add Task / Exam",
+
+        # Teacher Module: Exercise Creator
+        "cread_titulo": "✏️ Exercise & Rubric Creator for Teachers",
+        "cread_subtitulo": "Design custom activities with answer keys for your students",
+        "cread_btn_generar": "⚡ Generate Exercises",
+
+        # Teacher Module: Exam Grader
+        "corr_titulo": "📋 Automated Exam Grader & Assessment Assistant",
+        "corr_subtitulo": "Analyze student answers and generate pedagogical feedback",
+        "corr_btn_corregir": "⚡ Grade and Evaluate"
     },
 
     "de": {
@@ -304,7 +478,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "hdr_modulos_estudio": "STUDIENMODULE",
         "hdr_herramientas_docente": "LEHRERWERKZEUGE",
         
-        # Modules
+        # Modules Sidebar
         "mod_mapas": "🧠 Mindmaps",
         "mod_calculador": "📊 Notenrechner",
         "mod_apuntador": "📝 Notizen & Word",
@@ -333,10 +507,16 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ajustes_subtitulo": "Sprache, KI-Sprachausgabe (TTS) und Präferenzen anpassen",
         "ajustes_sec_idioma": "🌐 Anwendungssprache",
         "ajustes_lbl_idioma": "Oberflächensprache auswählen:",
+        "ajustes_sec_rol": "🎓 Kontomodus & Rolle",
+        "ajustes_lbl_rol": "Aktiver Arbeitsmodus:",
+        "ajustes_sec_multi": "👥 Multi-Account-Manager",
+        "ajustes_btn_agregar_cuenta": "➕ Weiteres Konto Hinzufügen",
         "ajustes_sec_voz": "🔊 KI-Sprachausgabe (TTS)",
         "ajustes_lbl_voz": "Vorlesestimme:",
         "ajustes_lbl_velocidad": "Geschwindigkeit:",
         "ajustes_btn_probar": "🔊 Stimme Testen",
+        "ajustes_sec_privacidad": "⚠️ Datenschutzbereich — Konto",
+        "ajustes_btn_borrar_cuenta": "🗑️ Mein Konto Dauerhaft Löschen",
         "ajustes_btn_guardar": "💾 Einstellungen Speichern",
         "ajustes_btn_cancelar": "Abbrechen",
         "ajustes_guardado_ok": "Einstellungen erfolgreich gespeichert.",
@@ -382,11 +562,92 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "tutoria_tab_solicitudes": "🔔 Ausstehende Anfragen",
         "tutoria_tab_alumnos": "👥 Meine verknüpften Schüler",
         "tutoria_btn_solicitar": "📨 Verknüpfung Anfragen",
-        "tutoria_btn_aceptar": "✅ Annehmen",
+        "tutoria_btn_aceptar": "✅ Schüler Annehmen",
         "tutoria_btn_rechazar": "❌ Ablehnen",
         "tutoria_btn_desvincular": "⚠️ Trennen",
         "tutoria_sin_profes": "Derzeit sind keine Lehrer registriert.",
-        "tutoria_solicitud_pendiente": "⏳ Anfrage ausstehend bei Lehrer {nombre} ({email})"
+        "tutoria_solicitud_pendiente": "⏳ Anfrage ausstehend bei Lehrer {nombre} ({email})",
+
+        # Support E2EE
+        "sop_titulo_ventana": "🛡️ Offizieller Support KernossAI — E2EE-Verschlüsselter Chat",
+        "sop_subtitulo": "🔒 Ende-zu-Ende-Verschlüsselung (E2EE) Aktiv • Null Server-Kenntnis",
+        "sop_aviso_beta": "🧪 Beta-Funktion • Probleme bitte auf GitHub melden",
+        "sop_lbl_motivo": "📌 Grund / Thema:",
+        "sop_plh_input": "Nachricht an den Support eingeben (wird vor dem Senden verschlüsselt)...",
+        "sop_btn_enviar": "Senden 📤",
+
+        # Module: Notenrechner
+        "calc_titulo": "📊 Notenrechner & Gewichtung",
+        "calc_subtitulo": "Noten organisieren, gewichten und visualisieren",
+        "calc_lbl_materia": "Fach / Kurs",
+        "calc_plh_materia": "z.B.: Mathematik, Physik...",
+        "calc_lbl_nota": "Direkte Note (0-10)",
+        "calc_plh_nota": "z.B.: 9.5",
+        "calc_lbl_pct": "% der Gesamtnote (Gewichtung)",
+        "calc_plh_pct": "z.B.: 40",
+        "calc_btn_guardar_nota": "➕ Note Speichern",
+        "calc_btn_bloques": "📂 Teilnoten / Blöcke Hinzufügen",
+        "calc_hdr_registro": "Detailliertes Protokoll",
+        "calc_hdr_grafica": "Leistungsdiagramm",
+        "calc_btn_calcular": "⚡ Endnote Berechnen",
+        "calc_btn_limpiar": "🗑️ Alles Löschen",
+        "calc_btn_exportar": "📄 Bericht Exportieren",
+
+        # Module: Notizen
+        "apunt_titulo": "📝 Notizen & Word-Export",
+        "apunt_subtitulo": "Ihre privaten Lernnotizen mit KI-Unterstützung",
+        "apunt_btn_nueva": "➕ Neue Notiz",
+        "apunt_btn_leer": "🔊 Vorlesen",
+        "apunt_btn_guardar": "💾 Speichern",
+        "apunt_btn_word": "📄 Word",
+        "apunt_btn_borrar": "🗑️ Löschen",
+        "apunt_lbl_sin_nota": "Wählen Sie eine Notiz",
+
+        # Module: Zusammenfasser
+        "resum_titulo": "🔍 KI-Text-Zusammenfasser",
+        "resum_subtitulo": "Erstellen Sie strukturierte Zusammenfassungen beliebiger Themen",
+        "resum_lbl_entrada": "Notizen oder Text hier einfügen:",
+        "resum_lbl_salida": "KI-generierte Zusammenfassung:",
+        "resum_btn_resumir": "⚡ Zusammenfassung Erstellen",
+        "resum_btn_limpiar": "🗑️ Löschen",
+        "resum_btn_copiar": "📋 Kopieren",
+
+        # Module: Prüfungsgenerator
+        "exam_titulo": "🎯 Prüfungs- & Quiz-Generator",
+        "exam_subtitulo": "Erstellen Sie Prüfungen aus Ihren Lerninhalten",
+        "exam_lbl_tema": "Prüfungsthema oder Inhalt:",
+        "exam_lbl_tipo": "Prüfungsformat:",
+        "exam_lbl_preguntas": "Anzahl der Fragen:",
+        "exam_lbl_dificultad": "Schwierigkeit:",
+        "exam_btn_generar": "⚡ Prüfung Generieren",
+
+        # Module: Problem-Löser
+        "ayud_titulo": "🤖 KI-Problem-Löser & Studienassistent",
+        "ayud_subtitulo": "Schritt-für-Schritt-Lösungen für Mathematik, Wissenschaft und Code",
+        "ayud_lbl_enunciado": "Geben Sie Ihre Aufgabe oder Übung ein:",
+        "ayud_lbl_solucion": "Lösung & Schritt-für-Schritt-Erklärung:",
+        "ayud_btn_resolver": "⚡ Schritt für Schritt Lösen",
+
+        # Module: Mindmaps
+        "mapa_titulo": "🧠 KI-Mindmap-Generator",
+        "mapa_subtitulo": "Visualisieren Sie die Begriffshierarchie beliebiger Themen",
+        "mapa_lbl_tema": "Hauptbegriff oder Thema:",
+        "mapa_btn_generar": "⚡ Mindmap Generieren",
+
+        # Module: Studienplaner
+        "agenda_titulo": "📅 Studienplaner & Kalender",
+        "agenda_subtitulo": "Organisieren Sie Abgaben, Prüfungen und Lerneinheiten",
+        "agenda_btn_anadir": "➕ Aufgabe / Prüfung Hinzufügen",
+
+        # Teacher Module: Übungsersteller
+        "cread_titulo": "✏️ Übungsersteller & Bewertungsraster",
+        "cread_subtitulo": "Erstellen Sie maßgeschneiderte Aufgaben mit Musterlösungen",
+        "cread_btn_generar": "⚡ Übungen Generieren",
+
+        # Teacher Module: Prüfungskorrektor
+        "corr_titulo": "📋 Automatischer Prüfungskorrektor",
+        "corr_subtitulo": "Schülerantworten analysieren und pädagogisches Feedback generieren",
+        "corr_btn_corregir": "⚡ Korrigieren & Bewerten"
     },
 
     "fr": {
@@ -428,7 +689,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "hdr_modulos_estudio": "MODULES D'ÉTUDE",
         "hdr_herramientas_docente": "OUTILS ENSEIGNANT",
         
-        # Modules
+        # Modules Sidebar
         "mod_mapas": "🧠 Cartes Mentales",
         "mod_calculador": "📊 Calculateur de Moyennes",
         "mod_apuntador": "📝 Prise de Notes & Word",
@@ -457,10 +718,16 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ajustes_subtitulo": "Personnalisez la langue, la voix de lecture (TTS) et les préférences",
         "ajustes_sec_idioma": "🌐 Langue de l'Application",
         "ajustes_lbl_idioma": "Sélectionnez la langue de l'interface :",
+        "ajustes_sec_rol": "🎓 Mode et Rôle du Compte",
+        "ajustes_lbl_rol": "Mode de travail actif :",
+        "ajustes_sec_multi": "👥 Gestionnaire Multi-Comptes",
+        "ajustes_btn_agregar_cuenta": "➕ Se Connecter à un Autre Compte",
         "ajustes_sec_voz": "🔊 Lecture à Voix Haute (TTS)",
         "ajustes_lbl_voz": "Voix de lecture :",
         "ajustes_lbl_velocidad": "Vitesse :",
         "ajustes_btn_probar": "🔊 Tester la Voix",
+        "ajustes_sec_privacidad": "⚠️ Zone de Confidentialité — Compte",
+        "ajustes_btn_borrar_cuenta": "🗑️ Supprimer Définitivement Mon Compte",
         "ajustes_btn_guardar": "💾 Enregistrer les Paramètres",
         "ajustes_btn_cancelar": "Annuler",
         "ajustes_guardado_ok": "Paramètres enregistrés avec succès.",
@@ -506,11 +773,92 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "tutoria_tab_solicitudes": "🔔 Demandes en Attente",
         "tutoria_tab_alumnos": "👥 Mes Élèves Connectés",
         "tutoria_btn_solicitar": "📨 Demander la Connexion",
-        "tutoria_btn_aceptar": "✅ Accepter",
+        "tutoria_btn_aceptar": "✅ Accepter l'Élève",
         "tutoria_btn_rechazar": "❌ Refuser",
         "tutoria_btn_desvincular": "⚠️ Déconnecter",
         "tutoria_sin_profes": "Aucun professeur inscrit pour le moment.",
-        "tutoria_solicitud_pendiente": "⏳ Demande en attente auprès du professeur {nombre} ({email})"
+        "tutoria_solicitud_pendiente": "⏳ Demande en attente auprès du professeur {nombre} ({email})",
+
+        # Support E2EE
+        "sop_titulo_ventana": "🛡️ Support Officiel KernossAI — Chat Chiffré E2EE",
+        "sop_subtitulo": "🔒 Chiffrement de Bout en Bout (E2EE) Actif • Zéro Connaissance Serveur",
+        "sop_aviso_beta": "🧪 Fonction bêta • Signalez tout problème sur GitHub",
+        "sop_lbl_motivo": "📌 Motif / Sujet :",
+        "sop_plh_input": "Tapez votre message au support (chiffré avant l'envoi)...",
+        "sop_btn_enviar": "Envoyer 📤",
+
+        # Module: Calculateur de Moyennes
+        "calc_titulo": "📊 Calculateur de Moyennes Pondérées",
+        "calc_subtitulo": "Organisez, pondérez et visualisez vos notes",
+        "calc_lbl_materia": "Matière ou Cours",
+        "calc_plh_materia": "ex : Mathématiques, Physique...",
+        "calc_lbl_nota": "Note Directe (0-10)",
+        "calc_plh_nota": "ex : 9.5",
+        "calc_lbl_pct": "% du Total (Pondération)",
+        "calc_plh_pct": "ex : 40",
+        "calc_btn_guardar_nota": "➕ Enregistrer la Note",
+        "calc_btn_bloques": "📂 Ajouter Sous-notes / Blocs",
+        "calc_hdr_registro": "Registre Détaillé",
+        "calc_hdr_grafica": "Graphique de Performance",
+        "calc_btn_calcular": "⚡ Calculer la Moyenne Finale",
+        "calc_btn_limpiar": "🗑️ Tout Effacer",
+        "calc_btn_exportar": "📄 Exporter le Rapport",
+
+        # Module: Prise de Notes
+        "apunt_titulo": "📝 Prise de Notes & Export Word",
+        "apunt_subtitulo": "Vos notes de cours privées avec assistance IA",
+        "apunt_btn_nueva": "➕ Nouvelle Note",
+        "apunt_btn_leer": "🔊 Écouter",
+        "apunt_btn_guardar": "💾 Enregistrer",
+        "apunt_btn_word": "📄 Word",
+        "apunt_btn_borrar": "🗑️ Supprimer",
+        "apunt_lbl_sin_nota": "Sélectionnez une note",
+
+        # Module: Résumeur IA
+        "resum_titulo": "🔍 Résumeur de Texte IA",
+        "resum_subtitulo": "Générez des résumés structurés de n'importe quel cours",
+        "resum_lbl_entrada": "Collez vos notes ou votre texte ici :",
+        "resum_lbl_salida": "Résumé Rigoureux Généré par l'IA :",
+        "resum_btn_resumir": "⚡ Générer le Résumé avec l'IA",
+        "resum_btn_limpiar": "🗑️ Effacer",
+        "resum_btn_copiar": "📋 Copier",
+
+        # Module: Générateur d'Examens
+        "exam_titulo": "🎯 Générateur d'Examens & Quiz",
+        "exam_subtitulo": "Créez des examens à partir de vos sujets d'étude",
+        "exam_lbl_tema": "Sujet ou Contenu de l'Examen :",
+        "exam_lbl_tipo": "Format d'Examen :",
+        "exam_lbl_preguntas": "Nombre de Questions :",
+        "exam_lbl_dificultad": "Difficulté :",
+        "exam_btn_generar": "⚡ Générer l'Examen avec l'IA",
+
+        # Module: Résolveur de Problèmes
+        "ayud_titulo": "🤖 Résolveur de Problèmes & Assistant IA",
+        "ayud_subtitulo": "Solutions pas à pas pour les maths, sciences et programmation",
+        "ayud_lbl_enunciado": "Entrez l'énoncé de votre problème ou exercice :",
+        "ayud_lbl_solucion": "Solution & Explication Pas à Pas :",
+        "ayud_btn_resolver": "⚡ Résoudre Pas à Pas",
+
+        # Module: Cartes Mentales
+        "mapa_titulo": "🧠 Générateur de Cartes Mentales IA",
+        "mapa_subtitulo": "Visualisez la hiérarchie conceptuelle de n'importe quel cours",
+        "mapa_lbl_tema": "Concept Principal ou Sujet d'Étude :",
+        "mapa_btn_generar": "⚡ Générer la Carte Mentale",
+
+        # Module: Agenda d'Études
+        "agenda_titulo": "📅 Agenda & Planificateur d'Études",
+        "agenda_subtitulo": "Organisez vos échéances, examens et sessions de révision",
+        "agenda_btn_anadir": "➕ Ajouter Tâche / Examen",
+
+        # Teacher Module: Créateur d'Exercices
+        "cread_titulo": "✏️ Créateur d'Exercices & Barèmes pour Enseignants",
+        "cread_subtitulo": "Concevez des activités personnalisées avec corrigés",
+        "cread_btn_generar": "⚡ Générer les Exercices",
+
+        # Teacher Module: Correcteur d'Examens
+        "corr_titulo": "📋 Correcteur d'Examens Automatisé",
+        "corr_subtitulo": "Analysez les réponses des élèves et générez un retour pédagogique",
+        "corr_btn_corregir": "⚡ Corriger et Évaluer"
     }
 }
 
