@@ -3120,10 +3120,13 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
 
         self.versiones_catalogo = [
             (f"v{VERSION_APP} (Versión Actual)", [
-                ("🛡️ Soporte Técnico Oficial Cifrado E2EE", "Canal de chat directo con kernossai@support.com para resolución de incidencias con cifrado de extremo a extremo."),
-                ("🔒 Mensajería Privada E2EE (Cero Conocimiento)", "Cifrado criptográfico local con PBKDF2 y HMAC-SHA256. Nadie en el medio ni en el servidor puede leer tus mensajes."),
-                ("💻 Protección Anti-Fraude de Hardware (HWID)", "Identificación única de dispositivo físico y blindaje de cuentas."),
-                ("👑 Panel Maestro de Moderación y Bans", "Gestión en tiempo real de baneos de cuenta, IP-Ban y Hardware-Ban para administradores.")
+                ("🛡️ Soporte Técnico Oficial E2EE con Categorización", "Canal de chat cifrado de extremo a extremo (E2EE) con selector de motivo (dudas, IA, bugs, cuentas) y respuestas en vivo."),
+                ("👥 Gestor de Multicuentas en Ajustes", "Inicia sesión con múltiples cuentas en el mismo equipo y alterna entre ellas con 1 solo clic (🔄 Cambiar) sin volver a escribir contraseñas."),
+                ("🎓 Selector de Rol Académico (Alumno / Profesor)", "Cambia tu modalidad en cualquier momento desde Ajustes para desbloquear el Creador de Ejercicios y Corrector Automático."),
+                ("⛔ Vigilante de Moderación en Vivo & Pantalla de Bloqueo", "Detección instantánea de sanciones con cierre automático de sesión, revocación total de acceso a la IA y pantalla roja informativa."),
+                ("🗑️ Vaciado y Eliminación de Chats de Tickets", "Panel de administración con opción para limpiar o eliminar tickets cerrados directamente en la base de datos permanente."),
+                ("⚡ Persistencia de Sesión & Cloud Storage Supabase", "Conexión segura con la nube de Supabase para evitar deslogueos al cerrar la aplicación y almacenar datos de forma perpetua."),
+                ("💻 Blindaje Anti-Fraude de Hardware (HWID)", "Identificación criptográfica de dispositivos para garantizar la seguridad de cuentas y prevenir el abuso de accesos.")
             ], COLOR_ACCENT_PRIMARY),
             ("v1.5", [
                 ("🌐 Internacionalización & Multi-idioma", "Interfaz traducida al Español (🇪🇸), Inglés (🇬🇧), Alemán (🇩🇪) y Francés (🇫🇷) con selector en Ajustes."),
