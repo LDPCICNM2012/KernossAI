@@ -992,24 +992,6 @@ class ModuloExamen(ctk.CTkFrame):
                       border_color=COLOR_BORDER, hover_color=COLOR_ACCENT_HOVER,
                       height=36, command=self.exportar_word).pack(fill="x", padx=20, pady=4)
 
-    def _toggle_tts(self):
-        if tts_engine.esta_reproduciendo():
-            tts_engine.detener()
-            self.btn_tts_examen.configure(text=t("btn_escuchar"), fg_color=COLOR_BG_CARD_LIGHT)
-        else:
-            texto = self.output_text.get("1.0", "end-1c").strip()
-            if not texto:
-                messagebox.showinfo("KernossIA", "Primero genera un examen para escucharlo.")
-                return
-
-            def _cb(rep):
-                if rep:
-                    self.btn_tts_examen.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
-                else:
-                    self.btn_tts_examen.configure(text=t("btn_escuchar"), fg_color=COLOR_BG_CARD_LIGHT)
-
-            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
-
         self.status_label = ctk.CTkLabel(sidebar, text="🟢 Ready",
                                          text_color=COLOR_SUCCESS, font=("Segoe UI", 11))
         self.status_label.pack(side="bottom", pady=15)
@@ -1034,6 +1016,24 @@ class ModuloExamen(ctk.CTkFrame):
                       fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
                       font=("Segoe UI", 12, "bold"),
                       command=self.enviar_respuesta).grid(row=0, column=1)
+
+    def _toggle_tts(self):
+        if tts_engine.esta_reproduciendo():
+            tts_engine.detener()
+            self.btn_tts_examen.configure(text=t("btn_escuchar"), fg_color=COLOR_BG_CARD_LIGHT)
+        else:
+            texto = self.output_text.get("1.0", "end-1c").strip()
+            if not texto:
+                messagebox.showinfo("KernossIA", "Primero genera un examen para escucharlo.")
+                return
+
+            def _cb(rep):
+                if rep:
+                    self.btn_tts_examen.configure(text="⏹️ Detener", fg_color=COLOR_DANGER)
+                else:
+                    self.btn_tts_examen.configure(text=t("btn_escuchar"), fg_color=COLOR_BG_CARD_LIGHT)
+
+            tts_engine.hablar(texto, callback_estado=lambda r: self.after(0, lambda: _cb(r)))
 
     def iniciar_generacion(self):
         tema = self.txt_tema.get("1.0", "end-1c").strip()
@@ -3298,16 +3298,25 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
                 resumen = llamar_groq(prompt)
 
             def _actualizar():
-                self.txt_resumen_ia.configure(state="normal")
-                self.txt_resumen_ia.delete("1.0", "end")
-                self.txt_resumen_ia.insert("1.0", resumen)
-                self.txt_resumen_ia.configure(state="disabled")
-                self.btn_resumir_ia.configure(state="normal", text="🔄 Reanalizar")
+                try:
+                    if not self.winfo_exists():
+                        return
+                    self.txt_resumen_ia.configure(state="normal")
+                    self.txt_resumen_ia.delete("1.0", "end")
+                    self.txt_resumen_ia.insert("1.0", resumen)
+                    self.txt_resumen_ia.configure(state="disabled")
+                    self.btn_resumir_ia.configure(state="normal", text="🔄 Reanalizar")
+                except Exception:
+                    pass
 
             self.after(0, _actualizar)
         except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
-            self.after(0, lambda: self.btn_resumir_ia.configure(state="normal", text="⚡ Analizar con IA"))
+            try:
+                if self.winfo_exists():
+                    self.after(0, lambda: messagebox.showerror("Error IA", str(e)))
+                    self.after(0, lambda: self.btn_resumir_ia.configure(state="normal", text="⚡ Analizar con IA"))
+            except Exception:
+                pass
 
     def _toggle_tts(self):
         if tts_engine.esta_reproduciendo():
