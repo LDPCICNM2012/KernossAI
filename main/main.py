@@ -3311,9 +3311,30 @@ class VentanaSoporteE2EE(ctk.CTkToplevel):
             text_color=COLOR_TEXT_MUTED
         ).pack(side="left")
 
+        # Fila de selección de Motivo de la consulta
+        fila_motivo = ctk.CTkFrame(barra_input, fg_color="transparent")
+        fila_motivo.pack(fill="x", padx=18, pady=(2, 2))
+
+        ctk.CTkLabel(fila_motivo, text="📌 Motivo:", font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left", padx=(0, 8))
+
+        self.combo_motivo = ctk.CTkComboBox(
+            fila_motivo,
+            values=[
+                "Duda Académica / Tareas",
+                "Problema con la IA",
+                "Error o Bug del Programa",
+                "Problema con mi Cuenta",
+                "Sugerencia / Idea",
+                "Consulta General"
+            ],
+            height=28, width=240, font=("Segoe UI", 10), fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER
+        )
+        self.combo_motivo.set("Duda Académica / Tareas")
+        self.combo_motivo.pack(side="left")
+
         # Fila del input de texto y botón enviar
         fila_entrada = ctk.CTkFrame(barra_input, fg_color="transparent")
-        fila_entrada.pack(fill="x", padx=18, pady=(2, 12))
+        fila_entrada.pack(fill="x", padx=18, pady=(4, 12))
 
         self.entry_msg = ctk.CTkEntry(
             fila_entrada, font=("Segoe UI", 12), height=42,
@@ -3387,11 +3408,15 @@ class VentanaSoporteE2EE(ctk.CTkToplevel):
         txt = self.entry_msg.get().strip()
         if not txt:
             return
+        
+        motivo = self.combo_motivo.get().strip()
+        msg_con_motivo = f"📌 [Motivo: {motivo}]\n{txt}" if motivo else txt
+
         self.entry_msg.delete(0, "end")
         self.btn_enviar.configure(state="disabled")
 
         def _thread():
-            ok, res = enviar_mensaje_soporte(txt)
+            ok, res = enviar_mensaje_soporte(msg_con_motivo)
             if ok:
                 ok2, msgs = obtener_mensajes_soporte()
                 if ok2:
@@ -3808,9 +3833,18 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                               command=lambda hw=hwid: self._desban_quick(hw, "hwid")).pack(side="left", padx=2)
 
     def _ban_quick(self, objetivo, tipo):
-        ok, res = admin_aplicar_ban(objetivo, tipo, "Baneo aplicado desde Panel de Administración")
+        dialogo = ctk.CTkInputDialog(
+            text=f"Introduce el motivo de la sanción para {tipo} '{objetivo}':\n(Se mostrará al usuario en su pantalla roja de bloqueo)",
+            title=f"⛔ Motivo del Baneo de {tipo.upper()}"
+        )
+        motivo = dialogo.get_input()
+        if motivo is None:
+            return  # Cancelado por el admin
+
+        motivo_limpio = motivo.strip() or "Infracción de las normas del sistema"
+        ok, res = admin_aplicar_ban(objetivo, tipo, motivo_limpio)
         if ok:
-            messagebox.showinfo("Baneo Aplicado", res)
+            messagebox.showinfo("Baneo Aplicado", f"{res}\n\n📋 Motivo: {motivo_limpio}")
             self._cargar_usuarios()
         else:
             messagebox.showerror("Error", res)
