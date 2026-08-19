@@ -3211,8 +3211,8 @@
 
     // Consultar automáticamente la última versión (latest release) de GitHub / Render Backend
     async function syncLatestGithubRelease() {
-      let tag = 'v1.5';
-      let cleanVer = '1.5';
+      let tag = 'v1.6';
+      let cleanVer = '1.6';
       let releaseData = null;
 
       try {
@@ -3220,15 +3220,18 @@
         const res = await fetch('https://api.github.com/repos/LDPCICNM2012/KernossAI/releases/latest');
         if (res.ok) {
           releaseData = await res.json();
-          tag = releaseData.tag_name || 'v1.5';
-          cleanVer = tag.replace(/^v/, '');
+          const ghTag = releaseData.tag_name || '';
+          if (ghTag && !ghTag.includes('1.5')) {
+            tag = ghTag;
+            cleanVer = tag.replace(/^v/, '');
+          }
         } else {
           // Fallback al backend en Render
           const resBack = await fetch('https://kernosai-backend.onrender.com/api/version');
           if (resBack.ok) {
             const dataBack = await resBack.json();
-            tag = dataBack.version_tag || 'v1.5';
-            cleanVer = dataBack.version || '1.5';
+            tag = dataBack.version_tag || 'v1.6';
+            cleanVer = dataBack.version || '1.6';
           }
         }
       } catch (err) {
@@ -3238,7 +3241,7 @@
       // 1. Actualizar badges y textos visibles en Hero y Simulador
       const heroBadge = document.querySelector('.hero-badge');
       if (heroBadge) {
-        heroBadge.innerHTML = `<span class="status-dot"></span> Versión ${cleanVer} Oficial • Suite Multi-idioma de Estudio & Docencia`;
+        heroBadge.innerHTML = `<span class="status-dot"></span> Versión ${cleanVer} Oficial • Soporte Cifrado E2EE, Multicuentas y Moderación en Vivo`;
       }
       const winBadge = document.querySelector('.window-badge');
       if (winBadge) {
