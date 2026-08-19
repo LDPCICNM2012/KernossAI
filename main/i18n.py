@@ -93,7 +93,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ajustes_btn_cancelar": "Cancelar",
         "ajustes_guardado_ok": "Ajustes guardados correctamente.",
         "ajustes_aviso_reinicio": "El idioma se ha actualizado correctamente.",
-        
+
         # Hogar Principal Modal
         "hogar_titulo": "🏠 ¿Estás en tu Hogar Principal?",
         "hogar_subtitulo": "Control de ubicación y protección de cuenta compartida",
@@ -115,7 +115,14 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "nov_item_cloud_tit": "⚡ Persistencia de Sesión & Cloud Storage Supabase",
         "nov_item_cloud_desc": "Conexión segura con la nube de Supabase para evitar deslogueos al cerrar la aplicación y almacenar datos de forma perpetua.",
         "nov_item_hwid_tit": "💻 Blindaje Anti-Fraude de Hardware (HWID)",
-        "nov_item_hwid_desc": "Identificación criptográfica de dispositivos para garantizar la seguridad de cuentas y prevenir el abuso de accesos."
+        "nov_item_hwid_desc": "Identificación criptográfica de dispositivos para garantizar la seguridad de cuentas y prevenir el abuso de accesos.",
+
+        # Actualización OTA
+        "ota_btn_actualizar": "⚡ Actualizar Automáticamente (OTA)",
+        "ota_btn_web": "🌐 Descargar en Web",
+        "ota_descargando": "Descargando actualización...",
+        "ota_instalando": "⚡ Instalando actualización y reiniciando...",
+        "ota_error": "Error al descargar actualización: {err}"
     },
 
     "en": {
@@ -216,7 +223,14 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "nov_item_cloud_tit": "⚡ Session Persistence & Supabase Cloud Storage",
         "nov_item_cloud_desc": "Secure connection to Supabase cloud preventing unintentional logouts upon app restart and keeping data permanently stored.",
         "nov_item_hwid_tit": "💻 Hardware Anti-Fraud Shield (HWID)",
-        "nov_item_hwid_desc": "Cryptographic hardware device fingerprinting to protect accounts and prevent unauthorized abuse."
+        "nov_item_hwid_desc": "Cryptographic hardware device fingerprinting to protect accounts and prevent unauthorized abuse.",
+
+        # OTA Update
+        "ota_btn_actualizar": "⚡ Auto-Update Now (OTA)",
+        "ota_btn_web": "🌐 Download from Web",
+        "ota_descargando": "Downloading update...",
+        "ota_instalando": "⚡ Installing update and restarting...",
+        "ota_error": "Error downloading update: {err}"
     },
 
     "de": {
@@ -317,7 +331,14 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "nov_item_cloud_tit": "⚡ Sitzungspersistenz & Supabase Cloud Storage",
         "nov_item_cloud_desc": "Sichere Verbindung zur Supabase-Cloud zur Vermeidung unbeabsichtigter Abmeldungen beim Neustart und dauerhafter Datenspeicherung.",
         "nov_item_hwid_tit": "💻 Hardware-Betrugsschutz (HWID)",
-        "nov_item_hwid_desc": "Kryptografische Hardware-Geräteerkennung zum Schutz von Konten und zur Verhinderung von Missbrauch."
+        "nov_item_hwid_desc": "Kryptografische Hardware-Geräteerkennung zum Schutz von Konten und zur Verhinderung von Missbrauch.",
+
+        # OTA Update
+        "ota_btn_actualizar": "⚡ Automatisch Aktualisieren (OTA)",
+        "ota_btn_web": "🌐 Auf Website Herunterladen",
+        "ota_descargando": "Update wird heruntergeladen...",
+        "ota_instalando": "⚡ Update wird installiert und neu gestartet...",
+        "ota_error": "Fehler beim Herunterladen: {err}"
     },
 
     "fr": {
@@ -408,7 +429,7 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "modal_novedades_subtitulo": "Découvrez les nouvelles fonctionnalités et améliorations ajoutées dans cette version :",
         "modal_novedades_btn_empezar": "🚀 Commencer à Utiliser KernossAI !",
         "nov_item_soporte_tit": "🛡️ Support Technique Officiel E2EE avec Catégorisation",
-        "nov_item_soporte_desc": "Canal de discussion direct et chiffré avec kernossai@support.com avec sélecteur de motif (doutes, IA, bugs, comptes) et réponses en direct.",
+        "nov_item_soporte_desc": "Canal de discussion direct et chiffré avec kernossai@support.com avec sélecteur de motif (doutes, IA, bugs, comptes) et respuestas en direct.",
         "nov_item_multi_tit": "👥 Gestionnaire Multi-Comptes dans les Paramètres",
         "nov_item_multi_desc": "Connectez-vous avec plusieurs comptes sur le même ordinateur et passez de l'un à l'autre en 1 clic (🔄 Changer) sans retaper les mots de passe.",
         "nov_item_rol_tit": "🎓 Sélecteur de Rôle Académique (Élève / Professeur)",
@@ -418,7 +439,14 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "nov_item_cloud_tit": "⚡ Persistance de Session & Stockage Cloud Supabase",
         "nov_item_cloud_desc": "Connexion sécurisée au cloud Supabase pour éviter les déconnexions intempestives lors du redémarrage et conserver les données de façon permanente.",
         "nov_item_hwid_tit": "💻 Protection Anti-Fraude Matérielle (HWID)",
-        "nov_item_hwid_desc": "Empreinte matérielle cryptographique pour protéger les comptes et prévenir les abus d'accès."
+        "nov_item_hwid_desc": "Empreinte matérielle cryptographique pour protéger les comptes et prévenir les abus d'accès.",
+
+        # OTA Update
+        "ota_btn_actualizar": "⚡ Mettre à Jour Automatiquement (OTA)",
+        "ota_btn_web": "🌐 Télécharger sur le Web",
+        "ota_descargando": "Téléchargement de la mise à jour...",
+        "ota_instalando": "⚡ Installation de la mise à jour et redémarrage...",
+        "ota_error": "Erreur lors du téléchargement : {err}"
     }
 }
 

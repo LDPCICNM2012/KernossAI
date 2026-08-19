@@ -9,6 +9,8 @@ import threading
 import calendar
 import webbrowser
 import requests
+import tempfile
+import subprocess
 from datetime import datetime
 
 import customtkinter as ctk
@@ -4805,52 +4807,142 @@ class DashboardEstudios(ctk.CTk):
             self.frame_banner_update.destroy()
             self.frame_banner_update = None
 
+    def _descargar_e_instalar_ota(self, info, progress_bar, lbl_status, btn_ota, btn_web, modal):
+        """Descarga e instala en segundo plano (OTA) la nueva versión de KernossAI con reinicio automático."""
+        url_descarga = info.get("url", "")
+        # Si no es un .exe directo o no estamos en Windows, abrir en navegador como respaldo
+        if sys.platform != "win32" or not url_descarga.lower().endswith(".exe"):
+            webbrowser.open(info.get("html_url", url_descarga))
+            modal.destroy()
+            return
+
+        btn_ota.configure(state="disabled", text=t("ota_descargando"))
+        btn_web.configure(state="disabled")
+        progress_bar.pack(fill="x", padx=30, pady=(6, 4))
+        progress_bar.set(0.0)
+        lbl_status.pack(anchor="w", padx=30, pady=(0, 10))
+        lbl_status.configure(text=t("ota_descargando"), text_color=COLOR_ACCENT_SKY)
+
+        def _worker():
+            try:
+                tag_limpio = info.get("tag", "latest").replace(" ", "_")
+                ruta_temp = os.path.join(tempfile.gettempdir(), f"KernossAI_Setup_OTA_{tag_limpio}.exe")
+
+                # Descargar en bloques (stream) para actualizar la barra de progreso
+                resp = requests.get(url_descarga, stream=True, timeout=90)
+                total_bytes = int(resp.headers.get("content-length", 0))
+                descargados = 0
+
+                with open(ruta_temp, "wb") as f:
+                    for chunk in resp.iter_content(chunk_size=65536):
+                        if chunk:
+                            f.write(chunk)
+                            descargados += len(chunk)
+                            if total_bytes > 0:
+                                p = descargados / total_bytes
+                                mb_act = descargados / (1024 * 1024)
+                                mb_tot = total_bytes / (1024 * 1024)
+                                pct = int(p * 100)
+                                self.after(0, lambda p_val=p, txt=f"⬇️ {mb_act:.1f} MB / {mb_tot:.1f} MB ({pct}%)...": (
+                                    progress_bar.set(p_val),
+                                    lbl_status.configure(text=txt)
+                                ))
+
+                # Descarga finalizada
+                self.after(0, lambda: (
+                    progress_bar.set(1.0),
+                    lbl_status.configure(text=t("ota_instalando"), text_color=COLOR_SUCCESS)
+                ))
+
+                # Ejecutar Inno Setup en modo silencioso
+                cmd = f'"{ruta_temp}" /VERYSILENT /SUPPRESSMSGBOXES /FORCECLOSEAPPLICATIONS'
+                subprocess.Popen(cmd, shell=True)
+
+                # Salir de la app para desbloquear archivos en disco
+                def _salir():
+                    try:
+                        self.quit()
+                        self.destroy()
+                    except Exception:
+                        pass
+                    os._exit(0)
+
+                self.after(1200, _salir)
+
+            except Exception as e:
+                err_msg = str(e)
+                self.after(0, lambda: (
+                    lbl_status.configure(text=t("ota_error", err=err_msg), text_color=COLOR_DANGER),
+                    btn_ota.configure(state="normal", text="🔄 Reintentar OTA"),
+                    btn_web.configure(state="normal")
+                ))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
     def _abrir_modal_actualizacion(self, info):
-        """Ventana emergente estilizada con el changelog y botón de descarga directa."""
+        """Ventana emergente estilizada con el changelog y opciones de actualización OTA / Web."""
         modal = ctk.CTkToplevel(self)
-        modal.title("Actualización de KernossIA")
-        modal.geometry("520x420")
-        modal.minsize(450, 360)
+        modal.title(f"Actualización de KernossIA ({info['tag']})")
+        modal.geometry("560x490")
+        modal.minsize(500, 420)
         modal.configure(fg_color=COLOR_BG_DARK)
         modal.transient(self)
         modal.grab_set()
 
         ctk.CTkLabel(modal, text="🚀 Nueva Versión Disponible",
-                     font=("Segoe UI", 18, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(20, 4))
+                     font=("Segoe UI", 18, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(18, 4))
         ctk.CTkLabel(modal, text=f"Versión instalada: v{VERSION_APP}   ➜   Última versión: {info['tag']}",
                      font=("Segoe UI", 12), text_color=COLOR_TEXT_MAIN).pack(pady=(0, 10))
 
         ctk.CTkLabel(modal, text="Novedades de esta versión:",
-                     font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=30, pady=(6, 2))
+                     font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=30, pady=(4, 2))
 
-        txt_notas = ctk.CTkTextbox(modal, height=180, fg_color=COLOR_BG_CARD,
+        txt_notas = ctk.CTkTextbox(modal, height=140, fg_color=COLOR_BG_CARD,
                                   border_width=1, border_color=COLOR_BORDER,
                                   text_color=COLOR_TEXT_MAIN, font=("Segoe UI", 11))
-        txt_notas.pack(fill="both", expand=True, padx=30, pady=(0, 15))
+        txt_notas.pack(fill="both", expand=True, padx=30, pady=(0, 8))
         txt_notas.insert("end", info.get("notas", "Mejoras de rendimiento, estabilidad y nuevas funciones."))
         txt_notas.configure(state="disabled")
 
-        frame_modal_btns = ctk.CTkFrame(modal, fg_color="transparent")
-        frame_modal_btns.pack(fill="x", padx=30, pady=(0, 20))
+        # Barra de progreso y texto de estado de descarga OTA
+        progress_bar = ctk.CTkProgressBar(modal, height=12, progress_color=COLOR_ACCENT_CYAN)
+        lbl_status = ctk.CTkLabel(modal, text="", font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_MUTED)
 
-        ctk.CTkButton(
+        frame_modal_btns = ctk.CTkFrame(modal, fg_color="transparent")
+        frame_modal_btns.pack(fill="x", padx=30, pady=(8, 20))
+
+        btn_ota = ctk.CTkButton(
             frame_modal_btns,
-            text="⚡ Descargar Actualización",
-            font=("Segoe UI", 13, "bold"),
+            text=t("ota_btn_actualizar"),
+            font=("Segoe UI", 12, "bold"),
             fg_color=COLOR_ACCENT_PRIMARY,
             hover_color=COLOR_ACCENT_HOVER,
             height=38,
-            command=lambda: [webbrowser.open(info["url"]), modal.destroy()]
-        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+            command=lambda: self._descargar_e_instalar_ota(info, progress_bar, lbl_status, btn_ota, btn_web, modal)
+        )
+        btn_ota.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        btn_web = ctk.CTkButton(
+            frame_modal_btns,
+            text=t("ota_btn_web"),
+            font=("Segoe UI", 11),
+            fg_color=COLOR_BG_CARD,
+            border_width=1,
+            border_color=COLOR_BORDER,
+            hover_color=COLOR_BG_SURFACE,
+            height=38,
+            command=lambda: [webbrowser.open(info.get("html_url", info["url"])), modal.destroy()]
+        )
+        btn_web.pack(side="left", padx=(0, 6))
 
         ctk.CTkButton(
             frame_modal_btns,
-            text="Cerrar",
+            text="✕",
             font=("Segoe UI", 12),
             fg_color=COLOR_BG_SURFACE,
-            hover_color=COLOR_BORDER,
+            hover_color=COLOR_DANGER_HOVER,
             height=38,
-            width=80,
+            width=40,
             command=modal.destroy
         ).pack(side="right")
 
