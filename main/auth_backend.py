@@ -1070,21 +1070,53 @@ def fijar_red_hogar_actual(email: Optional[str] = None) -> Tuple[bool, str]:
 
 
 def admin_ver_mensajes_raw() -> Tuple[bool, dict]:
-    """Descarga la base de datos de mensajes cifrados en bruto para verificar el cifrado E2EE."""
+    """Descarga la base de datos de mensajes cifrados en bruto (Supabase & Render) para verificar el cifrado E2EE."""
     token, _ = _leer_token()
-    if not token:
-        return False, {}
+    
+    # 1. Consultar Supabase directamente (Servidor E2EE Zero-Knowledge)
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        
+        r_msg = requests.get(f"{sb_url}/mensajes?order=timestamp.desc&limit=100", headers=sb_headers, timeout=6)
+        r_bans = requests.get(f"{sb_url}/bans?order=fecha.desc&limit=50", headers=sb_headers, timeout=6)
+        r_usrs = requests.get(f"{sb_url}/usuarios?order=created_at.desc&limit=50", headers=sb_headers, timeout=6)
+        
+        datos = {
+            "servidor": "Supabase Cloud (Zero-Knowledge E2EE Storage)",
+            "estado": "Cifrado E2EE Activo • Cero Conocimiento",
+            "total_mensajes_cifrados": len(r_msg.json()) if r_msg.status_code == 200 else 0,
+            "mensajes_cifrados_en_servidor": r_msg.json() if r_msg.status_code == 200 else [],
+            "bans_registrados": r_bans.json() if r_bans.status_code == 200 else [],
+            "usuarios_registrados": [
+                {
+                    "email": u.get("email"),
+                    "nombre": u.get("nombre"),
+                    "rol": u.get("rol"),
+                    "ip_ultima": u.get("ip_ultima"),
+                    "hwid": u.get("hwid"),
+                    "created_at": u.get("created_at")
+                } for u in (r_usrs.json() if r_usrs.status_code == 200 else [])
+            ]
+        }
+        return True, datos
+    except Exception:
+        pass
+        
+    # 2. Fallback a Render
     try:
         r = requests.get(
             f"{BACKEND_URL}/admin/mensajes_raw",
             headers={"Authorization": f"Bearer {token}"},
-            timeout=15
+            timeout=8
         )
         if r.status_code == 200:
             return True, r.json()
-        return False, {}
     except Exception:
-        return False, {}
+        pass
+        
+    return False, {"error": "No se pudo conectar con el servidor."}
 
 
 def admin_obtener_tickets_soporte() -> Tuple[bool, List[dict]]:

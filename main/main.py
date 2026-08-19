@@ -3635,57 +3635,43 @@ class VentanaSoporteE2EE(ctk.CTkToplevel):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  VENTANA MODAL DE ADMINISTRACIÓN, HARDWARE-BAN & VISUALIZADOR DE RENDER
+#  VENTANA DE BANDEJA DE ENTRADA — SOPORTE OFICIAL KERNOSSAI (EXCLUSIVA)
 # ══════════════════════════════════════════════════════════════════════════════
-class VentanaAdminModeracion(ctk.CTkToplevel):
-    """Panel de Control de Moderación, Hardware-Ban, IP-Ban y visualizador de Base de Datos Cifrada en Render."""
+class VentanaBandejaSoporte(ctk.CTkToplevel):
+    """Bandeja de Entrada exclusiva para atención de tickets de soporte oficial con cifrado E2EE."""
     def __init__(self, parent, sesion):
         super().__init__(parent)
         self.parent = parent
         self.sesion = sesion
-        self.title("👑 Panel Maestro de Administración & Moderación (Render)")
-        self.geometry("980x740")
-        self.minsize(800, 600)
+        self.title("📬 Bandeja de Entrada — Soporte Oficial KernossAI")
+        self.geometry("980x720")
+        self.minsize(800, 580)
         self.configure(fg_color=COLOR_BG_DARK)
         self.transient(parent)
 
+        self._ticket_activo_email = None
         self._build_ui()
-        self._cargar_usuarios()
+        self._cargar_tickets_soporte()
 
     def _build_ui(self):
         header = ctk.CTkFrame(self, fg_color=COLOR_BG_SURFACE, height=65, corner_radius=0)
         header.pack(fill="x")
-        
-        ctk.CTkLabel(header, text="👑 Panel Maestro de Administración & Moderación",
+
+        ctk.CTkLabel(header, text="📬 Bandeja de Entrada — Soporte Oficial (kernossai@support.com)",
                      font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left", padx=20, pady=16)
 
-        btn_refrescar = ctk.CTkButton(header, text="🔄 Recargar Servidor", width=140, height=32,
+        btn_refrescar = ctk.CTkButton(header, text="🔄 Actualizar Tickets", width=150, height=32,
                                       font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
-                                      hover_color=COLOR_ACCENT_HOVER, command=self._recargar_todo)
+                                      hover_color=COLOR_ACCENT_HOVER, command=self._cargar_tickets_soporte)
         btn_refrescar.pack(side="right", padx=(10, 20))
 
-        self.tabview = ctk.CTkTabview(self, fg_color=COLOR_BG_DARK)
-        self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
+        btn_cerrar = ctk.CTkButton(header, text="✕", width=36, height=36, fg_color=COLOR_BG_CARD,
+                                   hover_color=COLOR_DANGER, font=("Segoe UI", 14, "bold"), command=self.destroy)
+        btn_cerrar.pack(side="right", padx=6)
 
-        self.tab_usuarios = self.tabview.add("👥 Usuarios & Bans")
-        self.tab_soporte_inbox = self.tabview.add("📬 Bandeja de Soporte")
-        self.tab_db_raw = self.tabview.add("🔒 Ver Base de Datos Cifrada (Render)")
-        self.tab_ban_manual = self.tabview.add("🚫 Aplicar Ban Manual (IP / HWID)")
-        self.tabview.set("👥 Usuarios & Bans")
-
-        self._build_tab_usuarios()
-        self._build_tab_soporte_inbox()
-        self._build_tab_db_raw()
-        self._build_tab_ban_manual()
-
-    def _recargar_todo(self):
-        self._cargar_usuarios()
-        self._cargar_tickets_soporte()
-
-    def _build_tab_soporte_inbox(self):
         # Frame contenedor con dos columnas: Lista de Tickets a la izquierda y Conversación a la derecha
-        self.frame_inbox_split = ctk.CTkFrame(self.tab_soporte_inbox, fg_color="transparent")
-        self.frame_inbox_split.pack(fill="both", expand=True, padx=4, pady=4)
+        self.frame_inbox_split = ctk.CTkFrame(self, fg_color="transparent")
+        self.frame_inbox_split.pack(fill="both", expand=True, padx=15, pady=12)
         self.frame_inbox_split.grid_columnconfigure(0, weight=4)
         self.frame_inbox_split.grid_columnconfigure(1, weight=6)
         self.frame_inbox_split.grid_rowconfigure(0, weight=1)
@@ -3743,9 +3729,6 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         )
         self.btn_enviar_resp.pack(side="right")
 
-        self._ticket_activo_email = None
-        self._cargar_tickets_soporte()
-
     def _cargar_tickets_soporte(self):
         for w in self.scroll_tickets.winfo_children():
             w.destroy()
@@ -3756,6 +3739,10 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                 return
 
             def _render():
+                if not hasattr(self, "scroll_tickets") or not self.winfo_exists():
+                    return
+                for w in self.scroll_tickets.winfo_children():
+                    w.destroy()
                 if not tickets:
                     ctk.CTkLabel(self.scroll_tickets, text="No hay tickets de soporte aún.",
                                  font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(pady=30)
@@ -3870,7 +3857,6 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         def _thread():
             ok, res = admin_responder_ticket_soporte(self._ticket_activo_email, texto)
             if ok:
-                # Recargar conversación
                 ok2, tickets = admin_obtener_tickets_soporte()
                 if ok2:
                     for t in tickets:
@@ -3885,6 +3871,53 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
             self.after(0, lambda: self.btn_enviar_resp.configure(state="normal"))
 
         threading.Thread(target=_thread, daemon=True).start()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  VENTANA MODAL DE MODERACIÓN & BANS (EXCLUSIVA)
+# ══════════════════════════════════════════════════════════════════════════════
+class VentanaAdminModeracion(ctk.CTkToplevel):
+    """Panel de Control de Moderación, Hardware-Ban, IP-Ban y visualizador de Base de Datos Cifrada."""
+    def __init__(self, parent, sesion):
+        super().__init__(parent)
+        self.parent = parent
+        self.sesion = sesion
+        self.title("👑 Panel Maestro de Moderación & Bans — KernossAI")
+        self.geometry("980x740")
+        self.minsize(800, 600)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+
+        self._build_ui()
+        self._cargar_usuarios()
+
+    def _build_ui(self):
+        header = ctk.CTkFrame(self, fg_color=COLOR_BG_SURFACE, height=65, corner_radius=0)
+        header.pack(fill="x")
+        
+        ctk.CTkLabel(header, text="👑 Panel Maestro de Moderación & Bans",
+                     font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left", padx=20, pady=16)
+
+        btn_refrescar = ctk.CTkButton(header, text="🔄 Recargar Servidor", width=140, height=32,
+                                      font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+                                      hover_color=COLOR_ACCENT_HOVER, command=self._cargar_usuarios)
+        btn_refrescar.pack(side="right", padx=(10, 20))
+
+        btn_cerrar = ctk.CTkButton(header, text="✕", width=36, height=36, fg_color=COLOR_BG_CARD,
+                                   hover_color=COLOR_DANGER, font=("Segoe UI", 14, "bold"), command=self.destroy)
+        btn_cerrar.pack(side="right", padx=6)
+
+        self.tabview = ctk.CTkTabview(self, fg_color=COLOR_BG_DARK)
+        self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
+
+        self.tab_usuarios = self.tabview.add("👥 Usuarios & Bans")
+        self.tab_db_raw = self.tabview.add("🔒 Ver Base de Datos Cifrada")
+        self.tab_ban_manual = self.tabview.add("🚫 Aplicar Ban Manual (IP / HWID)")
+        self.tabview.set("👥 Usuarios & Bans")
+
+        self._build_tab_usuarios()
+        self._build_tab_db_raw()
+        self._build_tab_ban_manual()
 
     def _build_tab_usuarios(self):
         # Barra superior con búsqueda y botón de IP-Ban manual
@@ -4136,7 +4169,7 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
 
     def _cargar_raw_db(self):
         self.txt_raw.delete("1.0", "end")
-        self.txt_raw.insert("1.0", "⏳ Consultando base de datos en Render...")
+        self.txt_raw.insert("1.0", "⏳ Consultando base de datos cifrada (Zero-Knowledge)...")
 
         def _thread():
             ok, res = admin_ver_mensajes_raw()
@@ -4144,7 +4177,8 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                 txt = json.dumps(res, ensure_ascii=False, indent=2)
                 self.after(0, lambda: (self.txt_raw.delete("1.0", "end"), self.txt_raw.insert("1.0", txt)))
             else:
-                self.after(0, lambda: (self.txt_raw.delete("1.0", "end"), self.txt_raw.insert("1.0", "Error al consultar Render.")))
+                err_msg = res.get("error", "Error al consultar la base de datos.") if isinstance(res, dict) else "Error al consultar la base de datos."
+                self.after(0, lambda: (self.txt_raw.delete("1.0", "end"), self.txt_raw.insert("1.0", f"❌ {err_msg}")))
 
         threading.Thread(target=_thread, daemon=True).start()
 
@@ -5002,8 +5036,9 @@ class DashboardEstudios(ctk.CTk):
         VentanaNovedadesIA(self)
 
     def _abrir_soporte_e2ee(self):
-        if self.email.lower() == "kernossai@support.com":
-            VentanaAdminModeracion(self, self.sesion)
+        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or self.sesion.get("is_premium", False)
+        if es_admin:
+            VentanaBandejaSoporte(self, self.sesion)
         else:
             VentanaSoporteE2EE(self, self.sesion)
 
