@@ -1197,3 +1197,313 @@ def llamar_gemini(prompt: str) -> str:
 
 def llamar_groq(prompt: str) -> str:
     return consultar_ia(prompt, modelo="groq")
+
+
+# ── Sistema de Tutoría y Vinculación Alumno <-> Profesor ───
+
+def tutoria_listar_profesores() -> Tuple[bool, List[dict]]:
+    """Obtiene la lista de todos los docentes registrados en el sistema desde Supabase."""
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        
+        # Buscar usuarios con rol Profesor
+        r = requests.get(f"{sb_url}/usuarios?rol=eq.Profesor&order=nombre.asc", headers=sb_headers, timeout=8)
+        if r.status_code == 200:
+            profes = r.json()
+            if profes:
+                return True, profes
+        
+        # Fallback a todos los usuarios y filtrar
+        r_all = requests.get(f"{sb_url}/usuarios", headers=sb_headers, timeout=8)
+        if r_all.status_code == 200:
+            profes = [u for u in r_all.json() if str(u.get("rol", "")).strip().lower() in ["profesor", "teacher", "docente", "lehrer / dozent"]]
+            return True, profes
+    except Exception:
+        pass
+    
+    return False, []
+
+
+def tutoria_enviar_solicitud(profesor_email: str, profesor_nombre: str, mensaje: str = "") -> Tuple[bool, str]:
+    """El alumno envía una solicitud de vinculación a un profesor."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, "Debes iniciar sesión para vincularte con un profesor."
+    
+    alumno_email = sesion.get("email", "").strip().lower()
+    alumno_nombre = sesion.get("nombre", alumno_email)
+    profesor_email = profesor_email.strip().lower()
+    
+    if alumno_email == profesor_email:
+        return False, "No puedes vincularte contigo mismo."
+    
+    conv_id = f"tutoria_req:{alumno_email}:{profesor_email}"
+    now_iso = datetime.now().isoformat()
+    msg_id = f"vinc_{uuid.uuid4().hex[:10]}"
+    
+    data_payload = {
+        "tipo": "solicitud_tutoria",
+        "estado": "pendiente",
+        "alumno_email": alumno_email,
+        "alumno_nombre": alumno_nombre,
+        "profesor_email": profesor_email,
+        "profesor_nombre": profesor_nombre,
+        "mensaje": mensaje or "Hola, me gustaría vincularme contigo como mi profesor tutor.",
+        "timestamp": now_iso
+    }
+    texto_raw = json.dumps(data_payload, ensure_ascii=False)
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+            "Content-Type": "application/json"
+        }
+        # Eliminar solicitudes previas si existían
+        requests.delete(f"{sb_url}/mensajes?conv_id=eq.{conv_id}", headers=sb_headers, timeout=6)
+        
+        # Insertar nueva solicitud
+        msg_obj = {
+            "id": msg_id,
+            "conv_id": conv_id,
+            "emisor_email": alumno_email,
+            "emisor_nombre": alumno_nombre,
+            "emisor_rol": "Alumno",
+            "destinatario_email": profesor_email,
+            "texto_cifrado": texto_raw,
+            "timestamp": now_iso,
+            "leido": False
+        }
+        r = requests.post(f"{sb_url}/mensajes", json=msg_obj, headers=sb_headers, timeout=8)
+        if r.status_code in [200, 201]:
+            return True, f"Solicitud de vinculación enviada al profesor {profesor_nombre}."
+    except Exception as e:
+        return False, f"Error al enviar la solicitud: {e}"
+
+    return True, f"Solicitud enviada a {profesor_nombre}."
+
+
+def tutoria_obtener_estado_alumno() -> Tuple[bool, Optional[dict]]:
+    """Consulta si el alumno tiene alguna solicitud o vinculación activa con un profesor."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, None
+    
+    alumno_email = sesion.get("email", "").strip().lower()
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        
+        r = requests.get(f"{sb_url}/mensajes?emisor_email=eq.{alumno_email}&conv_id=like.tutoria_req:*&order=timestamp.desc&limit=1", headers=sb_headers, timeout=8)
+        if r.status_code == 200:
+            rows = r.json()
+            if rows:
+                row = rows[0]
+                try:
+                    payload = json.loads(row.get("texto_cifrado", "{}"))
+                    return True, payload
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return True, None
+
+
+def tutoria_profesor_obtener_solicitudes_y_alumnos() -> Tuple[bool, List[dict], List[dict]]:
+    """Para un profesor: devuelve (solicitudes_pendientes, alumnos_vinculados)."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, [], []
+    
+    profesor_email = sesion.get("email", "").strip().lower()
+    pendientes = []
+    aceptados = []
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        
+        r = requests.get(f"{sb_url}/mensajes?destinatario_email=eq.{profesor_email}&conv_id=like.tutoria_req:*&order=timestamp.desc", headers=sb_headers, timeout=8)
+        if r.status_code == 200:
+            rows = r.json()
+            for row in rows:
+                try:
+                    p = json.loads(row.get("texto_cifrado", "{}"))
+                    estado = p.get("estado", "pendiente")
+                    item = {
+                        "id": row.get("id"),
+                        "conv_id": row.get("conv_id"),
+                        "alumno_email": p.get("alumno_email", row.get("emisor_email")),
+                        "alumno_nombre": p.get("alumno_nombre", row.get("emisor_nombre")),
+                        "profesor_email": profesor_email,
+                        "mensaje": p.get("mensaje", ""),
+                        "estado": estado,
+                        "timestamp": row.get("timestamp")
+                    }
+                    if estado == "pendiente":
+                        pendientes.append(item)
+                    elif estado == "aceptada":
+                        aceptados.append(item)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    
+    return True, pendientes, aceptados
+
+
+def tutoria_profesor_responder_solicitud(alumno_email: str, aceptar: bool) -> Tuple[bool, str]:
+    """El profesor acepta o rechaza una solicitud de vinculación."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, "Sesión no válida."
+    
+    profesor_email = sesion.get("email", "").strip().lower()
+    alumno_email = alumno_email.strip().lower()
+    conv_id = f"tutoria_req:{alumno_email}:{profesor_email}"
+    nuevo_estado = "aceptada" if aceptar else "rechazada"
+    now_iso = datetime.now().isoformat()
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+            "Content-Type": "application/json"
+        }
+        
+        r = requests.get(f"{sb_url}/mensajes?conv_id=eq.{conv_id}", headers=sb_headers, timeout=6)
+        if r.status_code == 200 and r.json():
+            row = r.json()[0]
+            try:
+                payload = json.loads(row.get("texto_cifrado", "{}"))
+            except Exception:
+                payload = {}
+            
+            payload["estado"] = nuevo_estado
+            payload["respuesta_timestamp"] = now_iso
+            texto_raw = json.dumps(payload, ensure_ascii=False)
+            
+            patch_payload = {"texto_cifrado": texto_raw, "leido": True}
+            requests.patch(f"{sb_url}/mensajes?id=eq.{row['id']}", json=patch_payload, headers=sb_headers, timeout=8)
+            
+            # Si aceptó, crear el mensaje de bienvenida de tutoría
+            if aceptar:
+                tutoria_enviar_mensaje(alumno_email, "👋 ¡Hola! He aceptado tu solicitud de tutoría. Puedes escribirme cualquier duda o consulta por este canal.")
+            
+            return True, f"Solicitud {'aceptada' if aceptar else 'rechazada'} correctamente."
+    except Exception as e:
+        return False, f"Error al responder la solicitud: {e}"
+
+    return True, f"Solicitud {'aceptada' if aceptar else 'rechazada'}."
+
+
+def tutoria_enviar_mensaje(destinatario_email: str, texto: str) -> Tuple[bool, str]:
+    """Envía un mensaje cifrado E2EE en el canal de tutoría Alumno <-> Profesor."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, "Inicia sesión para enviar mensajes."
+    
+    mi_email = sesion.get("email", "").strip().lower()
+    mi_nombre = sesion.get("nombre", mi_email)
+    mi_rol = sesion.get("rol", "Alumno")
+    destinatario_email = destinatario_email.strip().lower()
+    
+    clave = _obtener_clave_canal(mi_email, destinatario_email)
+    cifrado = cifrar_e2ee(texto, clave)
+    conv_id = f"tutoria_chat:{sorted([mi_email, destinatario_email])[0]}:{sorted([mi_email, destinatario_email])[1]}"
+    now_iso = datetime.now().isoformat()
+    msg_id = f"tut_msg_{uuid.uuid4().hex[:10]}"
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+            "Content-Type": "application/json"
+        }
+        msg_payload = {
+            "id": msg_id,
+            "conv_id": conv_id,
+            "emisor_email": mi_email,
+            "emisor_nombre": mi_nombre,
+            "emisor_rol": mi_rol,
+            "destinatario_email": destinatario_email,
+            "texto_cifrado": cifrado,
+            "timestamp": now_iso,
+            "leido": False
+        }
+        requests.post(f"{sb_url}/mensajes", json=msg_payload, headers=sb_headers, timeout=8)
+        return True, "Mensaje enviado."
+    except Exception as e:
+        return False, f"Error al enviar mensaje: {e}"
+
+
+def tutoria_obtener_mensajes_chat(otro_email: str) -> Tuple[bool, List[dict]]:
+    """Descarga y descifra los mensajes del chat de tutoría entre el usuario y el profesor/alumno."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, []
+    
+    mi_email = sesion.get("email", "").strip().lower()
+    otro_email = otro_email.strip().lower()
+    clave = _obtener_clave_canal(mi_email, otro_email)
+    conv_id = f"tutoria_chat:{sorted([mi_email, otro_email])[0]}:{sorted([mi_email, otro_email])[1]}"
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        
+        r = requests.get(f"{sb_url}/mensajes?conv_id=eq.{conv_id}&order=timestamp.asc", headers=sb_headers, timeout=8)
+        if r.status_code == 200:
+            mensajes_raw = r.json()
+            mensajes_descifrados = []
+            for m in mensajes_raw:
+                texto_claro = descifrar_e2ee(m.get("texto_cifrado", ""), clave)
+                es_mio = (m.get("emisor_email", "").strip().lower() == mi_email)
+                mensajes_descifrados.append({
+                    "id": m.get("id"),
+                    "emisor_email": m.get("emisor_email"),
+                    "emisor_nombre": m.get("emisor_nombre"),
+                    "emisor_rol": m.get("emisor_rol"),
+                    "destinatario_email": m.get("destinatario_email"),
+                    "texto": texto_claro,
+                    "timestamp": m.get("timestamp"),
+                    "es_mio": es_mio
+                })
+            return True, mensajes_descifrados
+    except Exception:
+        pass
+    
+    return False, []
+
+
+def tutoria_desvincular(otro_email: str) -> Tuple[bool, str]:
+    """Elimina la vinculación entre un alumno y un profesor."""
+    token, sesion = _leer_token()
+    if not token:
+        return False, "Sesión no válida."
+    
+    mi_email = sesion.get("email", "").strip().lower()
+    otro_email = otro_email.strip().lower()
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        
+        # Eliminar tanto solicitud como vinculación si existen en ambas direcciones
+        requests.delete(f"{sb_url}/mensajes?conv_id=eq.tutoria_req:{mi_email}:{otro_email}", headers=sb_headers, timeout=6)
+        requests.delete(f"{sb_url}/mensajes?conv_id=eq.tutoria_req:{otro_email}:{mi_email}", headers=sb_headers, timeout=6)
+        return True, "Vinculación finalizada con éxito."
+    except Exception as e:
+        return False, f"Error al desvincular: {e}"

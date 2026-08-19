@@ -122,7 +122,23 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ota_btn_web": "🌐 Descargar en Web",
         "ota_descargando": "Descargando actualización...",
         "ota_instalando": "⚡ Instalando actualización y reiniciando...",
-        "ota_error": "Error al descargar actualización: {err}"
+        "ota_error": "Error al descargar actualización: {err}",
+
+        # Vinculación & Tutoría Alumno <-> Profesor
+        "btn_tutoria_alumno": "👨‍🏫 Mi Profesor",
+        "btn_tutoria_profesor": "🎓 Mis Alumnos",
+        "tutoria_modal_titulo_alumno": "👨‍🏫 Mi Profesor Tutor & Consultas",
+        "tutoria_modal_titulo_profesor": "🎓 Panel de Tutoría: Alumnos & Solicitudes",
+        "tutoria_tab_profesores": "👨‍🏫 Profesores Disponibles",
+        "tutoria_tab_mi_profe": "💬 Chat con mi Profesor",
+        "tutoria_tab_solicitudes": "🔔 Solicitudes Pendientes",
+        "tutoria_tab_alumnos": "👥 Mis Alumnos Vinculados",
+        "tutoria_btn_solicitar": "📨 Solicitar Vinculación",
+        "tutoria_btn_aceptar": "✅ Aceptar",
+        "tutoria_btn_rechazar": "❌ Rechazar",
+        "tutoria_btn_desvincular": "⚠️ Desvincular",
+        "tutoria_sin_profes": "No hay profesores registrados en este momento.",
+        "tutoria_solicitud_pendiente": "⏳ Solicitud pendiente de confirmación con el profesor {nombre} ({email})"
     },
 
     "en": {
@@ -230,7 +246,23 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ota_btn_web": "🌐 Download from Web",
         "ota_descargando": "Downloading update...",
         "ota_instalando": "⚡ Installing update and restarting...",
-        "ota_error": "Error downloading update: {err}"
+        "ota_error": "Error downloading update: {err}",
+
+        # Tutoring & Linking Student <-> Teacher
+        "btn_tutoria_alumno": "👨‍🏫 My Teacher",
+        "btn_tutoria_profesor": "🎓 My Students",
+        "tutoria_modal_titulo_alumno": "👨‍🏫 My Tutor Teacher & Questions",
+        "tutoria_modal_titulo_profesor": "🎓 Tutoring Panel: Students & Requests",
+        "tutoria_tab_profesores": "👨‍🏫 Available Teachers",
+        "tutoria_tab_mi_profe": "💬 Chat with my Teacher",
+        "tutoria_tab_solicitudes": "🔔 Pending Requests",
+        "tutoria_tab_alumnos": "👥 My Connected Students",
+        "tutoria_btn_solicitar": "📨 Request Connection",
+        "tutoria_btn_aceptar": "✅ Accept",
+        "tutoria_btn_rechazar": "❌ Reject",
+        "tutoria_btn_desvincular": "⚠️ Disconnect",
+        "tutoria_sin_profes": "No teachers registered at this time.",
+        "tutoria_solicitud_pendiente": "⏳ Connection request pending with teacher {nombre} ({email})"
     },
 
     "de": {
@@ -338,7 +370,23 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ota_btn_web": "🌐 Auf Website Herunterladen",
         "ota_descargando": "Update wird heruntergeladen...",
         "ota_instalando": "⚡ Update wird installiert und neu gestartet...",
-        "ota_error": "Fehler beim Herunterladen: {err}"
+        "ota_error": "Fehler beim Herunterladen: {err}",
+
+        # Betreuung & Verknüpfung Schüler <-> Lehrer
+        "btn_tutoria_alumno": "👨‍🏫 Mein Lehrer",
+        "btn_tutoria_profesor": "🎓 Meine Schüler",
+        "tutoria_modal_titulo_alumno": "👨‍🏫 Mein Betreuungslehrer & Fragen",
+        "tutoria_modal_titulo_profesor": "🎓 Lehrerbereich: Schüler & Anfragen",
+        "tutoria_tab_profesores": "👨‍🏫 Verfügbare Lehrer",
+        "tutoria_tab_mi_profe": "💬 Chat mit meinem Lehrer",
+        "tutoria_tab_solicitudes": "🔔 Ausstehende Anfragen",
+        "tutoria_tab_alumnos": "👥 Meine verknüpften Schüler",
+        "tutoria_btn_solicitar": "📨 Verknüpfung Anfragen",
+        "tutoria_btn_aceptar": "✅ Annehmen",
+        "tutoria_btn_rechazar": "❌ Ablehnen",
+        "tutoria_btn_desvincular": "⚠️ Trennen",
+        "tutoria_sin_profes": "Derzeit sind keine Lehrer registriert.",
+        "tutoria_solicitud_pendiente": "⏳ Anfrage ausstehend bei Lehrer {nombre} ({email})"
     },
 
     "fr": {
@@ -446,7 +494,23 @@ TRADUCCIONES: Dict[str, Dict[str, str]] = {
         "ota_btn_web": "🌐 Télécharger sur le Web",
         "ota_descargando": "Téléchargement de la mise à jour...",
         "ota_instalando": "⚡ Installation de la mise à jour et redémarrage...",
-        "ota_error": "Erreur lors du téléchargement : {err}"
+        "ota_error": "Erreur lors du téléchargement : {err}",
+
+        # Tutorat & Liaison Élève <-> Professeur
+        "btn_tutoria_alumno": "👨‍🏫 Mon Professeur",
+        "btn_tutoria_profesor": "🎓 Mes Élèves",
+        "tutoria_modal_titulo_alumno": "👨‍🏫 Mon Professeur Tuteur & Questions",
+        "tutoria_modal_titulo_profesor": "🎓 Espace Tutorat : Élèves & Demandes",
+        "tutoria_tab_profesores": "👨‍🏫 Professeurs Disponibles",
+        "tutoria_tab_mi_profe": "💬 Chat avec mon Professeur",
+        "tutoria_tab_solicitudes": "🔔 Demandes en Attente",
+        "tutoria_tab_alumnos": "👥 Mes Élèves Connectés",
+        "tutoria_btn_solicitar": "📨 Demander la Connexion",
+        "tutoria_btn_aceptar": "✅ Accepter",
+        "tutoria_btn_rechazar": "❌ Refuser",
+        "tutoria_btn_desvincular": "⚠️ Déconnecter",
+        "tutoria_sin_profes": "Aucun professeur inscrit pour le moment.",
+        "tutoria_solicitud_pendiente": "⏳ Demande en attente auprès du professeur {nombre} ({email})"
     }
 }
 
