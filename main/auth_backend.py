@@ -927,6 +927,148 @@ def admin_desbanear(objetivo: str, tipo: str = "usuario") -> Tuple[bool, str]:
     return True, f"Desbaneo de {tipo} '{obj_clean}' completado con éxito."
 
 
+def admin_eliminar_usuario(email: str) -> Tuple[bool, str]:
+    """Elimina definitivamente la cuenta de un usuario de Supabase y Render (Acción de Administrador)."""
+    token, _ = _leer_token()
+    if not token:
+        return False, "Sin sesión admin."
+    
+    email_clean = email.strip().lower()
+    if not email_clean:
+        return False, "Email no válido."
+        
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+            "Content-Type": "application/json"
+        }
+        # Borrar usuario de la tabla de usuarios
+        requests.delete(f"{sb_url}/usuarios?email=eq.{email_clean}", headers=sb_headers, timeout=8)
+        # Borrar chats cloud
+        requests.delete(f"{sb_url}/chats_cloud?email=eq.{email_clean}", headers=sb_headers, timeout=8)
+        # Borrar tickets o mensajes de soporte/tutoría
+        requests.delete(f"{sb_url}/mensajes?or=(emisor_email.eq.{email_clean},destinatario_email.eq.{email_clean})", headers=sb_headers, timeout=8)
+        # Borrar bans asociados al email
+        requests.delete(f"{sb_url}/bans?objetivo=eq.{email_clean}", headers=sb_headers, timeout=8)
+    except Exception:
+        pass
+
+    try:
+        requests.post(
+            f"{BACKEND_URL}/admin/eliminar_usuario",
+            json={"email": email_clean},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=8
+        )
+    except Exception:
+        pass
+
+    return True, f"Cuenta '{email_clean}' eliminada definitivamente de la base de datos."
+
+
+def obtener_ip_publica() -> str:
+    """Obtiene la dirección IP pública actual de forma rápida."""
+    servicios = [
+        "https://api.ipify.org?format=json",
+        "https://icanhazip.com",
+        "https://ident.me",
+        "https://ifconfig.me/ip"
+    ]
+    for url in servicios:
+        try:
+            r = requests.get(url, timeout=3)
+            if r.status_code == 200:
+                if "json" in url:
+                    return r.json().get("ip", "").strip()
+                return r.text.strip()
+        except Exception:
+            continue
+    try:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_loc = s.getsockname()[0]
+        s.close()
+        return ip_loc
+    except Exception:
+        return "127.0.0.1"
+
+
+def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
+    """
+    Comprueba si el usuario está actualmente en su Hogar Principal de Estudio.
+    Devuelve:
+      - codigo: "si" | "no" | "desconocido"
+      - texto: "SI" | "NO" | "No se sabe"
+      - detalles: dict(ip_actual, hogar_ip, hogar_nombre)
+    """
+    token, sesion = _leer_token()
+    em = (email or sesion.get("email", "")).strip().lower()
+    ip_actual = obtener_ip_publica()
+    
+    if not em:
+        return "desconocido", "No se sabe", {"ip_actual": ip_actual, "hogar_ip": "", "hogar_nombre": "Desconocido"}
+        
+    hogar_ip = ""
+    hogar_nombre = "Hogar Principal de Estudio"
+    
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {"apikey": sb_key, "Authorization": f"Bearer {sb_key}"}
+        r = requests.get(f"{sb_url}/usuarios?email=eq.{em}", headers=sb_headers, timeout=5)
+        if r.status_code == 200 and r.json():
+            u = r.json()[0]
+            hogar_ip = u.get("hogar_ip") or u.get("ip_registro") or ""
+            hogar_nombre = u.get("hogar_nombre") or "Hogar Principal de Estudio"
+    except Exception:
+        pass
+        
+    detalles = {
+        "ip_actual": ip_actual,
+        "hogar_ip": hogar_ip,
+        "hogar_nombre": hogar_nombre
+    }
+    
+    if not hogar_ip or hogar_ip in ("N/D", "", "127.0.0.1") or ip_actual in ("N/D", "", "127.0.0.1"):
+        return "desconocido", "No se sabe", detalles
+        
+    if ip_actual == hogar_ip or (ip_actual.split(".")[:3] == hogar_ip.split(".")[:3] and len(ip_actual.split(".")) == 4):
+        return "si", "SI", detalles
+    else:
+        return "no", "NO", detalles
+
+
+def fijar_red_hogar_actual(email: Optional[str] = None) -> Tuple[bool, str]:
+    """Establece la IP pública actual como el Hogar Principal del usuario."""
+    token, sesion = _leer_token()
+    em = (email or sesion.get("email", "")).strip().lower()
+    if not em:
+        return False, "Sin sesión activa."
+        
+    ip_actual = obtener_ip_publica()
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+            "Content-Type": "application/json"
+        }
+        patch_data = {
+            "hogar_ip": ip_actual,
+            "ip_ultima": ip_actual,
+            "hogar_nombre": "Hogar Principal de Estudio"
+        }
+        requests.patch(f"{sb_url}/usuarios?email=eq.{em}", json=patch_data, headers=sb_headers, timeout=6)
+        return True, f"Red '{ip_actual}' registrada como tu Hogar Principal de Estudio."
+    except Exception as e:
+        return False, f"Error al actualizar hogar: {e}"
+
+
 def admin_ver_mensajes_raw() -> Tuple[bool, dict]:
     """Descarga la base de datos de mensajes cifrados en bruto para verificar el cifrado E2EE."""
     token, _ = _leer_token()

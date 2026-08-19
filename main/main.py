@@ -27,14 +27,15 @@ from auth_backend import (
     login, registro, llamar_gemini, llamar_groq, token_guardado, borrar_token,
     actualizar_hogar_principal, borrar_cuenta_usuario, obtener_chats_cloud, guardar_chat_cloud, borrar_chat_cloud,
     enviar_mensaje_soporte, obtener_mensajes_soporte, admin_listar_usuarios,
-    admin_aplicar_ban, admin_desbanear, admin_ver_mensajes_raw,
+    admin_aplicar_ban, admin_desbanear, admin_ver_mensajes_raw, admin_eliminar_usuario,
     admin_obtener_tickets_soporte, admin_responder_ticket_soporte,
     obtener_cuentas_guardadas, cambiar_a_cuenta, eliminar_cuenta_switcher,
     agregar_cuenta_secundaria, actualizar_rol_usuario,
     verificar_estado_baneo, admin_borrar_ticket_soporte,
     tutoria_listar_profesores, tutoria_enviar_solicitud, tutoria_obtener_estado_alumno,
     tutoria_profesor_obtener_solicitudes_y_alumnos, tutoria_profesor_responder_solicitud,
-    tutoria_enviar_mensaje, tutoria_obtener_mensajes_chat, tutoria_desvincular
+    tutoria_enviar_mensaje, tutoria_obtener_mensajes_chat, tutoria_desvincular,
+    obtener_estado_casa, fijar_red_hogar_actual
 )
 from config_manager import (
     obtener_ajustes_tts, guardar_ajustes_tts, obtener_idioma, guardar_idioma
@@ -2916,7 +2917,58 @@ class VentanaAjustes(ctk.CTkToplevel):
         # Separador
         ctk.CTkFrame(self.scroll_tarjeta, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=18, pady=(2, 10))
 
-        # ── SECCIÓN 5: ZONA DE CUENTA & PRIVACIDAD (BORRAR CUENTA) ──
+        # ── SECCIÓN 5: PROTECCIÓN DE RED HOGAR (ESTADO DE CASA) ──
+        ctk.CTkLabel(self.scroll_tarjeta, text="🏡 Red y Ubicación de Estudio — Estado de Casa:",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 2))
+        ctk.CTkLabel(self.scroll_tarjeta, text="Indica si te encuentras en tu red doméstica principal de estudio para la sincronización y protección de cuenta.",
+                     font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=18, pady=(0, 6))
+
+        card_casa = ctk.CTkFrame(self.scroll_tarjeta, fg_color=COLOR_BG_SURFACE, corner_radius=10, border_width=1, border_color=COLOR_BORDER)
+        card_casa.pack(fill="x", padx=18, pady=(0, 10))
+
+        row_casa_header = ctk.CTkFrame(card_casa, fg_color="transparent")
+        row_casa_header.pack(fill="x", padx=14, pady=(10, 4))
+
+        ctk.CTkLabel(row_casa_header, text="Estado de Red:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MAIN).pack(side="left")
+
+        self.lbl_badge_casa = ctk.CTkLabel(
+            row_casa_header, text="  Casa: ⏳ Comprobando...  ",
+            font=("Segoe UI", 11, "bold"), corner_radius=6,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MUTED
+        )
+        self.lbl_badge_casa.pack(side="right")
+
+        self.lbl_detalles_casa = ctk.CTkLabel(
+            card_casa, text="Verificando IP pública y red de hogar...",
+            font=("Segoe UI", 9), text_color=COLOR_TEXT_MUTED, justify="left", wraplength=480
+        )
+        self.lbl_detalles_casa.pack(anchor="w", padx=14, pady=(0, 8))
+
+        row_casa_actions = ctk.CTkFrame(card_casa, fg_color="transparent")
+        row_casa_actions.pack(fill="x", padx=14, pady=(0, 10))
+
+        self.btn_fijar_casa = ctk.CTkButton(
+            row_casa_actions, text="🏡 Establecer Esta Red como mi Casa",
+            font=("Segoe UI", 10, "bold"), height=30,
+            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+            command=self._fijar_red_casa_actual
+        )
+        self.btn_fijar_casa.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        self.btn_refrescar_casa = ctk.CTkButton(
+            row_casa_actions, text="🔄 Comprobar",
+            font=("Segoe UI", 10, "bold"), height=30, width=95,
+            fg_color=COLOR_BG_CARD, hover_color=COLOR_BORDER,
+            command=self._comprobar_estado_casa
+        )
+        self.btn_refrescar_casa.pack(side="right")
+
+        self._comprobar_estado_casa()
+
+        # Separador
+        ctk.CTkFrame(self.scroll_tarjeta, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=18, pady=(2, 10))
+
+        # ── SECCIÓN 6: ZONA DE CUENTA & PRIVACIDAD (BORRAR CUENTA) ──
         ctk.CTkLabel(self.scroll_tarjeta, text="⚠️ Zona de Privacidad — Cuenta",
                      font=("Segoe UI", 11, "bold"), text_color=COLOR_DANGER).pack(anchor="w", padx=18, pady=(0, 1))
 
@@ -2997,6 +3049,65 @@ class VentanaAjustes(ctk.CTkToplevel):
     def _quitar_cuenta_switcher(self, email):
         eliminar_cuenta_switcher(email)
         self._cargar_multicuentas()
+
+    def _comprobar_estado_casa(self):
+        if not hasattr(self, "lbl_badge_casa"):
+            return
+        self.lbl_badge_casa.configure(text="  Casa: ⏳ Comprobando...  ", fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MUTED)
+        
+        def _thread():
+            codigo, texto, detalles = obtener_estado_casa(self.email_actual)
+            
+            def _render():
+                if not hasattr(self, "lbl_badge_casa") or not self.winfo_exists():
+                    return
+                ip_act = detalles.get("ip_actual", "N/D")
+                ip_hog = detalles.get("hogar_ip", "Sin registrar")
+                
+                if codigo == "si":
+                    # [VERDE] SI
+                    self.lbl_badge_casa.configure(
+                        text="  Casa: 🟢 SI  ",
+                        fg_color="#10b981",
+                        text_color="#ffffff"
+                    )
+                    self.lbl_detalles_casa.configure(
+                        text=f"✅ Conectado en tu Hogar Principal de Estudio.\n🌐 IP Actual: {ip_act}  |  🏡 IP Hogar Registrada: {ip_hog}"
+                    )
+                elif codigo == "no":
+                    # [ROJO] NO
+                    self.lbl_badge_casa.configure(
+                        text="  Casa: 🔴 NO  ",
+                        fg_color="#ef4444",
+                        text_color="#ffffff"
+                    )
+                    self.lbl_detalles_casa.configure(
+                        text=f"⚠️ Conexión fuera de tu Hogar Principal (Modo viaje / red externa).\n🌐 IP Actual: {ip_act}  |  🏡 IP Hogar Registrada: {ip_hog}"
+                    )
+                else:
+                    # [Naranja] No se sabe
+                    self.lbl_badge_casa.configure(
+                        text="  Casa: 🟠 No se sabe  ",
+                        fg_color="#f59e0b",
+                        text_color="#000000"
+                    )
+                    self.lbl_detalles_casa.configure(
+                        text=f"ℹ️ Aún no has registrado una red como Hogar Principal fijo.\n🌐 IP Actual: {ip_act}  |  Pulsa abajo para fijar esta red como tu Casa."
+                    )
+                    
+            self.after(0, _render)
+            
+        threading.Thread(target=_thread, daemon=True).start()
+
+    def _fijar_red_casa_actual(self):
+        def _thread():
+            ok, msg = fijar_red_hogar_actual(self.email_actual)
+            if ok:
+                self.after(0, lambda: messagebox.showinfo("Hogar Principal", msg))
+                self.after(0, self._comprobar_estado_casa)
+            else:
+                self.after(0, lambda: messagebox.showerror("Error", msg))
+        threading.Thread(target=_thread, daemon=True).start()
 
     def _probar_voz(self):
         nombre_voz = self.combo_voz.get()
@@ -3556,13 +3667,14 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         self.tabview = ctk.CTkTabview(self, fg_color=COLOR_BG_DARK)
         self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
 
-        self.tab_soporte_inbox = self.tabview.add("📬 Bandeja de Soporte")
         self.tab_usuarios = self.tabview.add("👥 Usuarios & Bans")
+        self.tab_soporte_inbox = self.tabview.add("📬 Bandeja de Soporte")
         self.tab_db_raw = self.tabview.add("🔒 Ver Base de Datos Cifrada (Render)")
         self.tab_ban_manual = self.tabview.add("🚫 Aplicar Ban Manual (IP / HWID)")
+        self.tabview.set("👥 Usuarios & Bans")
 
-        self._build_tab_soporte_inbox()
         self._build_tab_usuarios()
+        self._build_tab_soporte_inbox()
         self._build_tab_db_raw()
         self._build_tab_ban_manual()
 
@@ -3775,7 +3887,7 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         threading.Thread(target=_thread, daemon=True).start()
 
     def _build_tab_usuarios(self):
-        # Barra superior de búsqueda rápida
+        # Barra superior con búsqueda y botón de IP-Ban manual
         frame_busqueda = ctk.CTkFrame(self.tab_usuarios, fg_color="transparent")
         frame_busqueda.pack(fill="x", padx=6, pady=(6, 8))
 
@@ -3784,8 +3896,15 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
             placeholder_text="🔍 Buscar usuario por nombre, email, rol, IP o HWID...",
             fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
         )
-        self.entry_buscar_usr.pack(fill="x", expand=True)
+        self.entry_buscar_usr.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.entry_buscar_usr.bind("<KeyRelease>", lambda e: self._filtrar_usuarios())
+
+        btn_ip_ban_top = ctk.CTkButton(
+            frame_busqueda, text="🌐 Banear IP Manual", width=140, height=36,
+            font=("Segoe UI", 11, "bold"), fg_color="#7c3aed", hover_color="#6d28d9",
+            command=self._ban_ip_manual_dialog
+        )
+        btn_ip_ban_top.pack(side="right")
 
         self.scroll_usr = ctk.CTkScrollableFrame(self.tab_usuarios, fg_color=COLOR_BG_DARK)
         self.scroll_usr.pack(fill="both", expand=True, padx=4, pady=4)
@@ -3895,32 +4014,84 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
             f_actions = ctk.CTkFrame(card, fg_color="transparent")
             f_actions.pack(side="right", padx=10, pady=10)
 
+            # 1. Ban Cuenta
             if not baneado:
-                ctk.CTkButton(f_actions, text="🚫 Ban Cuenta", width=95, height=28,
+                ctk.CTkButton(f_actions, text="🚫 Ban Cuenta", width=90, height=28,
                               font=("Segoe UI", 10, "bold"), fg_color=COLOR_DANGER, hover_color="#b91c1c",
                               command=lambda em=email: self._ban_quick(em, "usuario")).pack(side="left", padx=2)
             else:
-                ctk.CTkButton(f_actions, text="✅ Desban Cuenta", width=110, height=28,
+                ctk.CTkButton(f_actions, text="✅ Desban Cuenta", width=105, height=28,
                               font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
                               command=lambda em=email: self._desban_quick(em, "usuario")).pack(side="left", padx=2)
 
-            if not ip_baneada and ip != "N/D":
+            # 2. IP-Ban
+            if not ip_baneada:
                 ctk.CTkButton(f_actions, text="🌐 IP-Ban", width=75, height=28,
                               font=("Segoe UI", 10, "bold"), fg_color="#7c3aed", hover_color="#6d28d9",
-                              command=lambda ip_val=ip: self._ban_quick(ip_val, "ip")).pack(side="left", padx=2)
-            elif ip_baneada:
+                              command=lambda ip_val=ip, em=email: self._ip_ban_user(ip_val, em)).pack(side="left", padx=2)
+            else:
                 ctk.CTkButton(f_actions, text="✅ Desban IP", width=85, height=28,
                               font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
                               command=lambda ip_val=ip: self._desban_quick(ip_val, "ip")).pack(side="left", padx=2)
 
+            # 3. HW-Ban
             if not hwid_baneado and hwid != "N/D" and hwid != "HWID_NO_REPORTADO":
-                ctk.CTkButton(f_actions, text="💻 HW-Ban", width=80, height=28,
+                ctk.CTkButton(f_actions, text="💻 HW-Ban", width=75, height=28,
                               font=("Segoe UI", 10, "bold"), fg_color="#b45309", hover_color="#92400e",
                               command=lambda hw=hwid: self._ban_quick(hw, "hwid")).pack(side="left", padx=2)
             elif hwid_baneado:
-                ctk.CTkButton(f_actions, text="✅ Desban HW", width=90, height=28,
+                ctk.CTkButton(f_actions, text="✅ Desban HW", width=85, height=28,
                               font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
                               command=lambda hw=hwid: self._desban_quick(hw, "hwid")).pack(side="left", padx=2)
+
+            # 4. Borrar Cuenta (Acción Admin)
+            ctk.CTkButton(f_actions, text="🗑️ Borrar Cuenta", width=100, height=28,
+                          font=("Segoe UI", 10, "bold"), fg_color="#7f1d1d", hover_color="#991b1b",
+                          border_width=1, border_color=COLOR_DANGER,
+                          command=lambda em=email: self._borrar_cuenta_admin(em)).pack(side="left", padx=2)
+
+    def _ip_ban_user(self, ip_val: str, email: str):
+        if not ip_val or ip_val == "N/D":
+            dialogo = ctk.CTkInputDialog(
+                text=f"El usuario '{email}' no tiene IP registrada aún.\nIntroduce la dirección IP a banear:",
+                title="🌐 Banear Dirección IP"
+            )
+            ip_input = dialogo.get_input()
+            if not ip_input or not ip_input.strip():
+                return
+            ip_val = ip_input.strip()
+        self._ban_quick(ip_val, "ip")
+
+    def _ban_ip_manual_dialog(self):
+        dialogo = ctk.CTkInputDialog(
+            text="Introduce la dirección IP que deseas bloquear en todo el sistema:",
+            title="🌐 Banear Dirección IP Manual"
+        )
+        ip_input = dialogo.get_input()
+        if not ip_input or not ip_input.strip():
+            return
+        self._ban_quick(ip_input.strip(), "ip")
+
+    def _borrar_cuenta_admin(self, email: str):
+        confirm = messagebox.askyesno(
+            "🗑️ Eliminar Cuenta de Usuario",
+            f"¿Estás seguro de que deseas ELIMINAR permanentemente la cuenta de '{email}'?\n\n"
+            "• Se borrarán sus datos, chats y registros de Supabase y Render.\n"
+            "• Esta acción es IRREVERSIBLE.\n\n"
+            "¿Deseas continuar?"
+        )
+        if not confirm:
+            return
+            
+        def _thread():
+            ok, msg = admin_eliminar_usuario(email)
+            if ok:
+                self.after(0, lambda: messagebox.showinfo("Usuario Eliminado", msg))
+                self.after(0, self._cargar_usuarios)
+            else:
+                self.after(0, lambda: messagebox.showerror("Error", msg))
+                
+        threading.Thread(target=_thread, daemon=True).start()
 
     def _ban_quick(self, objetivo, tipo):
         dialogo = ctk.CTkInputDialog(
