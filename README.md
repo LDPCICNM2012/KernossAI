@@ -1,6 +1,6 @@
 # KernosssAI
 
-KernosssAI is a Python-based application that provides a comprehensive suite of modules and tools powered by artificial intelligence to assist students and teachers. The platform optimizes academic workflows, helping users streamline their study habits and generate tailored exercises efficiently.
+KernosssAI is a Python-based application made by Lander De Pablos that provides a comprehensive suite of modules and tools powered by artificial intelligence to assist students and teachers. The platform optimizes academic workflows, helping users streamline their study habits and generate tailored exercises efficiently.
 
 ## Core Technologies
 The current version relies on Groq and Google Gemini to power its intelligent features. However, the long-term roadmap focuses on transitioning toward proprietary, custom-trained AI models to enhance autonomy and local processing capabilities.
