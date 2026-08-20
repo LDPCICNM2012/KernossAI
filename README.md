@@ -4,6 +4,8 @@
 [![Latest Release](https://img.io/badge/Release-v1.6_Official-blue?style=for-the-badge)](https://github.com/LDPCICNM2012/KernossAI/releases/latest)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
+KernossAI is a Python-based application made by Lander De Pablos that provides a comprehensive suite of modules and tools powered by artificial intelligence to assist students and teachers. The platform optimizes academic workflows, helping users streamline their study habits and generate tailored exercises efficiently.
+
 > **Sitio Web Oficial & Descargas:** [https://ldpcicnm2012.github.io/KernossAI/](https://ldpcicnm2012.github.io/KernossAI/)
 
 ---
