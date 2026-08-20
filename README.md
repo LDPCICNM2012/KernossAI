@@ -46,4 +46,4 @@ KernossAI is a Python-based application made by Lander De Pablos that provides a
 
 ## 👤 Autor
 
-Desarrollado con dedicación por **Lander de Pablos**.
+Hecho y desarrollado por **ldpcicnm2012 / Lander De Pablos** ([@LDPCICNM2012](https://github.com/LDPCICNM2012)).
