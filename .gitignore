@@ -1,2 +1,69 @@
-main/installer_windows.iss
-main/KernossAI.spec
+# ── Byte-compiled / optimized / DLL files ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# ── C extensions & builds ──
+build/
+dist/
+bin/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+
+# ── Packaging / PyInstaller / Inno Setup ──
+*.spec
+*.iss
+*.manifest
+
+# ── Virtual Environments ──
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ── OS Generated Files ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── IDE / Editor specific ──
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# ── Local Secrets, Tokens and Logs ──
+.env
+.env.local
+.env.*.local
+*.token.json
+.kernos_token.json
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# ── Testing & Coverage ──
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Temporary / Backup files ──
+old/
+backup/
+tmp/
+*.tmp
+*.bak
