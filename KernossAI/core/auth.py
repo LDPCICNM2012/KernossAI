@@ -1019,7 +1019,7 @@ def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
       - texto: "SI" | "No se sabe" | "NO"
       - detalles: dict(ip_actual, hogar_ip, hogar_nombre, pase_activo, dias_restantes_pase, fecha_disp_pase, dias_para_disp)
     """
-    from config_manager import obtener_pase_temporal
+    from KernossAI.core.config import obtener_pase_temporal
     token, sesion = _leer_token()
     em = (email or sesion.get("email", "")).strip().lower()
     ip_actual = obtener_ip_publica()
@@ -1077,7 +1077,7 @@ def obtener_estado_casa(email: Optional[str] = None) -> Tuple[str, str, dict]:
 
 def activar_pase_hogar_temporal(email: Optional[str] = None) -> Tuple[bool, str]:
     """Activa el pase de Hogar Temporal por 7 días (limitado a 1 vez cada 30 días)."""
-    from config_manager import guardar_activacion_pase_temporal
+    from KernossAI.core.config import guardar_activacion_pase_temporal
     token, sesion = _leer_token()
     em = (email or sesion.get("email", "")).strip().lower()
     if not em:

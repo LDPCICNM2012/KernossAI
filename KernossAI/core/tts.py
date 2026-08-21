@@ -6,9 +6,8 @@ import uuid
 import tempfile
 import asyncio
 import threading
-import subprocess
 import edge_tts
-from config_manager import obtener_ajustes_tts, guardar_ajustes_tts
+from KernossAI.core.config import obtener_ajustes_tts, guardar_ajustes_tts
 
 VOICES_DISPONIBLES = {
     "es-ES-AlvaroNeural": "👨 Álvaro (España - Masculino)",

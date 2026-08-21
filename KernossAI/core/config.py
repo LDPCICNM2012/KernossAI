@@ -1,11 +1,20 @@
+"""
+KernossAI - Gestor de Configuración Local y Políticas de Sistema
+Persistencia de preferencias de usuario, claves de API, configuración TTS,
+idioma, período de gracia (15 días) y pases de hogar temporales (7 días).
+"""
+
 import os
 import json
-from typing import Tuple
+from datetime import datetime, timedelta
+from typing import Tuple, Optional
 
 CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".kernossai")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 
+
 def inicializar_config():
+    """Garantiza la existencia del directorio y archivo de configuración local."""
     if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR, exist_ok=True)
     if not os.path.exists(CONFIG_FILE):
@@ -18,7 +27,9 @@ def inicializar_config():
                 "tts_velocidad": "+0%"
             }, f, indent=2)
 
+
 def guardar_keys(groq_key: str, gemini_key: str):
+    """Guarda las claves API personalizadas del usuario."""
     inicializar_config()
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -30,7 +41,9 @@ def guardar_keys(groq_key: str, gemini_key: str):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+
 def obtener_keys() -> Tuple[str, str]:
+    """Recupera las claves API personalizadas guardadas."""
     inicializar_config()
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -39,7 +52,9 @@ def obtener_keys() -> Tuple[str, str]:
     except Exception:
         return "", ""
 
+
 def guardar_ajustes_tts(voz: str, velocidad: str = "+0%"):
+    """Guarda las preferencias del motor de voz TTS."""
     inicializar_config()
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -51,7 +66,9 @@ def guardar_ajustes_tts(voz: str, velocidad: str = "+0%"):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+
 def obtener_ajustes_tts() -> Tuple[str, str]:
+    """Recupera la voz y velocidad seleccionadas para TTS."""
     inicializar_config()
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -63,7 +80,9 @@ def obtener_ajustes_tts() -> Tuple[str, str]:
     except Exception:
         return "es-ES-AlvaroNeural", "+0%"
 
+
 def guardar_idioma(idioma: str):
+    """Guarda el idioma preferido de la interfaz."""
     inicializar_config()
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -74,7 +93,9 @@ def guardar_idioma(idioma: str):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+
 def obtener_idioma() -> str:
+    """Recupera el código de idioma actual (es, en, de, fr)."""
     inicializar_config()
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -84,13 +105,11 @@ def obtener_idioma() -> str:
         return "es"
 
 
-def obtener_fecha_instalacion() -> Tuple[object, int, int]:
+def obtener_fecha_instalacion() -> Tuple[datetime, int, int]:
     """
-    Obtiene la fecha de instalación inicial.
-    Devuelve (fecha_dt, dias_transcurridos, dias_restantes_gracia).
-    El período de gracia es de 15 días.
+    Calcula la fecha de instalación y el período de gracia inicial de 15 días.
+    Retorna (fecha_dt, dias_transcurridos, dias_restantes_gracia).
     """
-    from datetime import datetime
     inicializar_config()
     data = {}
     try:
@@ -121,14 +140,10 @@ def obtener_fecha_instalacion() -> Tuple[object, int, int]:
 
 def obtener_pase_temporal(email: str = "") -> Tuple[bool, int, str, int]:
     """
-    Comprueba si el usuario tiene activo el pase temporal de 7 días y cuándo puede volver a activarlo.
-    Devuelve:
-      - activo (bool): Si el pase de 7 días está vigente ahora mismo.
-      - dias_restantes_pase (int): Días que le quedan al pase de 7 días activo.
-      - fecha_disponible_str (str): Fecha en la que podrá volver a activarlo (1 vez al mes / cada 30 días).
-      - dias_para_disponible (int): Días que faltan para poder activarlo de nuevo (0 si ya está disponible).
+    Comprueba si el usuario tiene activo el pase temporal de 7 días (modo vacaciones)
+    y el tiempo restante para poder reactivarlo (máximo 1 vez por mes).
+    Retorna: (activo, dias_restantes_pase, fecha_disponible_str, dias_para_disponible).
     """
-    from datetime import datetime, timedelta
     inicializar_config()
     em_key = (email or "global").strip().lower()
     try:
@@ -174,9 +189,8 @@ def obtener_pase_temporal(email: str = "") -> Tuple[bool, int, str, int]:
 
 def guardar_activacion_pase_temporal(email: str = "") -> Tuple[bool, str]:
     """
-    Activa el pase temporal de 7 días si han pasado al menos 30 días desde la última activación.
+    Activa el pase temporal de 7 días si se cumple la política de 1 activación mensual.
     """
-    from datetime import datetime, timedelta
     inicializar_config()
     em_key = (email or "global").strip().lower()
     activo, _, fecha_disp, dias_falta = obtener_pase_temporal(em_key)
