@@ -51,7 +51,7 @@ fi
 ln -s /Applications "$DMG_TEMP/Applications"
 
 # Crear la imagen .dmg usando la herramienta nativa de macOS hdiutil
-DMG_OUTPUT="$DIR/dist/KernossAI_v1.6_macOS.dmg"
+DMG_OUTPUT="$DIR/dist/KernossAI_macOS_Installer.dmg"
 rm -f "$DMG_OUTPUT"
 
 hdiutil create -volname "KernossAI Installer" -srcfolder "$DMG_TEMP" -ov -format UDZO "$DMG_OUTPUT"

@@ -45,7 +45,6 @@ jobs:
           name: KernossAI-Linux-x86_64
           path: |
             dist/KernossAI_Linux_x86_64.tar.gz
-            dist/KernossAI/
 
   build-windows:
     name: Build Windows (.exe & Setup Installer)
@@ -86,13 +85,18 @@ jobs:
           }
           & $iscc installer_windows.iss
 
+      - name: Compress Windows Portable Bundle (.zip)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/KernossAI/* -DestinationPath dist/installer/KernossAI_Windows_Portable_x64.zip -Force
+
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: KernossAI-Windows-x64
           path: |
-            dist/installer/KernossAI_Setup_v1.6.exe
-            dist/KernossAI/
+            dist/installer/KernossAI_Windows_Setup_x64.exe
+            dist/installer/KernossAI_Windows_Portable_x64.zip
 
   build-macos:
     name: Build macOS (.app & .dmg)
@@ -121,8 +125,7 @@ jobs:
         with:
           name: KernossAI-macOS
           path: |
-            dist/KernossAI_v1.6_macOS.dmg
-            dist/KernossAI.app
+            dist/KernossAI_macOS_Installer.dmg
 
   publish-release:
     name: Publish GitHub Release
@@ -154,20 +157,12 @@ jobs:
       - name: Prepare Release Files
         run: |
           mkdir -p release_dist
-          # Linux
-          if [ -f release_assets/linux/KernossAI_Linux_x86_64.tar.gz ]; then
-            cp release_assets/linux/KernossAI_Linux_x86_64.tar.gz release_dist/
-          fi
-          # Windows Setup
-          if [ -f release_assets/windows/KernossAI_Setup_v1.6.exe ]; then
-            cp release_assets/windows/KernossAI_Setup_v1.6.exe release_dist/
-          fi
-          # macOS DMG
-          if [ -f release_assets/macos/KernossAI_v1.6_macOS.dmg ]; then
-            cp release_assets/macos/KernossAI_v1.6_macOS.dmg release_dist/
-          fi
+          # Buscar y copiar todos los ejecutables e instaladores construidos
+          find release_assets -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.tar.gz" -o -name "*.zip" \) -exec cp -v {} release_dist/ \;
           # Arch Linux PKGBUILD
-          cp PKGBUILD release_dist/PKGBUILD
+          cp -v PKGBUILD release_dist/
+          echo "=== ARCHIVOS A PUBLICAR EN LA RELEASE ==="
+          ls -la release_dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
