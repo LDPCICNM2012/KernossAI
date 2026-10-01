@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """
 KernossAI — Compilador Multiplataforma de Escritorio
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Empaqueta automáticamente KernossAI para el sistema
+Empaqueta automaticamente KernossAI para el sistema
 operativo actual (Windows, macOS o Linux) utilizando
 PyInstaller con CustomTkinter, Matplotlib, E2EE,
-recursos gráficos y módulos completos.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+recursos graficos y modulos completos.
 """
 
 import os
@@ -16,23 +14,39 @@ import platform
 import subprocess
 from pathlib import Path
 
-# Directorio raíz del proyecto
+# Asegurar codificacion UTF-8 segura en Windows y otros entornos
+os.environ["PYTHONIOENCODING"] = "utf-8"
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+# Directorio raiz del proyecto
 PROJECT_ROOT = Path(__file__).resolve().parent
 PACKAGE_DIR = PROJECT_ROOT / "KernossAI"
 
+def safe_print(msg: str):
+    """Imprime mensajes de forma segura evitando errores de codificacion en Windows cp1252."""
+    try:
+        print(msg)
+    except UnicodeEncodeError:
+        print(msg.encode("ascii", "replace").decode("ascii"))
+
 def print_banner(msg: str):
-    print("\n" + "═" * 60)
-    print(f" 🚀 {msg}")
-    print("═" * 60 + "\n")
+    safe_print("\n" + "=" * 60)
+    safe_print(f" [*] {msg}")
+    safe_print("=" * 60 + "\n")
 
 def check_requirements():
-    """Verifica e instala dependencias de compilación si no están presentes."""
-    print("📦 Verificando dependencias de compilación...")
+    """Verifica e instala dependencias de compilacion si no estan presentes."""
+    safe_print("[INFO] Verificando dependencias de compilacion...")
     try:
         import PyInstaller
-        print(f"✓ PyInstaller detectado (v{PyInstaller.__version__})")
+        safe_print(f"[OK] PyInstaller detectado (v{PyInstaller.__version__})")
     except ImportError:
-        print("Instalando PyInstaller...")
+        safe_print("[BUILD] Instalando PyInstaller...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
 
 def build():
@@ -114,28 +128,28 @@ def build():
 
     cmd.append(main_script)
 
-    print("Ejecutando PyInstaller...")
-    print(f"Comando: {' '.join(cmd)}\n")
+    safe_print("[BUILD] Ejecutando PyInstaller...")
+    safe_print(f"[CMD] {' '.join(cmd)}\n")
 
     result = subprocess.run(cmd, cwd=str(PROJECT_ROOT))
     if result.returncode != 0:
-        print("\n❌ Error durante la compilación.")
+        safe_print("\n[ERROR] Error durante la compilacion con PyInstaller.")
         sys.exit(result.returncode)
 
     dist_dir = PROJECT_ROOT / "dist" / "KernossAI"
-    print_banner("¡Compilación completada con éxito!")
-    print(f"📁 Los archivos ejecutables se encuentran en:")
-    print(f"   {dist_dir}\n")
+    print_banner("Compilacion completada con exito!")
+    safe_print(f"[OUTPUT] Los archivos ejecutables se encuentran en:")
+    safe_print(f"         {dist_dir}\n")
 
     if current_os == "windows":
-        print("💡 Para ejecutar KernossAI en Windows, abre:")
-        print(f"   {dist_dir / 'KernossAI.exe'}")
+        safe_print("[INFO] Para ejecutar KernossAI en Windows, abre:")
+        safe_print(f"       {dist_dir / 'KernossAI.exe'}")
     elif current_os == "darwin":
-        print("💡 Para ejecutar KernossAI en macOS, abre:")
-        print(f"   {PROJECT_ROOT / 'dist' / 'KernossAI.app'}")
+        safe_print("[INFO] Para ejecutar KernossAI en macOS, abre:")
+        safe_print(f"       {PROJECT_ROOT / 'dist' / 'KernossAI.app'}")
     else:
-        print("💡 Para ejecutar KernossAI en Linux, ejecuta:")
-        print(f"   {dist_dir / 'KernossAI'}")
+        safe_print("[INFO] Para ejecutar KernossAI en Linux, ejecuta:")
+        safe_print(f"       {dist_dir / 'KernossAI'}")
 
 if __name__ == "__main__":
     build()

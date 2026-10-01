@@ -50,6 +50,9 @@ jobs:
   build-windows:
     name: Build Windows (.exe & Setup Installer)
     runs-on: windows-latest
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
