@@ -17,6 +17,7 @@ eggs/
 # ── Packaging / PyInstaller / Inno Setup ──
 *.spec
 *.iss
+!installer_windows.iss
 *.manifest
 
 # ── Virtual Environments ──

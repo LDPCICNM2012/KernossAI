@@ -1,0 +1,165 @@
+name: Build Multiplatform Releases
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux (x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Linux Binary
+        run: |
+          bash build_linux.sh
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KernossAI-Linux-x86_64
+          path: |
+            dist/KernossAI_Linux_x86_64.tar.gz
+            dist/KernossAI/
+
+  build-windows:
+    name: Build Windows (.exe & Setup Installer)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Windows Executable (.exe)
+        run: |
+          python build_desktop.py
+
+      - name: Compile Inno Setup Installer (.exe Setup)
+        uses: Minithra/innosetup-action@v1.2.2
+        with:
+          filepath: installer_windows.iss
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KernossAI-Windows-x64
+          path: |
+            dist/installer/KernossAI_Setup_v1.6.exe
+            dist/KernossAI/
+
+  build-macos:
+    name: Build macOS (.app & .dmg)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build macOS Application and DMG Installer
+        run: |
+          bash build_macos.sh
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KernossAI-macOS
+          path: |
+            dist/KernossAI_v1.6_macOS.dmg
+            dist/KernossAI.app
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-linux, build-windows, build-macos]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: KernossAI-Linux-x86_64
+          path: release_assets/linux
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: KernossAI-Windows-x64
+          path: release_assets/windows
+
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: KernossAI-macOS
+          path: release_assets/macos
+
+      - name: Prepare Release Files
+        run: |
+          mkdir -p release_dist
+          # Linux
+          if [ -f release_assets/linux/KernossAI_Linux_x86_64.tar.gz ]; then
+            cp release_assets/linux/KernossAI_Linux_x86_64.tar.gz release_dist/
+          fi
+          # Windows Setup
+          if [ -f release_assets/windows/KernossAI_Setup_v1.6.exe ]; then
+            cp release_assets/windows/KernossAI_Setup_v1.6.exe release_dist/
+          fi
+          # macOS DMG
+          if [ -f release_assets/macos/KernossAI_v1.6_macOS.dmg ]; then
+            cp release_assets/macos/KernossAI_v1.6_macOS.dmg release_dist/
+          fi
+          # Arch Linux PKGBUILD
+          cp PKGBUILD release_dist/PKGBUILD
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_dist/*
+          title: "KernossAI Release ${{ github.ref_name }}"
+          generate_release_notes: true
+          draft: false
+          prerelease: false

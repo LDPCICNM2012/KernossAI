@@ -1473,6 +1473,108 @@ def consultar_ia(prompt: str, modelo: str = "groq") -> str:
     return "Error de conexión con el motor de IA. Comprueba tu conexión a internet e inténtalo de nuevo."
 
 
+def codificar_imagenes_base64(rutas_imagenes: List[str], max_dimension: int = 1600) -> List[str]:
+    """Carga, redimensiona y codifica una lista de imágenes en Base64 para consumo multimodal."""
+    from PIL import Image
+    import io
+    import base64
+
+    imagenes_b64 = []
+    for ruta in rutas_imagenes:
+        if not ruta or not os.path.exists(ruta):
+            continue
+        try:
+            with Image.open(ruta) as img:
+                if img.mode in ("RGBA", "P", "LA"):
+                    img = img.convert("RGB")
+                elif img.mode != "RGB":
+                    img = img.convert("RGB")
+                
+                w, h = img.size
+                if max(w, h) > max_dimension:
+                    scale = max_dimension / max(w, h)
+                    new_size = (int(w * scale), int(h * scale))
+                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+                buf = io.BytesIO()
+                img.save(buf, format="JPEG", quality=85, optimize=True)
+                b64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
+                imagenes_b64.append(b64_str)
+        except Exception as e:
+            print(f"Error procesando imagen '{ruta}': {e}")
+    return imagenes_b64
+
+
+def consultar_ia_multimodal(prompt: str, rutas_imagenes: Optional[List[str]] = None, modelo: str = "gemini") -> str:
+    """Envía un prompt junto a una o varias imágenes para análisis visual, OCR y síntesis con IA."""
+    token, sesion = _leer_token()
+    if not token or not sesion:
+        cuentas = obtener_cuentas_guardadas()
+        if cuentas:
+            c = cuentas[0]
+            token = c.get("token", "")
+            sesion = c.get("sesion", {})
+            if token and sesion:
+                _guardar_token(token, sesion)
+
+    if not token and not sesion:
+        return "Error: no hay sesión activa. Inicia sesión primero."
+
+    email = sesion.get("email", "") if sesion else None
+    ok_ban, motivo_ban, tipo_ban = _verificar_baneos_supabase(email=email)
+    if not ok_ban:
+        return f"⛔ ACCESO DENEGADO ({tipo_ban}): {motivo_ban}"
+
+    b64_list = []
+    if rutas_imagenes:
+        b64_list = codificar_imagenes_base64(rutas_imagenes)
+
+    # 1. Llamar al backend de Render
+    try:
+        payload_data = {"prompt": prompt, "model": modelo}
+        if b64_list:
+            payload_data["images"] = b64_list
+
+        r = requests.post(
+            f"{BACKEND_URL}/api/evaluar",
+            json=payload_data,
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=90
+        )
+        if r.status_code == 200:
+            raw_res = r.json().get("resultado", "Sin respuesta.")
+            return limpiar_respuesta_ia(raw_res)
+    except Exception as e:
+        print(f"Error llamando al backend multimodal: {e}")
+
+    # 2. Fallback con Gemini local si está configurada la clave en config.py
+    try:
+        from KernossAI.core.config import obtener_keys
+        _, gemini_key = obtener_keys()
+        if gemini_key and rutas_imagenes:
+            import google.genai as genai
+            from google.genai import types
+            import base64
+            
+            client = genai.Client(api_key=gemini_key)
+            contents = []
+            for b64 in b64_list:
+                img_bytes = base64.b64decode(b64)
+                contents.append(types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"))
+            contents.append(prompt)
+            res = client.models.generate_content(model="gemini-2.5-flash", contents=contents)
+            return limpiar_respuesta_ia(res.text)
+    except Exception:
+        pass
+
+    if not rutas_imagenes:
+        res_directa = _llamar_groq_directo(prompt)
+        if res_directa:
+            return res_directa
+
+    return "Error al analizar las imágenes o conectar con la IA. Comprueba tu conexión a internet o intenta con menos imágenes."
+
+
 def llamar_gemini(prompt: str) -> str:
     return consultar_ia(prompt, modelo="gemini")
 
