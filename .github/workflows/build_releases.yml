@@ -2,6 +2,8 @@ name: Build Multiplatform Releases
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -67,10 +69,19 @@ jobs:
         run: |
           python build_desktop.py
 
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress --yes
+
       - name: Compile Inno Setup Installer (.exe Setup)
-        uses: Minithra/innosetup-action@v1.2.2
-        with:
-          filepath: installer_windows.iss
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+              $iscc = "C:\Program Files\Inno Setup 6\ISCC.exe"
+          }
+          & $iscc installer_windows.iss
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4

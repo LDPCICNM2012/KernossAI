@@ -104,8 +104,7 @@ def build():
         if icon_icns.exists():
             cmd.extend(["--icon", str(icon_icns)])
         cmd.extend([
-            "--osx-bundle-identifier", "com.kernossai.app",
-            "--target-architecture", "universal2"
+            "--osx-bundle-identifier", "com.kernossai.app"
         ])
     elif current_os == "linux":
         if icon_png.exists():
