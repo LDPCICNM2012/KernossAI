@@ -659,9 +659,12 @@ class DashboardEstudios(ctk.CTk):
         input_container.grid(row=3, column=0, sticky="ew", padx=25, pady=(0, 20))
         input_container.grid_columnconfigure(0, weight=1)
 
-        self.entry_home_pregunta = ctk.CTkEntry(input_container, placeholder_text=t("home_placeholder_input"),
-                                                height=46, font=("Segoe UI", 13),
-                                                fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_home_pregunta = ctk.CTkEntry(
+            input_container, placeholder_text=t("home_placeholder_input"),
+            height=46, font=("Segoe UI", 13),
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_home_pregunta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_home_pregunta.bind("<Return>", lambda e: self._enviar_chat_home())
 

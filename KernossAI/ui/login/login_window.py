@@ -106,14 +106,20 @@ class PantallaLogin(ctk.CTk):
         login_tab = self.tab.tab(t("tab_login"))
         ctk.CTkLabel(login_tab, text=t("lbl_email"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_email = ctk.CTkEntry(login_tab, placeholder_text=t("placeholder_email"), height=38,
-                                              fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_login_email = ctk.CTkEntry(
+            login_tab, placeholder_text=t("placeholder_email"), height=38,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_login_email.pack(fill="x", padx=10)
 
         ctk.CTkLabel(login_tab, text=t("lbl_pass"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(10, 2))
-        self.entry_login_pass = ctk.CTkEntry(login_tab, placeholder_text=t("placeholder_pass"), show="•", height=38,
-                                             fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_login_pass = ctk.CTkEntry(
+            login_tab, placeholder_text=t("placeholder_pass"), show="•", height=38,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_login_pass.pack(fill="x", padx=10)
         self.entry_login_pass.bind("<Return>", lambda e: self._login())
 
@@ -128,20 +134,29 @@ class PantallaLogin(ctk.CTk):
         reg = self.tab.tab(t("tab_registro"))
         ctk.CTkLabel(reg, text=t("lbl_nombre"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.entry_reg_nombre = ctk.CTkEntry(reg, placeholder_text=t("placeholder_nombre"), height=36,
-                                             fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_reg_nombre = ctk.CTkEntry(
+            reg, placeholder_text=t("placeholder_nombre"), height=36,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_reg_nombre.pack(fill="x", padx=10)
 
         ctk.CTkLabel(reg, text=t("lbl_email"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.entry_reg_email = ctk.CTkEntry(reg, placeholder_text=t("placeholder_email"), height=36,
-                                            fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_reg_email = ctk.CTkEntry(
+            reg, placeholder_text=t("placeholder_email"), height=36,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_reg_email.pack(fill="x", padx=10)
 
         ctk.CTkLabel(reg, text=t("lbl_pass"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
-        self.entry_reg_pass = ctk.CTkEntry(reg, placeholder_text=t("placeholder_pass_reg"), show="•", height=36,
-                                           fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_reg_pass = ctk.CTkEntry(
+            reg, placeholder_text=t("placeholder_pass_reg"), show="•", height=36,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_reg_pass.pack(fill="x", padx=10)
 
         ctk.CTkLabel(reg, text=t("lbl_rol"), anchor="w", font=("Segoe UI", 12, "bold"),

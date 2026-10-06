@@ -11,36 +11,54 @@ import customtkinter as ctk
 VERSION_APP = "1.8.0"
 
 # ─────────────────────────────────────────────────────────────
-#  PALETA DE COLORES Y TOKENS VISUALES
+#  PALETA DE COLORES Y TOKENS VISUALES (MODO BLANCO / MODO OSCURO)
+#  Formato CustomTkinter: (Color Modo Blanco, Color Modo Oscuro)
 # ─────────────────────────────────────────────────────────────
-COLOR_BG_DARK       = "#050811"  # Fondo base de la ventana
-COLOR_BG_SIDEBAR    = "#070c18"  # Fondo sidebar lateral
-COLOR_BG_CARD       = "#0a1124"  # Paneles y tarjetas base
-COLOR_BG_CARD_LIGHT = "#0f1a35"  # Entradas de texto y visores
-COLOR_BG_SURFACE    = "#152449"  # Superficies activas
-COLOR_BORDER        = "#1e3a6a"  # Bordes azulados sutiles
-COLOR_BORDER_GLOW   = "#3b82f6"  # Borde con resplandor activo
+COLOR_BG_DARK       = ("#f8fafc", "#050811")  # Fondo base de la ventana
+COLOR_BG_SIDEBAR    = ("#f1f5f9", "#070c18")  # Fondo sidebar lateral
+COLOR_BG_CARD       = ("#ffffff", "#0a1124")  # Paneles y tarjetas base
+COLOR_BG_CARD_LIGHT = ("#ffffff", "#0f1a35")  # Entradas de texto y visores
+COLOR_BG_SURFACE    = ("#e2e8f0", "#152449")  # Superficies activas
+COLOR_BORDER        = ("#cbd5e1", "#1e3a6a")  # Bordes sutiles
+COLOR_BORDER_GLOW   = ("#2563eb", "#3b82f6")  # Borde con resplandor activo
 
-COLOR_ACCENT_PRIMARY      = "#2563eb" # Azul Eléctrico principal
-COLOR_ACCENT_HOVER        = "#3b82f6" # Azul hover brillante
-COLOR_ACCENT_CYAN         = "#06b6d4" # Cian brillante
-COLOR_ACCENT_CYAN_HOVER   = "#0891b2"
-COLOR_ACCENT_SKY          = "#38bdf8" # Celeste
-COLOR_ACCENT_PURPLE       = "#6366f1" # Indigo (Docentes)
-COLOR_ACCENT_PURPLE_HOVER = "#4f46e5"
+COLOR_ACCENT_PRIMARY      = ("#2563eb", "#2563eb") # Azul Eléctrico principal
+COLOR_ACCENT_HOVER        = ("#1d4ed8", "#3b82f6") # Azul hover brillante
+COLOR_ACCENT_CYAN         = ("#0284c7", "#06b6d4") # Cian brillante
+COLOR_ACCENT_CYAN_HOVER   = ("#0369a1", "#0891b2")
+COLOR_ACCENT_SKY          = ("#0284c7", "#38bdf8") # Celeste
+COLOR_ACCENT_PURPLE       = ("#6366f1", "#6366f1") # Indigo (Docentes)
+COLOR_ACCENT_PURPLE_HOVER = ("#4f46e5", "#4f46e5")
 
-COLOR_TEXT_MAIN      = "#f8fafc" # Blanco nítido
-COLOR_TEXT_MUTED     = "#94a3b8" # Gris azulado secundario
-COLOR_TEXT_DIM       = "#64748b" # Gris tenue
-COLOR_SUCCESS        = "#10b981" # Verde esmeralda
-COLOR_SUCCESS_HOVER  = "#059669"
-COLOR_WARNING        = "#f59e0b" # Ámbar
-COLOR_DANGER         = "#ef4444" # Rojo coral
-COLOR_DANGER_HOVER   = "#dc2626"
+COLOR_TEXT_MAIN      = ("#0f172a", "#f8fafc") # Texto principal (Negro en modo blanco, Blanco en modo oscuro)
+COLOR_TEXT_MUTED     = ("#475569", "#94a3b8") # Gris secundario
+COLOR_TEXT_DIM       = ("#94a3b8", "#64748b") # Gris tenue / placeholder
+COLOR_SUCCESS        = ("#16a34a", "#10b981") # Verde esmeralda
+COLOR_SUCCESS_HOVER  = ("#15803d", "#059669")
+COLOR_WARNING        = ("#d97706", "#f59e0b") # Ámbar
+COLOR_DANGER         = ("#dc2626", "#ef4444") # Rojo coral
+COLOR_DANGER_HOVER   = ("#b91c1c", "#dc2626")
 
 # ─────────────────────────────────────────────────────────────
 #  UTILIDADES DE VENTANA Y HELPER FUNCTIONS
 # ─────────────────────────────────────────────────────────────
+def aplicar_tema(tema: str = None):
+    """
+    Aplica el modo visual a nivel global en CustomTkinter:
+    'dark' / 'oscuro': Modo Oscuro (fondo negro, texto blanco)
+    'light' / 'blanco': Modo Blanco (fondo blanco, texto negro)
+    """
+    if tema is None:
+        try:
+            from KernossAI.core.config import obtener_tema
+            tema = obtener_tema()
+        except Exception:
+            tema = "dark"
+    if str(tema).lower() in ("light", "blanco", "claro"):
+        ctk.set_appearance_mode("light")
+    else:
+        ctk.set_appearance_mode("dark")
+
 def aplicar_icono(ventana):
     """Aplica el icono institucional según la plataforma (Windows .ico, macOS .icns)."""
     try:

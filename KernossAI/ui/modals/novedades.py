@@ -84,7 +84,8 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
 
         self.txt_resumen_ia = ctk.CTkTextbox(
             f_resumen_ia, font=("Segoe UI", 11), height=110, wrap="word",
-            fg_color=COLOR_BG_DARK, border_width=1, border_color=COLOR_BORDER
+            fg_color=COLOR_BG_DARK, text_color=COLOR_TEXT_MAIN,
+            border_width=1, border_color=COLOR_BORDER
         )
         self.txt_resumen_ia.pack(fill="x", padx=14, pady=(0, 14))
         self.txt_resumen_ia.insert("1.0", t("nov_placeholder_ia"))
@@ -94,8 +95,9 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=16, pady=(4, 8))
 
         self.txt_notas_oficiales = ctk.CTkTextbox(
-            scroll_principal, font=("Consolas", 11), height=220, wrap="word",
-            fg_color=COLOR_BG_DARK, border_width=1, border_color=COLOR_BORDER
+            scroll_principal, font=("Helvetica", 11), height=220, wrap="word",
+            fg_color=COLOR_BG_DARK, text_color=COLOR_TEXT_MAIN,
+            border_width=1, border_color=COLOR_BORDER
         )
         self.txt_notas_oficiales.pack(fill="both", expand=True, padx=16, pady=(0, 16))
         self.txt_notas_oficiales.insert("1.0", self._obtener_notas_cambios())
@@ -116,7 +118,11 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
             "es": (
                 f"KERNOSSAI — VERSIÓN OFICIAL v{VERSION_APP}\n"
                 "─────────────────────────────────────────────────────────────\n"
-                "🌐 1. NUEVO MÓDULO: GLOBAL CLASSROOMS & MODEL UNITED NATIONS\n"
+                "🎨 1. SELECTOR DE TEMA BLANCO / OSCURO & CONTRASTE WINDOWS\n"
+                "   • Opción en Ajustes para alternar entre Modo Blanco (fondo blanco, texto negro) y Modo Oscuro (fondo negro, texto blanco).\n"
+                "   • Vista previa instantánea y persistencia automática de tema entre reinicios.\n"
+                "   • Corrección integral en Windows del contraste al teclear en cuadros de texto y entradas.\n\n"
+                "🌐 2. NUEVO MÓDULO: GLOBAL CLASSROOMS & MODEL UNITED NATIONS\n"
                 "   • Búsqueda Masiva Web 360° en tiempo real (evidencias, tratados, resoluciones ONU).\n"
                 "   • Redactor de Position Papers oficiales en formato canónico de 3 secciones.\n"
                 "   • Generador de Opening Speeches cronometrados a 1 minuto (~120 palabras) con contador de palabras y estimación de tiempo.\n"
@@ -125,19 +131,19 @@ class VentanaNovedadesIA(ctk.CTkToplevel):
                 "   • Simulador de Preguntas Hostiles (POIs) con réplicas diplomáticas documentadas.\n"
                 "   • Botón de ayuda interactiva '?' con guía diplomática completa de cada herramienta.\n"
                 "   • Exportación directa a Word (.docx), copia al portapapeles y voz neural Edge-TTS.\n\n"
-                "👑 2. SISTEMA AVANZADO DE ROLES Y PERMISOS\n"
+                "👑 3. SISTEMA AVANZADO DE ROLES Y PERMISOS\n"
                 "   • Nuevos rangos: Alumno, Profesor, Alumno+, Profesor+ y Admin.\n"
                 "   • Acceso exclusivo al módulo Global Classrooms para Alumno+, Profesor+ y Admin.\n"
                 "   • Modal informativo para rangos estándar con enlace a Soporte Oficial.\n\n"
-                "🛡️ 3. GESTIÓN INTEGRAL EN MODERACIÓN & BANS\n"
+                "🛡️ 4. GESTIÓN INTEGRAL EN MODERACIÓN & BANS\n"
                 "   • Selector interactivo de rangos en vivo para cada usuario registrado.\n"
                 "   • Barra de desplazamiento horizontal en cada tarjeta por si el correo o HWID es extenso.\n"
                 "   • Asignación manual de roles por correo en Supabase y Render.\n\n"
-                "📜 4. POLÍTICA DE PRIVACIDAD & CUMPLIMIENTO RGPD VINCULANTE\n"
+                "📜 5. POLÍTICA DE PRIVACIDAD & CUMPLIMIENTO RGPD VINCULANTE\n"
                 "   • Consentimiento obligatorio al iniciar la app: continuar o salir.\n"
                 "   • Cláusulas legales estrictas sobre tratamiento legítimo de IPs para seguridad y anti-ataques.\n"
                 "   • Obligatoriedad de aceptación en el registro y acceso permanente desde Ajustes.\n\n"
-                "⚙️ 5. INTERFAZ Y COMPILACIÓN MULTIPLATAFORMA\n"
+                "⚙️ 6. INTERFAZ Y COMPILACIÓN MULTIPLATAFORMA\n"
                 "   • Sidebar con scroll central y pie fijo para 'Ajustes' y 'Cerrar Sesión'.\n"
                 "   • Motor de IA ultra-resiliente con fallback Gemini / Groq.\n"
                 "   • Compilación nativa (.dmg para macOS, instalador .exe para Windows, Linux tar.gz / PKGBUILD)."

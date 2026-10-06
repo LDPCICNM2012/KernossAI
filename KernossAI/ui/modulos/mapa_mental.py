@@ -352,9 +352,12 @@ class ModuloMapaMental(ctk.CTkFrame):
         # Input de Tema
         ctk.CTkLabel(panel_izq, text=t("mapa_lbl_tema"),
                      font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=1, column=0, sticky="w", padx=18, pady=(4, 2))
-        self.entry_tema = ctk.CTkEntry(panel_izq, placeholder_text="Ej: La Célula (o deja vacío si subes imágenes)",
-                                       height=36, font=("Segoe UI", 12),
-                                       fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_tema = ctk.CTkEntry(
+            panel_izq, placeholder_text="Ej: La Célula (o deja vacío si subes imágenes)",
+            height=36, font=("Segoe UI", 12),
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_tema.grid(row=2, column=0, sticky="ew", padx=18, pady=(0, 8))
         self.entry_tema.bind("<Return>", lambda e: self.generar_mapa_mental())
 
@@ -374,9 +377,12 @@ class ModuloMapaMental(ctk.CTkFrame):
 
         ctk.CTkLabel(frame_opts, text="Enfoque Opcional:", font=("Segoe UI", 11, "bold"),
                      text_color=COLOR_TEXT_MUTED).grid(row=0, column=1, sticky="w", padx=(6, 0), pady=(0, 2))
-        self.entry_enfoque = ctk.CTkEntry(frame_opts, placeholder_text="Puntos clave...",
-                                          font=("Segoe UI", 11), height=32,
-                                          fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_enfoque = ctk.CTkEntry(
+            frame_opts, placeholder_text="Puntos clave...",
+            font=("Segoe UI", 11), height=32,
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_enfoque.grid(row=1, column=1, sticky="ew", padx=(6, 0))
 
         # ── SECCIÓN DE SUBIDA MULTIMODAL DE IMÁGENES ──

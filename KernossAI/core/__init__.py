@@ -28,6 +28,7 @@ from KernossAI.core.theme import (
     COLOR_DANGER_HOVER,
     centrar_ventana,
     aplicar_icono,
+    aplicar_tema,
     es_version_superior,
     construir_prompt,
 )
@@ -40,6 +41,8 @@ from KernossAI.core.config import (
     obtener_ajustes_tts,
     guardar_idioma,
     obtener_idioma,
+    guardar_tema,
+    obtener_tema,
     obtener_fecha_instalacion,
     obtener_pase_temporal,
     guardar_activacion_pase_temporal,

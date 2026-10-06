@@ -63,25 +63,33 @@ class ModuloCalculador(ctk.CTkFrame):
 
         ctk.CTkLabel(self.frame_entrada, text=t("calc_lbl_materia"),
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
-        self.entrada_nombre = ctk.CTkEntry(self.frame_entrada, placeholder_text=t("calc_plh_materia"),
-                                           height=40, font=("Segoe UI", 12),
-                                           fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entrada_nombre = ctk.CTkEntry(
+            self.frame_entrada, placeholder_text=t("calc_plh_materia"),
+            height=40, font=("Segoe UI", 12),
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entrada_nombre.grid(row=1, column=0, padx=15, pady=(0, 12), sticky="ew")
 
         ctk.CTkLabel(self.frame_entrada, text=t("calc_lbl_nota"),
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=1, padx=15, pady=(15, 5), sticky="w")
-        self.entrada_nota_directa = ctk.CTkEntry(self.frame_entrada, placeholder_text=t("calc_plh_nota"),
-                                                  height=40, font=("Segoe UI", 12),
-                                                  fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entrada_nota_directa = ctk.CTkEntry(
+            self.frame_entrada, placeholder_text=t("calc_plh_nota"),
+            height=40, font=("Segoe UI", 12),
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entrada_nota_directa.grid(row=1, column=1, padx=15, pady=(0, 12), sticky="ew")
 
         ctk.CTkLabel(self.frame_entrada,
                      text=t("calc_lbl_pct"),
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=2, column=0, padx=15, pady=(0, 5), sticky="w")
-        self.entrada_porcentaje = ctk.CTkEntry(self.frame_entrada,
-                                               placeholder_text=t("calc_plh_pct"),
-                                               height=40, font=("Segoe UI", 12),
-                                               fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entrada_porcentaje = ctk.CTkEntry(
+            self.frame_entrada, placeholder_text=t("calc_plh_pct"),
+            height=40, font=("Segoe UI", 12),
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entrada_porcentaje.grid(row=3, column=0, columnspan=2, padx=15, pady=(0, 15), sticky="ew")
 
         frame_botones = ctk.CTkFrame(self, fg_color="transparent")

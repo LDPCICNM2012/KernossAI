@@ -15,6 +15,10 @@ def main():
     global __spec__
     __spec__ = None
 
+    # Inicializar modo de apariencia visual (Oscuro / Blanco)
+    from KernossAI.core.theme import aplicar_tema
+    aplicar_tema()
+
     # 1. Comprobación obligatoria de Política de Privacidad & RGPD al iniciar la app
     import os
     import sys

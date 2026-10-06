@@ -119,7 +119,8 @@ class VentanaTutoriaAlumnoProfesor(ctk.CTkToplevel):
         self.entry_busq_profe = ctk.CTkEntry(
             frame_busq, height=36, font=("Segoe UI", 11),
             placeholder_text="🔍 Buscar profesor por nombre o email...",
-            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_width=1, border_color=COLOR_BORDER
         )
         self.entry_busq_profe.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.entry_busq_profe.bind("<KeyRelease>", lambda e: self._filtrar_profesores_ui())
@@ -182,7 +183,11 @@ class VentanaTutoriaAlumnoProfesor(ctk.CTkToplevel):
         ctk.CTkLabel(dialog, text=f"📨 {profesor_nombre}", font=("Segoe UI", 14, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(16, 4))
         ctk.CTkLabel(dialog, text=f"Docente: {profesor_email}", font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(pady=(0, 10))
 
-        entry_msg = ctk.CTkEntry(dialog, height=36, font=("Segoe UI", 11), fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        entry_msg = ctk.CTkEntry(
+            dialog, height=36, font=("Segoe UI", 11),
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         entry_msg.pack(fill="x", padx=25, pady=(0, 15))
         entry_msg.insert(0, "Hola, me gustaría vincularme como alumno para tutoría académica.")
 
@@ -257,7 +262,8 @@ class VentanaTutoriaAlumnoProfesor(ctk.CTkToplevel):
         self.entry_msg_alumno = ctk.CTkEntry(
             f_input, height=40, font=("Segoe UI", 11),
             placeholder_text="Escribe tu consulta académica a tu profesor...",
-            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_width=1, border_color=COLOR_BORDER
         )
         self.entry_msg_alumno.pack(side="left", fill="x", expand=True, padx=10, pady=10)
         self.entry_msg_alumno.bind("<Return>", lambda e: self._enviar_msg_alumno(p_email))
@@ -445,7 +451,8 @@ class VentanaTutoriaAlumnoProfesor(ctk.CTkToplevel):
         self.entry_resp_profe = ctk.CTkEntry(
             barra_resp, font=("Segoe UI", 11), height=38,
             placeholder_text="Escribe tu respuesta académica al alumno...",
-            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_width=1, border_color=COLOR_BORDER
         )
         self.entry_resp_profe.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.entry_resp_profe.bind("<Return>", lambda e: self._enviar_msg_profesor())

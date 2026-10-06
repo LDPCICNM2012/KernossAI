@@ -103,8 +103,11 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
 
         ctk.CTkLabel(sidebar, text="Topic / Subject", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15, pady=(5, 2))
-        self.entry_tema = ctk.CTkEntry(sidebar, placeholder_text="e.g. Physics, History...",
-                                       fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_tema = ctk.CTkEntry(
+            sidebar, placeholder_text="e.g. Physics, History...",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_tema.pack(fill="x", padx=15, pady=(0, 8))
 
         ctk.CTkLabel(sidebar, text="Level", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
@@ -180,13 +183,16 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
         self.lbl_modo_edicion = ctk.CTkLabel(cab, text="", font=("Segoe UI", 11), text_color=COLOR_WARNING)
         self.lbl_modo_edicion.pack(side="right")
 
-        self.txt_ejercicio = ctk.CTkTextbox(panel, font=("Consolas", 13), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+        self.txt_ejercicio = ctk.CTkTextbox(panel, font=("Consolas", 13), fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN, border_width=1, border_color=COLOR_BORDER)
         self.txt_ejercicio.grid(row=1, column=0, sticky="nsew")
         self.txt_ejercicio.insert("end", "Configura los parámetros en el panel izquierdo y pulsa 'Generar Ejercicio'.")
         self.txt_ejercicio.configure(state="disabled")
 
-        self.entry_cambio = ctk.CTkEntry(panel, placeholder_text="Ajustes con IA: Ej: 'Hazlo más difícil' / 'Añade 2 preguntas teóricas'", height=42,
-                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_cambio = ctk.CTkEntry(
+            panel, placeholder_text="Ajustes con IA: Ej: 'Hazlo más difícil' / 'Añade 2 preguntas teóricas'", height=42,
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_cambio.grid(row=2, column=0, sticky="ew", pady=(10, 0))
         self.entry_cambio.bind("<Return>", lambda e: self.aplicar_cambio_ia())
 
@@ -419,8 +425,11 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
 
         ctk.CTkLabel(sidebar, text="Materia / Examen", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15, pady=(5, 2))
-        self.entry_materia = ctk.CTkEntry(sidebar, placeholder_text="Ej: Historia — Tema 4",
-                                          fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_materia = ctk.CTkEntry(
+            sidebar, placeholder_text="Ej: Historia — Tema 4",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_materia.pack(fill="x", padx=15, pady=(0, 8))
 
         ctk.CTkLabel(sidebar, text="Nivel educativo", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
@@ -432,13 +441,19 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.combo_nivel.pack(fill="x", padx=15, pady=(0, 8))
 
         ctk.CTkLabel(sidebar, text="Nombre del alumno", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
-        self.entry_alumno = ctk.CTkEntry(sidebar, placeholder_text="Nombre y apellidos",
-                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_alumno = ctk.CTkEntry(
+            sidebar, placeholder_text="Nombre y apellidos",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_alumno.pack(fill="x", padx=15, pady=(0, 8))
 
         ctk.CTkLabel(sidebar, text="Criterios de puntuación", font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=15)
-        self.entry_criterios = ctk.CTkEntry(sidebar, placeholder_text="Ej: P1=2pts, P2=3pts, P3=5pts",
-                                            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_criterios = ctk.CTkEntry(
+            sidebar, placeholder_text="Ej: P1=2pts, P2=3pts, P3=5pts",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_criterios.pack(fill="x", padx=15, pady=(0, 8))
         ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=5)
 

@@ -111,7 +111,8 @@ class VentanaSoporteE2EE(ctk.CTkToplevel):
 
         self.entry_msg = ctk.CTkEntry(
             fila_campo, placeholder_text=t("sop_placeholder_input"),
-            font=("Segoe UI", 12), fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER, height=42
+            font=("Segoe UI", 12), fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER, height=42
         )
         self.entry_msg.pack(side="left", fill="x", expand=True, padx=(0, 10))
         self.entry_msg.bind("<Return>", lambda e: self._enviar_mensaje())
@@ -271,7 +272,8 @@ class VentanaBandejaSoporte(ctk.CTkToplevel):
         self.entry_resp_soporte = ctk.CTkEntry(
             barra_resp, font=("Segoe UI", 11), height=38,
             placeholder_text="Escribe la respuesta oficial al alumno...",
-            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_width=1, border_color=COLOR_BORDER
         )
         self.entry_resp_soporte.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.entry_resp_soporte.bind("<Return>", lambda e: self._enviar_respuesta_soporte())

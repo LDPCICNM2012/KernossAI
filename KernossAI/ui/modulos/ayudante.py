@@ -65,8 +65,11 @@ class ModuloAyudador(ctk.CTkFrame):
                                fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         sidebar.grid(row=0, column=0, sticky="nsew")
         ctk.CTkLabel(sidebar, text=t("ayud_titulo"), font=("Segoe UI", 16, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(20, 5), padx=10)
-        self.entry_nombre = ctk.CTkEntry(sidebar, placeholder_text=t("placeholder_nombre"),
-                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_nombre = ctk.CTkEntry(
+            sidebar, placeholder_text=t("placeholder_nombre"),
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_nombre.pack(fill="x", padx=15, pady=8)
         if self.sesion.get("nombre"):
             self.entry_nombre.insert(0, self.sesion["nombre"])
@@ -128,8 +131,11 @@ class ModuloAyudador(ctk.CTkFrame):
         input_frame.grid(row=2, column=0, sticky="ew")
         input_frame.grid_columnconfigure(0, weight=1)
 
-        self.entry_pregunta = ctk.CTkEntry(input_frame, placeholder_text=t("ayud_lbl_enunciado"), height=44,
-                                           fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_pregunta = ctk.CTkEntry(
+            input_frame, placeholder_text=t("ayud_lbl_enunciado"), height=44,
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_pregunta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_pregunta.bind("<Return>", lambda e: self._enviar())
 

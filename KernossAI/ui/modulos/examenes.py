@@ -52,8 +52,11 @@ class ModuloExamen(ctk.CTkFrame):
                                fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
         sidebar.grid(row=0, column=0, sticky="nsew")
         ctk.CTkLabel(sidebar, text=t("exam_titulo"), font=("Segoe UI", 16, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=20, padx=10)
-        self.entry_nombre = ctk.CTkEntry(sidebar, placeholder_text=t("placeholder_nombre"),
-                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_nombre = ctk.CTkEntry(
+            sidebar, placeholder_text=t("placeholder_nombre"),
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_nombre.pack(fill="x", padx=20, pady=8)
 
         ctk.CTkLabel(sidebar, text="🟢 AI Ready", text_color=COLOR_SUCCESS,
@@ -95,8 +98,11 @@ class ModuloExamen(ctk.CTkFrame):
         input_f = ctk.CTkFrame(main_f, fg_color="transparent")
         input_f.grid(row=1, column=0, sticky="ew")
         input_f.grid_columnconfigure(0, weight=1)
-        self.entry_respuesta = ctk.CTkEntry(input_f, placeholder_text="Escribe aquí tus respuestas...", height=42,
-                                            fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_respuesta = ctk.CTkEntry(
+            input_f, placeholder_text="Escribe aquí tus respuestas...", height=42,
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_respuesta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_respuesta.bind("<Return>", lambda e: self.enviar_respuesta())
         ctk.CTkButton(input_f, text="Enviar Respuestas", width=140, height=42,

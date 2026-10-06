@@ -84,7 +84,8 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         self.entry_buscar_usr = ctk.CTkEntry(
             frame_busqueda, height=36, font=("Segoe UI", 11),
             placeholder_text="🔍 Buscar usuario por nombre, email, rol, IP o HWID...",
-            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_width=1, border_color=COLOR_BORDER
         )
         self.entry_buscar_usr.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.entry_buscar_usr.bind("<KeyRelease>", lambda e: self._filtrar_usuarios())
@@ -113,7 +114,8 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         btn_ver_raw.pack(side="right")
 
         self.txt_raw = ctk.CTkTextbox(self.tab_db_raw, font=("Consolas", 11), wrap="word",
-                                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER)
+                                      fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                      border_width=1, border_color=COLOR_BORDER)
         self.txt_raw.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.txt_raw.insert("1.0", "Haz clic en 'Consultar Raw' para comprobar en vivo que los mensajes están cifrados en el servidor.")
 
@@ -129,11 +131,19 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
         self.combo_tipo_ban.pack(fill="x", padx=20, pady=(2, 10))
 
         ctk.CTkLabel(frame, text="Objetivo (Email / Dirección IP / HWID Hexadecimal):", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
-        self.entry_ban_obj = ctk.CTkEntry(frame, font=("Segoe UI", 11), placeholder_text="ej: usuario@correo.com o 192.168.1.1 o 657ed7dbd298...")
+        self.entry_ban_obj = ctk.CTkEntry(
+            frame, font=("Segoe UI", 11), placeholder_text="ej: usuario@correo.com o 192.168.1.1 o 657ed7dbd298...",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_ban_obj.pack(fill="x", padx=20, pady=(2, 10))
 
         ctk.CTkLabel(frame, text="Motivo del Baneo:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
-        self.entry_ban_motivo = ctk.CTkEntry(frame, font=("Segoe UI", 11), placeholder_text="ej: Uso indebido del sistema o multicuentas")
+        self.entry_ban_motivo = ctk.CTkEntry(
+            frame, font=("Segoe UI", 11), placeholder_text="ej: Uso indebido del sistema o multicuentas",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_ban_motivo.pack(fill="x", padx=20, pady=(2, 15))
 
         btn_ejecutar_ban = ctk.CTkButton(frame, text="⛔ Ejecutar Baneo Inmediato", height=38,
@@ -149,7 +159,11 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                      font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=20, pady=(15, 10))
 
         ctk.CTkLabel(frame_roles, text="Correo Electrónico del Usuario:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
-        self.entry_rol_email = ctk.CTkEntry(frame_roles, font=("Segoe UI", 11), placeholder_text="ej: estudiante@colegio.com")
+        self.entry_rol_email = ctk.CTkEntry(
+            frame_roles, font=("Segoe UI", 11), placeholder_text="ej: estudiante@colegio.com",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_rol_email.pack(fill="x", padx=20, pady=(2, 10))
 
         ctk.CTkLabel(frame_roles, text="Nuevo Rol a Asignar:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)

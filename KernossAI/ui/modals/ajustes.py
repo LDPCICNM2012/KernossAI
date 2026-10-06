@@ -22,10 +22,13 @@ from KernossAI.core.theme import (
     COLOR_DANGER_HOVER,
     aplicar_icono,
     centrar_ventana,
+    aplicar_tema,
 )
 from KernossAI.core.config import (
     obtener_idioma,
     guardar_idioma,
+    obtener_tema,
+    guardar_tema,
     obtener_ajustes_tts,
     guardar_ajustes_tts,
     obtener_pase_temporal,
@@ -69,11 +72,21 @@ class ModalAgregarCuenta(ctk.CTkToplevel):
         f_card.pack(fill="both", expand=True, padx=20, pady=(0, 15))
 
         ctk.CTkLabel(f_card, text="Correo Electrónico:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=16, pady=(12, 2))
-        self.entry_email = ctk.CTkEntry(f_card, height=36, font=("Segoe UI", 11), placeholder_text="ej: usuario@correo.com")
+        self.entry_email = ctk.CTkEntry(
+            f_card, height=36, font=("Segoe UI", 11),
+            placeholder_text="ej: usuario@correo.com",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_email.pack(fill="x", padx=16, pady=(0, 8))
 
         ctk.CTkLabel(f_card, text="Contraseña:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=16, pady=(0, 2))
-        self.entry_pass = ctk.CTkEntry(f_card, height=36, font=("Segoe UI", 11), show="•", placeholder_text="••••••••")
+        self.entry_pass = ctk.CTkEntry(
+            f_card, height=36, font=("Segoe UI", 11), show="•",
+            placeholder_text="••••••••",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_pass.pack(fill="x", padx=16, pady=(0, 10))
         self.entry_pass.bind("<Return>", lambda e: self._guardar())
 
@@ -167,7 +180,29 @@ class VentanaAjustes(ctk.CTkToplevel):
 
         ctk.CTkFrame(self.scroll_tarjeta, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=18, pady=(2, 10))
 
-        # 2. Rol
+        # 2. Modo de Apariencia / Tema Visual (Blanco / Oscuro)
+        ctk.CTkLabel(self.scroll_tarjeta, text="🎨 Modo de Apariencia / Tema Visual:",
+                     font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 2))
+        ctk.CTkLabel(self.scroll_tarjeta, text="Selecciona entre modo Blanco (fondo claro y texto negro) u Oscuro (fondo negro y texto blanco).",
+                     font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=18, pady=(0, 6))
+
+        self.opciones_tema = ["🌙 Oscuro (Fondo negro)", "☀️ Blanco (Fondo blanco)"]
+        tema_actual = obtener_tema()
+        idx_tema = 1 if tema_actual == "light" else 0
+
+        self.seg_tema = ctk.CTkSegmentedButton(
+            self.scroll_tarjeta, values=self.opciones_tema, height=36,
+            font=("Segoe UI", 11, "bold"),
+            selected_color=COLOR_ACCENT_PRIMARY,
+            selected_hover_color=COLOR_ACCENT_HOVER,
+            command=self._al_cambiar_tema_live
+        )
+        self.seg_tema.set(self.opciones_tema[idx_tema])
+        self.seg_tema.pack(fill="x", padx=18, pady=(0, 10))
+
+        ctk.CTkFrame(self.scroll_tarjeta, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=18, pady=(2, 10))
+
+        # 3. Rol
         ctk.CTkLabel(self.scroll_tarjeta, text="🎓 Modo de Cuenta / Rol Académico:",
                      font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=18, pady=(0, 2))
         ctk.CTkLabel(self.scroll_tarjeta, text="Elige entre 'Alumno' (estudio) o 'Profesor' (herramientas docentes).",
@@ -504,13 +539,24 @@ class VentanaAjustes(ctk.CTkToplevel):
 
         tts_engine.hablar(frase, callback_estado=lambda r: self.after(0, lambda: _callback(r)))
 
+    def _al_cambiar_tema_live(self, valor):
+        nuevo_modo = "light" if "Blanco" in valor else "dark"
+        aplicar_tema(nuevo_modo)
+
     def _guardar(self):
+        # 1. Guardar y aplicar tema visual (Blanco / Oscuro)
+        tema_elegido = "light" if "Blanco" in self.seg_tema.get() else "dark"
+        guardar_tema(tema_elegido)
+        aplicar_tema(tema_elegido)
+
+        # 2. Guardar idioma
         nombre_idioma = self.combo_idioma.get()
         idioma_id = self.map_idiomas_a_id.get(nombre_idioma, "es")
         idioma_anterior = obtener_idioma()
         guardar_idioma(idioma_id)
         fijar_idioma(idioma_id)
 
+        # 3. Guardar rol
         nuevo_rol = self.combo_rol.get()
         if nuevo_rol != self.rol_original:
             ok_rol, _ = actualizar_rol_usuario(nuevo_rol)
@@ -520,6 +566,7 @@ class VentanaAjustes(ctk.CTkToplevel):
                 if hasattr(self.master, "_al_cambiar_cuenta"):
                     self.master._al_cambiar_cuenta(self.master.sesion)
 
+        # 4. Guardar ajustes TTS
         nombre_voz = self.combo_voz.get()
         voz_id = self.map_voces_a_id.get(nombre_voz, "es-ES-AlvaroNeural")
         nombre_vel = self.combo_vel.get()
@@ -532,7 +579,7 @@ class VentanaAjustes(ctk.CTkToplevel):
             messagebox.showinfo(t("ajustes_titulo"), t("ajustes_aviso_reinicio"))
         else:
             messagebox.showinfo(t("ajustes_titulo"), t("ajustes_guardado_ok"))
-        self._cerrar()
+        self._cerrar(guardado=True)
 
     def _abrir_politica_privacidad(self):
         from KernossAI.ui.modals.privacidad import VentanaPoliticaPrivacidad
@@ -555,7 +602,7 @@ class VentanaAjustes(ctk.CTkToplevel):
             if ok:
                 def _exito():
                     messagebox.showinfo("Cuenta Eliminada", "Tu cuenta ha sido eliminada con éxito del sistema.")
-                    self._cerrar()
+                    self._cerrar(guardado=True)
                     if hasattr(self.master, "_cerrar_sesion"):
                         self.master._cerrar_sesion()
                     else:
@@ -566,6 +613,10 @@ class VentanaAjustes(ctk.CTkToplevel):
 
         threading.Thread(target=_thread, daemon=True).start()
 
-    def _cerrar(self):
+    def _cerrar(self, guardado: bool = False):
         tts_engine.detener()
+        if not guardado:
+            # Si el usuario cierra sin guardar, restablecer el tema previo guardado
+            aplicar_tema(obtener_tema())
         self.destroy()
+

@@ -271,12 +271,20 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
 
         # 1. País
         ctk.CTkLabel(f_grid, text="🏳️ País Asignado:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, sticky="w", padx=4, pady=(0, 2))
-        self.entry_pais = ctk.CTkEntry(f_grid, placeholder_text="ej: Alemania, Japón, Brasil, Francia...", font=("Segoe UI", 11), height=34, fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_pais = ctk.CTkEntry(
+            f_grid, placeholder_text="ej: Alemania, Japón, Brasil, Francia...", font=("Segoe UI", 11),
+            height=34, fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_pais.grid(row=1, column=0, sticky="ew", padx=4)
 
         # 2. Topic / Tema
         ctk.CTkLabel(f_grid, text="📌 Topic / Tema del Debate:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=1, sticky="w", padx=4, pady=(0, 2))
-        self.entry_topic = ctk.CTkEntry(f_grid, placeholder_text="ej: Regulación ética de la IA, Refugiados climáticos...", font=("Segoe UI", 11), height=34, fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.entry_topic = ctk.CTkEntry(
+            f_grid, placeholder_text="ej: Regulación ética de la IA, Refugiados climáticos...", font=("Segoe UI", 11),
+            height=34, fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_topic.grid(row=1, column=1, sticky="ew", padx=4)
 
         # 3. Comité de la ONU
@@ -441,8 +449,9 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
 
     def _crear_textbox(self, parent):
         txt = ctk.CTkTextbox(
-            parent, font=("Consolas", 12), wrap="word",
-            fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER
+            parent, font=("Helvetica", 12), wrap="word",
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            border_width=1, border_color=COLOR_BORDER
         )
         txt.pack(fill="both", expand=True, padx=6, pady=6)
         txt.insert("1.0", "Introduce un país y un topic y presiona cualquiera de los botones de investigación para comenzar.")

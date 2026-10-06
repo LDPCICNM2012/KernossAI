@@ -21,6 +21,7 @@ def inicializar_config():
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump({
                 "idioma": "es",
+                "tema": "dark",
                 "groq_key": "",
                 "gemini_key": "",
                 "tts_voz": "es-ES-AlvaroNeural",
@@ -103,6 +104,31 @@ def obtener_idioma() -> str:
             return data.get("idioma", "es")
     except Exception:
         return "es"
+
+
+def guardar_tema(tema: str):
+    """Guarda el modo de apariencia preferido ('dark' o 'light')."""
+    inicializar_config()
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        data = {}
+    data["tema"] = "light" if str(tema).lower() in ("light", "blanco", "claro") else "dark"
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+def obtener_tema() -> str:
+    """Recupera el modo de apariencia guardado ('dark' por defecto o 'light')."""
+    inicializar_config()
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("tema", "dark")
+    except Exception:
+        return "dark"
+
 
 
 def obtener_fecha_instalacion() -> Tuple[datetime, int, int]:

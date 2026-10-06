@@ -83,9 +83,12 @@ class ModuloResumidor(ctk.CTkFrame):
                                       command=lambda: self._set_modelo("groq"))
         self.btn_groq.pack(side="left", padx=2, pady=2)
 
-        self.entry_nombre = ctk.CTkEntry(header, placeholder_text="Título / Materia del resumen...", width=220,
-                                         height=32, font=("Segoe UI", 11),
-                                         fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER)
+        self.entry_nombre = ctk.CTkEntry(
+            header, placeholder_text="Título / Materia del resumen...", width=220,
+            height=32, font=("Segoe UI", 11),
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            placeholder_text_color=COLOR_TEXT_DIM, border_color=COLOR_BORDER
+        )
         self.entry_nombre.pack(side="right", padx=10)
 
         # Contenedor Principal (2 Columnas: Entrada / Salida)
