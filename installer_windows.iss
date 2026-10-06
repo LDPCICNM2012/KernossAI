@@ -3,7 +3,7 @@
 ; ─────────────────────────────────────────────────────────────
 
 #define MyAppName "KernossAI"
-#define MyAppVersion "1.6.0"
+#define MyAppVersion "1.8.0"
 #define MyAppPublisher "KernossAI Team"
 #define MyAppURL "https://github.com/lander/KernossAI"
 #define MyAppExeName "KernossAI.exe"

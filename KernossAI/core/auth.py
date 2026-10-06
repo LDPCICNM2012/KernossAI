@@ -1430,7 +1430,7 @@ def _llamar_groq_directo(prompt: str) -> Optional[str]:
     return None
 
 
-def consultar_ia(prompt: str, modelo: str = "groq") -> str:
+def consultar_ia(prompt: str, modelo: str = "gemini") -> str:
     token, sesion = _leer_token()
     if not token or not sesion:
         # Intentar restaurar sesión desde cuentas guardadas
@@ -1451,26 +1451,53 @@ def consultar_ia(prompt: str, modelo: str = "groq") -> str:
     if not ok_ban:
         return f"⛔ ACCESO DENEGADO A LA IA ({tipo_ban}): Tu cuenta o dispositivo ha sido suspendido por moderación. Motivo: {motivo_ban}."
 
-    # 2. Intentar llamar al backend de Render
+    # 2. Intentar llamar al backend de Render (preferencia por Gemini que está activo 100% en producción)
+    modelo_elegido = modelo.lower() if modelo else "gemini"
     try:
         r = requests.post(
             f"{BACKEND_URL}/api/evaluar",
-            json={"prompt": prompt, "model": modelo},
+            json={"prompt": prompt, "model": modelo_elegido},
             headers={"Authorization": f"Bearer {token}"},
-            timeout=30
+            timeout=35
         )
         if r.status_code == 200:
             raw_res = r.json().get("resultado", "Sin respuesta.")
             return limpiar_respuesta_ia(raw_res)
+        
+        # Si falló Groq en el servidor, reintentar automáticamente con Gemini
+        if modelo_elegido != "gemini":
+            r_gem = requests.post(
+                f"{BACKEND_URL}/api/evaluar",
+                json={"prompt": prompt, "model": "gemini"},
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=35
+            )
+            if r_gem.status_code == 200:
+                raw_res = r_gem.json().get("resultado", "Sin respuesta.")
+                return limpiar_respuesta_ia(raw_res)
     except Exception:
         pass
 
-    # 3. Fallback inteligente directo a Groq para asegurar respuesta garantizada
+    # 3. Reintento final de alta resiliencia con Gemini directo al backend
+    try:
+        r_final = requests.post(
+            f"{BACKEND_URL}/api/evaluar",
+            json={"prompt": prompt, "model": "gemini"},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=30
+        )
+        if r_final.status_code == 200:
+            raw_res = r_final.json().get("resultado", "Sin respuesta.")
+            return limpiar_respuesta_ia(raw_res)
+    except Exception:
+        pass
+
+    # 4. Fallback directo a Groq si estuviera disponible
     res_directa = _llamar_groq_directo(prompt)
     if res_directa:
         return res_directa
 
-    return "Error de conexión con el motor de IA. Comprueba tu conexión a internet e inténtalo de nuevo."
+    return "Error de conexión con el motor de IA. El servidor de Render puede estar iniciando o sin conexión. Por favor reintenta en unos instantes."
 
 
 def codificar_imagenes_base64(rutas_imagenes: List[str], max_dimension: int = 1600) -> List[str]:

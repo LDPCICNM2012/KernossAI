@@ -125,7 +125,7 @@ class DashboardEstudios(ctk.CTk):
         self.sidebar.pack_propagate(False)
 
         frame_brand = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        frame_brand.pack(fill="x", padx=18, pady=(24, 10))
+        frame_brand.pack(fill="x", padx=18, pady=(20, 8))
 
         ctk.CTkLabel(frame_brand, text=t("app_nombre"),
                      font=("Segoe UI", 24, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
@@ -134,11 +134,11 @@ class DashboardEstudios(ctk.CTk):
 
         frame_user = ctk.CTkFrame(self.sidebar, fg_color=COLOR_BG_CARD, corner_radius=12,
                                   border_width=1, border_color=COLOR_BORDER)
-        frame_user.pack(fill="x", padx=15, pady=(10, 10))
+        frame_user.pack(fill="x", padx=15, pady=(4, 8))
         icono = "🎓" if self.rol == "Alumno" else "👨‍🏫"
         self.lbl_perfil_nombre = ctk.CTkLabel(frame_user, text=f"{icono} {self.nombre}",
                                               font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN, anchor="w")
-        self.lbl_perfil_nombre.pack(fill="x", padx=12, pady=(10, 2))
+        self.lbl_perfil_nombre.pack(fill="x", padx=12, pady=(8, 2))
 
         self.lbl_perfil_email = ctk.CTkLabel(frame_user, text=self.email,
                                              font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED, anchor="w")
@@ -149,18 +149,41 @@ class DashboardEstudios(ctk.CTk):
         self.lbl_perfil_rol = ctk.CTkLabel(frame_user, text=f"  {rol_texto}  ",
                                            font=("Segoe UI", 10, "bold"), fg_color=badge_color,
                                            corner_radius=8, text_color="white")
-        self.lbl_perfil_rol.pack(anchor="w", padx=12, pady=(6, 10))
+        self.lbl_perfil_rol.pack(anchor="w", padx=12, pady=(4, 8))
+
+        # ── Pie fijo del sidebar (Ajustes y Cerrar Sesión) ──
+        # Anclado abajo para que NUNCA desaparezca de la pantalla
+        frame_sidebar_footer = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        frame_sidebar_footer.pack(side="bottom", fill="x", padx=15, pady=(4, 12))
+
+        ctk.CTkButton(frame_sidebar_footer, text=t("btn_ajustes"), height=36,
+                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
+                      text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
+                      command=self._abrir_ajustes).pack(fill="x", pady=(2, 4))
+
+        ctk.CTkButton(frame_sidebar_footer, text=t("btn_cerrar_sesion"), height=36,
+                      fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
+                      text_color=COLOR_TEXT_MUTED, hover_color=COLOR_DANGER_HOVER,
+                      command=self._cerrar_sesion).pack(fill="x", pady=(2, 0))
+
+        # ── Zona Deslizable Central (Módulos y Herramientas Docentes) ──
+        self.scroll_sidebar_modulos = ctk.CTkScrollableFrame(
+            self.sidebar, fg_color="transparent",
+            scrollbar_button_color=COLOR_BORDER,
+            scrollbar_button_hover_color=COLOR_ACCENT_PRIMARY
+        )
+        self.scroll_sidebar_modulos.pack(fill="both", expand=True, padx=4, pady=2)
 
         self.btn_home = ctk.CTkButton(
-            self.sidebar, text=t("btn_home"),
+            self.scroll_sidebar_modulos, text=t("btn_home"),
             font=("Segoe UI", 13, "bold"), height=42, anchor="w",
             fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
             command=self._mostrar_home_chat
         )
-        self.btn_home.pack(fill="x", padx=15, pady=(4, 6))
+        self.btn_home.pack(fill="x", padx=11, pady=(2, 6))
 
-        frame_historial_header = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        frame_historial_header.pack(fill="x", padx=16, pady=(8, 2))
+        frame_historial_header = ctk.CTkFrame(self.scroll_sidebar_modulos, fg_color="transparent")
+        frame_historial_header.pack(fill="x", padx=12, pady=(6, 2))
         ctk.CTkLabel(frame_historial_header, text=t("hdr_historial"),
                      font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_CYAN).pack(side="left")
 
@@ -169,16 +192,16 @@ class DashboardEstudios(ctk.CTk):
                       hover_color=COLOR_ACCENT_HOVER,
                       command=self._nuevo_chat_home).pack(side="right")
 
-        self.scroll_historial_home = ctk.CTkScrollableFrame(self.sidebar, height=95, fg_color=COLOR_BG_CARD,
+        self.scroll_historial_home = ctk.CTkScrollableFrame(self.scroll_sidebar_modulos, height=95, fg_color=COLOR_BG_CARD,
                                                            border_width=1, border_color=COLOR_BORDER,
                                                            corner_radius=8)
-        self.scroll_historial_home.pack(fill="x", padx=15, pady=(2, 8))
+        self.scroll_historial_home.pack(fill="x", padx=11, pady=(2, 8))
         self._actualizar_historial_home_ui()
 
-        ctk.CTkFrame(self.sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=4)
+        ctk.CTkFrame(self.scroll_sidebar_modulos, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=11, pady=4)
 
-        ctk.CTkLabel(self.sidebar, text=t("hdr_modulos_estudio"),
-                     font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_DIM).pack(anchor="w", padx=20, pady=(6, 2))
+        ctk.CTkLabel(self.scroll_sidebar_modulos, text=t("hdr_modulos_estudio"),
+                     font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_DIM).pack(anchor="w", padx=16, pady=(6, 2))
 
         self._btn(t("mod_mapas"), "mapa_mental")
         self._btn(t("mod_calculador"), "calculador")
@@ -189,21 +212,11 @@ class DashboardEstudios(ctk.CTk):
         self._btn(t("mod_agenda"), "calendario")
 
         if self.rol == "Profesor":
-            ctk.CTkFrame(self.sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=15, pady=6)
-            ctk.CTkLabel(self.sidebar, text=t("hdr_herramientas_docente"),
-                         font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_PURPLE).pack(anchor="w", padx=20, pady=(2, 2))
+            ctk.CTkFrame(self.scroll_sidebar_modulos, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=11, pady=6)
+            ctk.CTkLabel(self.scroll_sidebar_modulos, text=t("hdr_herramientas_docente"),
+                         font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_PURPLE).pack(anchor="w", padx=16, pady=(2, 2))
             self._btn(t("mod_ejercicios"), "creador", color=COLOR_BG_SURFACE)
             self._btn(t("mod_corrector"), "corrector", color=COLOR_BG_SURFACE)
-
-        ctk.CTkButton(self.sidebar, text=t("btn_ajustes"), height=36,
-                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
-                      text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
-                      command=self._abrir_ajustes).pack(fill="x", padx=15, pady=(4, 6), side="bottom")
-
-        ctk.CTkButton(self.sidebar, text=t("btn_cerrar_sesion"), height=36,
-                      fg_color="transparent", border_width=1, border_color=COLOR_BORDER,
-                      text_color=COLOR_TEXT_MUTED, hover_color=COLOR_DANGER_HOVER,
-                      command=self._cerrar_sesion).pack(fill="x", padx=15, pady=(4, 16), side="bottom")
 
         # Contenedor derecho
         self.contenedor = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR_BG_DARK)
@@ -517,13 +530,14 @@ class DashboardEstudios(ctk.CTk):
         self._mostrar_home_chat()
 
     def _btn(self, texto, modulo_id, color=COLOR_BG_SURFACE):
+        parent = getattr(self, "scroll_sidebar_modulos", self.sidebar)
         btn = ctk.CTkButton(
-            self.sidebar, text=texto,
+            parent, text=texto,
             font=("Segoe UI", 12, "bold"), height=36, anchor="w",
             fg_color=color, hover_color=COLOR_ACCENT_HOVER,
             command=lambda mid=modulo_id: self._abrir_modulo(mid)
         )
-        btn.pack(fill="x", padx=15, pady=2)
+        btn.pack(fill="x", padx=11, pady=2)
         self._botones_modulos[modulo_id] = btn
 
     def _crear_vista_home_chat(self):

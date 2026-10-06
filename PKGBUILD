@@ -1,6 +1,6 @@
 # Maintainer: Lander <lander@kernossai.com>
 pkgname=kernossai-bin
-pkgver=1.6.0
+pkgver=1.8.0
 pkgrel=1
 pkgdesc="Plataforma de Inteligencia Artificial para el Estudio y la Enseñanza"
 arch=('x86_64')

@@ -8,7 +8,7 @@ import re
 import sys
 import customtkinter as ctk
 
-VERSION_APP = "1.7.0"
+VERSION_APP = "1.8.0"
 
 # ─────────────────────────────────────────────────────────────
 #  PALETA DE COLORES Y TOKENS VISUALES
