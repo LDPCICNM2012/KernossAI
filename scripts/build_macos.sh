@@ -55,17 +55,22 @@ ln -s /Applications "$DMG_TEMP/Applications"
 
 # Crear la imagen .dmg usando la herramienta nativa de macOS hdiutil
 mkdir -p "$PROJECT_ROOT/dist"
-DMG_OUTPUT="$PROJECT_ROOT/dist/KernossAI_macOS_Installer.dmg"
+ARCH_NAME="${MAC_ARCH:-$(uname -m)}"
+DMG_NAME="${DMG_OUTPUT_NAME:-KernossAI_macOS_${ARCH_NAME}.dmg}"
+DMG_OUTPUT="$PROJECT_ROOT/dist/$DMG_NAME"
 rm -f "$DMG_OUTPUT"
 
 hdiutil create -volname "KernossAI Installer" -srcfolder "$DMG_TEMP" -ov -format UDZO "$DMG_OUTPUT"
+
+# Copia de compatibilidad genérica
+cp -f "$DMG_OUTPUT" "$PROJECT_ROOT/dist/KernossAI_macOS_Installer.dmg"
 
 # Limpieza
 rm -rf "$DMG_TEMP"
 
 echo ""
 echo "============================================================"
-echo "  🎉 ¡COMPILACIÓN EXITOSA EN MACOS!"
+echo "  🎉 ¡COMPILACIÓN EXITOSA EN MACOS ($ARCH_NAME)!"
 echo "  Aplicación ejecutable: dist/KernossAI.app"
-echo "  Instalador de disco:   dist/KernossAI_v1.8_macOS.dmg"
+echo "  Instalador de disco:   dist/$DMG_NAME"
 echo "============================================================"

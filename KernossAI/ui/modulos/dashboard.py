@@ -1056,10 +1056,21 @@ class DashboardEstudios(ctk.CTk):
                                 download_url = a.get("browser_download_url", download_url)
                                 break
                     elif sys.platform == "darwin":
+                        import platform
+                        is_intel = platform.machine().lower() in ("x86_64", "i386", "amd64")
+                        pref_keyword = "intel" if is_intel else "applesilicon"
+                        encontrado = False
                         for a in assets:
-                            if a.get("name", "").lower().endswith((".zip", ".dmg")):
+                            nombre_a = a.get("name", "").lower()
+                            if pref_keyword in nombre_a and nombre_a.endswith(".dmg"):
                                 download_url = a.get("browser_download_url", download_url)
+                                encontrado = True
                                 break
+                        if not encontrado:
+                            for a in assets:
+                                if a.get("name", "").lower().endswith((".dmg", ".zip")):
+                                    download_url = a.get("browser_download_url", download_url)
+                                    break
 
                     info = {
                         "tag": tag_remoto,

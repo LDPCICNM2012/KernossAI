@@ -124,6 +124,9 @@ def build():
         cmd.extend([
             "--osx-bundle-identifier", "com.kernossai.app"
         ])
+        mac_arch = os.environ.get("MAC_ARCH")
+        if mac_arch in ("x86_64", "arm64", "universal2"):
+            cmd.extend(["--target-arch", mac_arch])
     elif current_os == "linux":
         if icon_png.exists():
             cmd.extend(["--icon", str(icon_png)])
