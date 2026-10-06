@@ -26,6 +26,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_PURPLE_HOVER,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_SUCCESS_HOVER,
     COLOR_DANGER_HOVER,
@@ -98,11 +99,11 @@ class ModuloCalculador(ctk.CTkFrame):
 
         ctk.CTkButton(frame_botones, text=t("calc_btn_guardar_nota"),
                        command=self.agregar_nota_principal,
-                       fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                       fg_color=COLOR_SUCCESS, text_color="#ffffff", hover_color=COLOR_SUCCESS_HOVER,
                        height=40, font=("Segoe UI", 12, "bold")).grid(row=0, column=0, padx=(0, 6), sticky="ew")
         ctk.CTkButton(frame_botones, text=t("calc_btn_bloques"),
                        command=self.gestionar_subnotas,
-                       fg_color=COLOR_BG_SURFACE, border_width=1,
+                       fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, border_width=1,
                        border_color=COLOR_ACCENT_CYAN,
                        hover_color=COLOR_ACCENT_PRIMARY,
                        height=40, font=("Segoe UI", 12, "bold")).grid(row=0, column=1, padx=(6, 0), sticky="ew")
@@ -116,7 +117,7 @@ class ModuloCalculador(ctk.CTkFrame):
                      font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, pady=(0, 8), padx=(0, 10), sticky="w")
         self.salida_texto = ctk.CTkTextbox(frame_principal, width=500, height=320,
                                            font=("Consolas", 12), corner_radius=12,
-                                           fg_color=COLOR_BG_CARD, border_width=1,
+                                           fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN, border_width=1,
                                            border_color=COLOR_BORDER, state="disabled")
         self.salida_texto.grid(row=1, column=0, padx=(0, 10), sticky="nsew")
 
@@ -133,15 +134,17 @@ class ModuloCalculador(ctk.CTkFrame):
         ctk.CTkButton(frame_acciones, text=t("calc_btn_calcular"),
                       command=self.calcular_total_final,
                       height=44, font=("Segoe UI", 13, "bold"),
-                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER).grid(row=0, column=0, padx=(0, 6), sticky="ew")
+                      fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                      hover_color=COLOR_ACCENT_HOVER).grid(row=0, column=0, padx=(0, 6), sticky="ew")
         ctk.CTkButton(frame_acciones, text=t("calc_btn_limpiar"),
                       command=self.limpiar_datos,
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_DANGER_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, hover_color=COLOR_DANGER_HOVER,
                       border_width=1, border_color=COLOR_BORDER,
                       height=44, font=("Segoe UI", 13, "bold")).grid(row=0, column=1, padx=3, sticky="ew")
         ctk.CTkButton(frame_acciones, text=t("calc_btn_exportar"),
                       command=self.exportar_a_word,
-                      fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                      fg_color=COLOR_ACCENT_PURPLE, text_color="#ffffff",
+                      hover_color=COLOR_ACCENT_PURPLE_HOVER,
                       height=44, font=("Segoe UI", 13, "bold")).grid(row=0, column=2, padx=(6, 0), sticky="ew")
 
     def calcular_media(self, lista):

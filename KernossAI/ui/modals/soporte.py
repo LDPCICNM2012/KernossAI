@@ -16,6 +16,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_CYAN,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_DANGER,
     aplicar_icono,

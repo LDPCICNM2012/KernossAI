@@ -50,7 +50,8 @@ class ModuloApuntador(ctk.CTkFrame):
                      font=("Segoe UI", 16, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=20, padx=10)
 
         self.btn_nueva_nota = ctk.CTkButton(self.frame_lateral, text=t("apunt_btn_nueva"),
-                                            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                            fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                            hover_color=COLOR_ACCENT_HOVER,
                                             height=38, font=("Segoe UI", 12, "bold"),
                                             command=self.nueva_nota)
         self.btn_nueva_nota.pack(fill="x", padx=15, pady=(0, 10))
@@ -67,30 +68,31 @@ class ModuloApuntador(ctk.CTkFrame):
         frame_top = ctk.CTkFrame(self.frame_editor, fg_color="transparent")
         frame_top.grid(row=0, column=0, sticky="ew", pady=(0, 12))
         self.label_nota_abierta = ctk.CTkLabel(frame_top, text=t("apunt_lbl_sin_nota"),
-                                               font=("Segoe UI", 18, "bold"), text_color=COLOR_TEXT_MAIN)
+                                                font=("Segoe UI", 18, "bold"), text_color=COLOR_TEXT_MAIN)
         self.label_nota_abierta.pack(side="left")
 
         btn_bar = ctk.CTkFrame(frame_top, fg_color="transparent")
         btn_bar.pack(side="right")
 
         self.btn_tts_nota = ctk.CTkButton(btn_bar, text=t("apunt_btn_leer"), width=85, height=36,
-                                          fg_color=COLOR_BG_SURFACE, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                          fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                          border_width=1, border_color=COLOR_ACCENT_CYAN,
                                           hover_color=COLOR_ACCENT_HOVER,
                                           command=self._toggle_tts)
         self.btn_tts_nota.pack(side="left", padx=4)
 
         ctk.CTkButton(btn_bar, text=t("apunt_btn_guardar"), width=95, height=36,
-                      fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                      fg_color=COLOR_SUCCESS, text_color="#ffffff", hover_color=COLOR_SUCCESS_HOVER,
                       command=self.guardar_nota).pack(side="left", padx=4)
         ctk.CTkButton(btn_bar, text=t("apunt_btn_word"), width=95, height=36,
-                      fg_color=COLOR_ACCENT_PURPLE, hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                      fg_color=COLOR_ACCENT_PURPLE, text_color="#ffffff", hover_color=COLOR_ACCENT_PURPLE_HOVER,
                       command=self.exportar_nota_word).pack(side="left", padx=4)
         ctk.CTkButton(btn_bar, text=t("apunt_btn_borrar"), width=95, height=36,
-                      fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER,
+                      fg_color=COLOR_DANGER, text_color="#ffffff", hover_color=COLOR_DANGER_HOVER,
                       command=self.eliminar_nota).pack(side="left", padx=4)
 
         self.editor_texto = ctk.CTkTextbox(self.frame_editor, font=("Segoe UI", 14),
-                                           fg_color=COLOR_BG_CARD_LIGHT, border_width=1,
+                                           fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN, border_width=1,
                                            border_color=COLOR_BORDER, wrap="word")
         self.editor_texto.grid(row=1, column=0, sticky="nsew")
 

@@ -405,14 +405,16 @@ class ModuloMapaMental(ctk.CTkFrame):
 
         self.btn_adjuntar_img = ctk.CTkButton(f_img_btns, text="📁 Subir Varias Imágenes", height=28,
                                               font=("Segoe UI", 11, "bold"),
-                                              fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                                              fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                              hover_color=COLOR_ACCENT_HOVER,
                                               border_width=1, border_color=COLOR_BORDER,
                                               command=self._adjuntar_imagenes)
         self.btn_adjuntar_img.pack(side="left", fill="x", expand=True, padx=(0, 4))
 
         self.btn_limpiar_img = ctk.CTkButton(f_img_btns, text="🗑️", width=34, height=28,
                                              font=("Segoe UI", 11),
-                                             fg_color=COLOR_BG_SURFACE, hover_color=COLOR_DANGER,
+                                             fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                             hover_color=COLOR_DANGER,
                                              border_width=1, border_color=COLOR_BORDER,
                                              command=self._limpiar_imagenes)
         self.btn_limpiar_img.pack(side="right")
@@ -433,19 +435,22 @@ class ModuloMapaMental(ctk.CTkFrame):
 
         self.btn_gemini = ctk.CTkButton(frame_model_switch, text="🧠 Gemini (Visión)", height=28, width=100,
                                         font=("Segoe UI", 10, "bold"),
-                                        fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                        fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                        hover_color=COLOR_ACCENT_HOVER,
                                         command=lambda: self._set_modelo("gemini"))
         self.btn_gemini.pack(side="left", padx=2, pady=2)
 
         self.btn_groq = ctk.CTkButton(frame_model_switch, text="⚡ Groq", height=28, width=70,
                                       font=("Segoe UI", 10, "bold"),
-                                      fg_color="transparent", hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                                      fg_color="transparent", text_color=COLOR_TEXT_MAIN,
+                                      hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                       command=lambda: self._set_modelo("groq"))
         self.btn_groq.pack(side="left", padx=2, pady=2)
 
         self.btn_generar = ctk.CTkButton(frame_ia_bar, text="🧠 Generar Mapa Conceptual", height=36,
                                          font=("Segoe UI", 12, "bold"),
-                                         fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                         fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                         hover_color=COLOR_ACCENT_HOVER,
                                          command=self.generar_mapa_mental)
         self.btn_generar.grid(row=0, column=1, sticky="ew", padx=(8, 0))
 
@@ -463,11 +468,12 @@ class ModuloMapaMental(ctk.CTkFrame):
         
         frame_tags = ctk.CTkFrame(frame_quick, fg_color="transparent")
         frame_tags.pack(fill="x", padx=6, pady=(0, 4))
-        
+
         sugerencias = ["La Célula", "Fotosíntesis", "Redes Neuronales", "Revolución Industrial"]
         for sug in sugerencias:
             b_tag = ctk.CTkButton(frame_tags, text=sug, height=20, font=("Segoe UI", 9),
-                                  fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                                  fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                  hover_color=COLOR_ACCENT_HOVER,
                                   command=lambda s=sug: self._seleccionar_sugerencia(s))
             b_tag.pack(side="left", padx=2, pady=2)
 
@@ -488,13 +494,14 @@ class ModuloMapaMental(ctk.CTkFrame):
         f_json_btn.grid(row=0, column=0, sticky="ew", pady=(0, 4))
         ctk.CTkButton(f_json_btn, text="🔄 Redibujar Mapa", height=24, width=110,
                       font=("Segoe UI", 10, "bold"),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                      hover_color=COLOR_ACCENT_HOVER,
                       border_width=1, border_color=COLOR_BORDER,
                       command=self.redibujar_desde_editor).pack(side="right")
 
         self.txt_estructura = ctk.CTkTextbox(tab_json, font=("Consolas", 10), wrap="none",
-                                             fg_color=COLOR_BG_CARD, border_width=1,
-                                             border_color=COLOR_BORDER, corner_radius=8)
+                                             fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                             border_width=1, border_color=COLOR_BORDER, corner_radius=8)
         self.txt_estructura.grid(row=1, column=0, sticky="nsew")
 
         # Tab Info Texto
@@ -505,13 +512,14 @@ class ModuloMapaMental(ctk.CTkFrame):
         f_info_btn.grid(row=0, column=0, sticky="ew", pady=(0, 4))
         ctk.CTkButton(f_info_btn, text="📋 Copiar Resumen", height=24, width=110,
                       font=("Segoe UI", 10, "bold"),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                      hover_color=COLOR_ACCENT_HOVER,
                       border_width=1, border_color=COLOR_BORDER,
                       command=self.copiar_resumen_texto).pack(side="right")
 
         self.txt_resumen_texto = ctk.CTkTextbox(tab_info, font=("Segoe UI", 11), wrap="word",
-                                                fg_color=COLOR_BG_CARD, border_width=1,
-                                                border_color=COLOR_BORDER, corner_radius=8)
+                                                fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                                border_width=1, border_color=COLOR_BORDER, corner_radius=8)
         self.txt_resumen_texto.grid(row=1, column=0, sticky="nsew")
 
         # Botones de Exportación
@@ -521,16 +529,18 @@ class ModuloMapaMental(ctk.CTkFrame):
 
         self.btn_exportar_word = ctk.CTkButton(frame_acciones, text="📄 Exportar a Word (.docx)", height=34,
                                                font=("Segoe UI", 11, "bold"),
-                                               fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                               fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                               hover_color=COLOR_ACCENT_HOVER,
                                                state="disabled",
                                                command=self.exportar_word)
         self.btn_exportar_word.grid(row=0, column=0, sticky="ew", padx=(0, 4))
 
         self.btn_exportar_img = ctk.CTkButton(frame_acciones, text="🖼️ Guardar Imagen HD (.png)", height=34,
-                                              font=("Segoe UI", 11, "bold"),
-                                              fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
-                                              state="disabled",
-                                              command=self.exportar_imagen)
+                                               font=("Segoe UI", 11, "bold"),
+                                               fg_color=COLOR_SUCCESS, text_color="#ffffff",
+                                               hover_color=COLOR_SUCCESS_HOVER,
+                                               state="disabled",
+                                               command=self.exportar_imagen)
         self.btn_exportar_img.grid(row=0, column=1, sticky="ew", padx=(4, 0))
 
         # ── PANEL DERECHO: VISUALIZADOR HD & FICHAS DE ESTUDIO ──
@@ -560,15 +570,15 @@ class ModuloMapaMental(ctk.CTkFrame):
                      text_color=COLOR_TEXT_MUTED).pack(side="left", padx=(10, 6))
 
         ctk.CTkButton(bar_zoom, text="➕ Acercar", width=70, height=24, font=("Segoe UI", 9, "bold"),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
                       command=lambda: self._zoom_step(0.8)).pack(side="left", padx=2)
 
         ctk.CTkButton(bar_zoom, text="➖ Alejar", width=70, height=24, font=("Segoe UI", 9, "bold"),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
                       command=lambda: self._zoom_step(1.25)).pack(side="left", padx=2)
 
         ctk.CTkButton(bar_zoom, text="🔄 Centrar", width=70, height=24, font=("Segoe UI", 9, "bold"),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
                       command=self._reset_view).pack(side="left", padx=2)
 
         self.lbl_info_ramas = ctk.CTkLabel(bar_zoom, text="Sin mapa generado",

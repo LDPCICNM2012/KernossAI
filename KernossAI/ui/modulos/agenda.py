@@ -64,13 +64,13 @@ class ModuloCalendario(ctk.CTkFrame):
         self.frame_nav.pack(fill="x", pady=(0, 15))
         self.frame_nav.pack_propagate(False)
         ctk.CTkButton(self.frame_nav, text="◀", width=40, font=("Segoe UI", 16),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
                       command=self._mes_anterior).pack(side="left", padx=15, pady=10)
         self.lbl_mes_año = ctk.CTkLabel(self.frame_nav, text="", font=("Segoe UI", 20, "bold"),
                                          text_color=COLOR_ACCENT_SKY)
         self.lbl_mes_año.pack(side="left", expand=True)
         ctk.CTkButton(self.frame_nav, text="▶", width=40, font=("Segoe UI", 16),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
                       command=self._mes_siguiente).pack(side="right", padx=15, pady=10)
 
         self.frame_dias = ctk.CTkFrame(frame_izq, fg_color=COLOR_BG_CARD, corner_radius=15,
@@ -100,13 +100,13 @@ class ModuloCalendario(ctk.CTkFrame):
         self.lbl_fecha_actual = ctk.CTkLabel(frame_der, text="", font=("Segoe UI", 13), text_color=COLOR_TEXT_MUTED)
         self.lbl_fecha_actual.pack(pady=(0, 15), padx=20, anchor="w")
         self.txt_tareas = ctk.CTkTextbox(frame_der, font=("Segoe UI", 13), border_width=1,
-                                         fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+                                         fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN, border_color=COLOR_BORDER)
         self.txt_tareas.pack(fill="both", expand=True, padx=20, pady=10)
         ctk.CTkButton(frame_der, text=t("apunt_btn_guardar"), font=("Segoe UI", 13, "bold"),
-                      fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                      fg_color=COLOR_SUCCESS, text_color="#ffffff", hover_color=COLOR_SUCCESS_HOVER,
                       command=self._guardar_evento).pack(fill="x", padx=20, pady=(10, 5))
         ctk.CTkButton(frame_der, text=t("apunt_btn_borrar"), font=("Segoe UI", 13),
-                      fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER,
+                      fg_color=COLOR_DANGER, text_color="#ffffff", hover_color=COLOR_DANGER_HOVER,
                       command=self._borrar_evento).pack(fill="x", padx=20, pady=(5, 25))
 
     def _actualizar_calendario(self):

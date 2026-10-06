@@ -24,6 +24,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_PURPLE_HOVER,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_DANGER,
     COLOR_DANGER_HOVER,
@@ -77,7 +78,7 @@ class ModuloAyudador(ctk.CTkFrame):
         ctk.CTkLabel(sidebar, text="⚙️ System Prompt",
                      font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(10, 2))
         self.txt_instrucciones = ctk.CTkTextbox(sidebar, height=110, wrap="word", font=("Segoe UI", 11),
-                                                fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+                                                fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN, border_color=COLOR_BORDER)
         self.txt_instrucciones.pack(fill="x", padx=15, pady=5)
         self.txt_instrucciones.insert("1.0", self.instrucciones_groq)
 
@@ -85,11 +86,11 @@ class ModuloAyudador(ctk.CTkFrame):
         frame_modelo = ctk.CTkFrame(sidebar, fg_color=COLOR_BG_CARD_LIGHT, corner_radius=10, border_width=1, border_color=COLOR_BORDER)
         frame_modelo.pack(fill="x", padx=15, pady=5)
         self.btn_basico = ctk.CTkButton(frame_modelo, text="⚡ Groq", height=36,
-                                         fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                         fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff", hover_color=COLOR_ACCENT_HOVER,
                                          command=lambda: self._cambiar_modelo("groq"))
         self.btn_basico.pack(fill="x", padx=8, pady=(8, 4))
         self.btn_avanzado = ctk.CTkButton(frame_modelo, text="🧠 Gemini", height=36,
-                                           fg_color="transparent", border_width=1, border_color=COLOR_ACCENT_PURPLE,
+                                           fg_color="transparent", text_color=COLOR_TEXT_MAIN, border_width=1, border_color=COLOR_ACCENT_PURPLE,
                                            hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                            command=lambda: self._cambiar_modelo("gemini"))
         self.btn_avanzado.pack(fill="x", padx=8, pady=(4, 8))
@@ -98,11 +99,12 @@ class ModuloAyudador(ctk.CTkFrame):
         self.lbl_limite.pack(pady=(0, 5))
         ctk.CTkFrame(sidebar, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=10, pady=8)
 
-        ctk.CTkButton(sidebar, text=t("btn_word"), fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_PRIMARY,
+        ctk.CTkButton(sidebar, text=t("btn_word"), fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                      hover_color=COLOR_ACCENT_PRIMARY,
                       border_width=1, border_color=COLOR_BORDER,
                       command=self._exportar_word).pack(fill="x", padx=15, pady=4)
-        ctk.CTkButton(sidebar, text=t("btn_nuevo_chat"), fg_color="transparent", border_width=1,
-                      border_color=COLOR_BORDER, hover_color=COLOR_BG_SURFACE,
+        ctk.CTkButton(sidebar, text=t("btn_nuevo_chat"), fg_color="transparent", text_color=COLOR_TEXT_MAIN,
+                      border_width=1, border_color=COLOR_BORDER, hover_color=COLOR_BG_SURFACE,
                       command=self._limpiar_chat).pack(fill="x", padx=15, pady=4)
 
         ctk.CTkLabel(sidebar, text=t("hdr_historial"), font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(12, 3))
@@ -124,7 +126,7 @@ class ModuloAyudador(ctk.CTkFrame):
         self.lbl_banner.grid(row=0, column=0, sticky="w", pady=(0, 6))
 
         self.txt_chat = ctk.CTkTextbox(chat_frame, font=("Segoe UI", 14), state="disabled", wrap="word",
-                                       fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+                                       fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN, border_width=1, border_color=COLOR_BORDER)
         self.txt_chat.grid(row=1, column=0, sticky="nsew", pady=(0, 12))
 
         input_frame = ctk.CTkFrame(chat_frame, fg_color="transparent")
@@ -140,13 +142,14 @@ class ModuloAyudador(ctk.CTkFrame):
         self.entry_pregunta.bind("<Return>", lambda e: self._enviar())
 
         ctk.CTkButton(input_frame, text=t("ayud_btn_resolver"), width=140, height=44,
-                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff", hover_color=COLOR_ACCENT_HOVER,
                       font=("Segoe UI", 12, "bold"),
                       command=self._enviar).grid(row=0, column=1, padx=(0, 6))
 
         self.btn_tts_ayudador = ctk.CTkButton(input_frame, text=t("btn_escuchar"), width=110, height=44,
                                               font=("Segoe UI", 12, "bold"),
-                                              fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                              fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                              border_width=1, border_color=COLOR_ACCENT_CYAN,
                                               hover_color=COLOR_ACCENT_HOVER,
                                               command=self._toggle_tts)
         self.btn_tts_ayudador.grid(row=0, column=2)

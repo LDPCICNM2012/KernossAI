@@ -18,6 +18,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_SKY,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_DANGER,
     COLOR_DANGER_HOVER,
     aplicar_icono,
@@ -195,6 +196,9 @@ class VentanaAjustes(ctk.CTkToplevel):
             font=("Segoe UI", 11, "bold"),
             selected_color=COLOR_ACCENT_PRIMARY,
             selected_hover_color=COLOR_ACCENT_HOVER,
+            unselected_color=COLOR_BG_CARD_LIGHT,
+            unselected_hover_color=COLOR_BG_SURFACE,
+            text_color=COLOR_TEXT_MAIN,
             command=self._al_cambiar_tema_live
         )
         self.seg_tema.set(self.opciones_tema[idx_tema])
@@ -271,7 +275,8 @@ class VentanaAjustes(ctk.CTkToplevel):
 
         self.btn_probar = ctk.CTkButton(self.scroll_tarjeta, text=t("ajustes_btn_probar"),
                                         font=("Segoe UI", 11, "bold"), height=32,
-                                        fg_color=COLOR_BG_SURFACE, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                        fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                        border_width=1, border_color=COLOR_ACCENT_CYAN,
                                         hover_color=COLOR_ACCENT_PRIMARY,
                                         command=self._probar_voz)
         self.btn_probar.pack(fill="x", padx=18, pady=(0, 10))
@@ -311,7 +316,8 @@ class VentanaAjustes(ctk.CTkToplevel):
         self.btn_fijar_casa = ctk.CTkButton(
             row_casa_actions, text="🏡 Establecer Esta Red como mi Casa",
             font=("Segoe UI", 10, "bold"), height=30,
-            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+            fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+            hover_color=COLOR_ACCENT_HOVER,
             command=self._fijar_red_casa_actual
         )
         self.btn_fijar_casa.pack(side="left", fill="x", expand=True, padx=(0, 6))
@@ -319,7 +325,8 @@ class VentanaAjustes(ctk.CTkToplevel):
         self.btn_refrescar_casa = ctk.CTkButton(
             row_casa_actions, text="🔄 Comprobar",
             font=("Segoe UI", 10, "bold"), height=30, width=95,
-            fg_color=COLOR_BG_CARD, hover_color=COLOR_BORDER,
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            hover_color=COLOR_BORDER,
             command=self._comprobar_estado_casa
         )
         self.btn_refrescar_casa.pack(side="right")
@@ -330,8 +337,8 @@ class VentanaAjustes(ctk.CTkToplevel):
         self.btn_activar_temp = ctk.CTkButton(
             row_casa_temp, text="✈️ Establecer Casa solo por 7 Días (Modo Viaje • 1 vez al mes)",
             font=("Segoe UI", 10, "bold"), height=30,
-            fg_color="#1e1b4b", border_width=1, border_color="#818cf8",
-            text_color="#e0e7ff", hover_color="#4338ca",
+            fg_color=("#e0e7ff", "#1e1b4b"), border_width=1, border_color="#818cf8",
+            text_color=("#3730a3", "#e0e7ff"), hover_color="#4338ca",
             command=self._activar_casa_temporal_7dias
         )
         self.btn_activar_temp.pack(fill="x")
@@ -350,7 +357,8 @@ class VentanaAjustes(ctk.CTkToplevel):
         btn_ver_privacidad = ctk.CTkButton(
             self.scroll_tarjeta, text="📜 Política de Privacidad & Cumplimiento RGPD",
             font=("Segoe UI", 11, "bold"), height=34,
-            fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+            fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+            hover_color=COLOR_ACCENT_HOVER,
             border_width=1, border_color=COLOR_BORDER,
             command=self._abrir_politica_privacidad
         )
@@ -359,7 +367,7 @@ class VentanaAjustes(ctk.CTkToplevel):
         self.btn_eliminar_cuenta = ctk.CTkButton(
             self.scroll_tarjeta, text="🗑️ Borrar Mi Cuenta Definitivamente",
             font=("Segoe UI", 11, "bold"), height=34,
-            fg_color="#7f1d1d", hover_color="#991b1b",
+            fg_color="#7f1d1d", text_color="#ffffff", hover_color="#991b1b",
             border_width=1, border_color=COLOR_DANGER,
             command=self._solicitar_eliminar_cuenta
         )
@@ -371,12 +379,14 @@ class VentanaAjustes(ctk.CTkToplevel):
 
         ctk.CTkButton(frame_btns, text=t("ajustes_btn_guardar"), height=40,
                       font=("Segoe UI", 12, "bold"),
-                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                      hover_color=COLOR_ACCENT_HOVER,
                       command=self._guardar).pack(side="left", fill="x", expand=True, padx=(0, 6))
 
         ctk.CTkButton(frame_btns, text=t("ajustes_btn_cancelar"), height=40, width=90,
                       font=("Segoe UI", 12),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_BORDER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                      hover_color=COLOR_BORDER,
                       command=self._cerrar).pack(side="right")
 
     def _cargar_multicuentas(self):

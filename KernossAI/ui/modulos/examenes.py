@@ -19,6 +19,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_CYAN_HOVER,
     COLOR_ACCENT_SKY,
     COLOR_TEXT_MAIN,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_DANGER,
     construir_prompt,
@@ -62,23 +63,27 @@ class ModuloExamen(ctk.CTkFrame):
         ctk.CTkLabel(sidebar, text="🟢 AI Ready", text_color=COLOR_SUCCESS,
                      font=("Segoe UI", 12, "bold")).pack(fill="x", padx=20, pady=5)
         ctk.CTkLabel(sidebar, text=t("exam_lbl_tema"), font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT_MAIN).pack(pady=(15, 0), anchor="w", padx=20)
-        self.txt_tema = ctk.CTkTextbox(sidebar, height=130, fg_color=COLOR_BG_CARD_LIGHT, border_color=COLOR_BORDER)
+        self.txt_tema = ctk.CTkTextbox(sidebar, height=130, fg_color=COLOR_BG_CARD_LIGHT,
+                                       text_color=COLOR_TEXT_MAIN, border_color=COLOR_BORDER)
         self.txt_tema.pack(fill="x", padx=20, pady=8)
 
         self.btn_generar = ctk.CTkButton(sidebar, text=t("exam_btn_generar"),
-                                         fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                         fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                         hover_color=COLOR_ACCENT_HOVER,
                                          height=40, font=("Segoe UI", 12, "bold"),
                                          command=self.iniciar_generacion)
         self.btn_generar.pack(fill="x", padx=20, pady=8)
 
         self.btn_tts_examen = ctk.CTkButton(sidebar, text=t("btn_escuchar"), fg_color=COLOR_BG_CARD_LIGHT,
+                                            text_color=COLOR_TEXT_MAIN,
                                             border_width=1, border_color=COLOR_ACCENT_CYAN,
                                             hover_color=COLOR_ACCENT_HOVER,
                                             height=36, font=("Segoe UI", 11, "bold"),
                                             command=self._toggle_tts)
         self.btn_tts_examen.pack(fill="x", padx=20, pady=4)
 
-        ctk.CTkButton(sidebar, text=t("btn_word"), fg_color=COLOR_BG_SURFACE, border_width=1,
+        ctk.CTkButton(sidebar, text=t("btn_word"), fg_color=COLOR_BG_SURFACE,
+                      text_color=COLOR_TEXT_MAIN, border_width=1,
                       border_color=COLOR_BORDER, hover_color=COLOR_ACCENT_HOVER,
                       height=36, command=self.exportar_word).pack(fill="x", padx=20, pady=4)
 
@@ -92,7 +97,8 @@ class ModuloExamen(ctk.CTkFrame):
         main_f.grid_columnconfigure(0, weight=1)
 
         self.output_text = ctk.CTkTextbox(main_f, font=("Consolas", 13),
-                                          fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+                                          fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                                          border_width=1, border_color=COLOR_BORDER)
         self.output_text.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
 
         input_f = ctk.CTkFrame(main_f, fg_color="transparent")
@@ -106,7 +112,8 @@ class ModuloExamen(ctk.CTkFrame):
         self.entry_respuesta.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.entry_respuesta.bind("<Return>", lambda e: self.enviar_respuesta())
         ctk.CTkButton(input_f, text="Enviar Respuestas", width=140, height=42,
-                      fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
+                      fg_color=COLOR_ACCENT_CYAN, text_color="#ffffff",
+                      hover_color=COLOR_ACCENT_CYAN_HOVER,
                       font=("Segoe UI", 12, "bold"),
                       command=self.enviar_respuesta).grid(row=0, column=1)
 

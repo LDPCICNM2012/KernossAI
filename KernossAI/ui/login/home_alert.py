@@ -106,8 +106,8 @@ class ModalAlertaCasa(ctk.CTkToplevel):
         if self.tipo != "sin_casa":
             btn_temporal = ctk.CTkButton(
                 f_btns, text="✈️ Activar Hogar Temporal (7 Días)", height=32,
-                font=("Segoe UI", 10, "bold"), fg_color="#1e1b4b", border_width=1, border_color="#818cf8",
-                text_color="#e0e7ff", hover_color="#4338ca",
+                font=("Segoe UI", 10, "bold"), fg_color=("#e0e7ff", "#1e1b4b"), border_width=1, border_color="#818cf8",
+                text_color=("#3730a3", "#e0e7ff"), hover_color="#4338ca",
                 command=self._activar_temporal
             )
             btn_temporal.pack(fill="x", pady=(0, 6))

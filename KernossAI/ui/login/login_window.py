@@ -73,8 +73,9 @@ class PantallaLogin(ctk.CTk):
         self.combo_idioma_login = ctk.CTkComboBox(
             bar_top_lang, values=idiomas_nombres,
             font=("Segoe UI", 11), width=150, height=28,
-            fg_color=COLOR_BG_CARD, border_color=COLOR_BORDER,
-            command=self._al_cambiar_idioma
+            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+            dropdown_text_color=COLOR_TEXT_MAIN, dropdown_fg_color=COLOR_BG_CARD,
+            border_color=COLOR_BORDER, command=self._al_cambiar_idioma
         )
         self.combo_idioma_login.set(idioma_actual)
         self.combo_idioma_login.pack(side="right")
@@ -124,7 +125,8 @@ class PantallaLogin(ctk.CTk):
         self.entry_login_pass.bind("<Return>", lambda e: self._login())
 
         ctk.CTkButton(login_tab, text=t("btn_login"), height=42,
-                      fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                      hover_color=COLOR_ACCENT_HOVER,
                       font=("Segoe UI", 13, "bold"),
                       command=self._login).pack(fill="x", padx=10, pady=(20, 5))
         self.lbl_login_error = ctk.CTkLabel(login_tab, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
@@ -162,8 +164,9 @@ class PantallaLogin(ctk.CTk):
         ctk.CTkLabel(reg, text=t("lbl_rol"), anchor="w", font=("Segoe UI", 12, "bold"),
                      text_color=COLOR_TEXT_MAIN).pack(fill="x", padx=10, pady=(6, 2))
         self.combo_rol = ctk.CTkOptionMenu(reg, values=[t("lbl_rol_alumno"), t("lbl_rol_profesor")], height=36,
-                                           fg_color=COLOR_ACCENT_PRIMARY,
+                                           fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
                                            button_color=COLOR_ACCENT_HOVER,
+                                           dropdown_text_color=COLOR_TEXT_MAIN,
                                            dropdown_fg_color=COLOR_BG_CARD)
         self.combo_rol.pack(fill="x", padx=10)
 
@@ -175,6 +178,7 @@ class PantallaLogin(ctk.CTk):
         self.chk_politica = ctk.CTkCheckBox(
             f_politica_reg, text="Acepto la Política de Privacidad & RGPD",
             variable=self.var_acepta_politica, font=("Segoe UI", 10),
+            text_color=COLOR_TEXT_MAIN,
             checkbox_width=18, checkbox_height=18,
             fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER
         )
@@ -183,12 +187,14 @@ class PantallaLogin(ctk.CTk):
         btn_ver_pol = ctk.CTkButton(
             f_politica_reg, text="📜 Leer", width=55, height=22,
             font=("Segoe UI", 9, "bold"), fg_color=COLOR_BG_CARD,
+            text_color=COLOR_TEXT_MAIN,
             hover_color=COLOR_ACCENT_HOVER, command=self._abrir_politica
         )
         btn_ver_pol.pack(side="right")
 
         ctk.CTkButton(reg, text=t("btn_registro"), height=40,
-                      fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
+                      fg_color=COLOR_ACCENT_CYAN, text_color="#ffffff",
+                      hover_color=COLOR_ACCENT_CYAN_HOVER,
                       font=("Segoe UI", 13, "bold"),
                       command=self._registrar).pack(fill="x", padx=10, pady=(10, 4))
         self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))

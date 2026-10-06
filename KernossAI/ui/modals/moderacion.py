@@ -10,6 +10,7 @@ from tkinter import messagebox
 from KernossAI.core.theme import (
     COLOR_BG_DARK,
     COLOR_BG_CARD,
+    COLOR_BG_CARD_LIGHT,
     COLOR_BG_SURFACE,
     COLOR_BORDER,
     COLOR_ACCENT_PRIMARY,
@@ -17,6 +18,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_CYAN,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_DANGER,
     aplicar_icono,

@@ -255,7 +255,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         btn_guia = ctk.CTkButton(
             f_badge, text="❓ ¿Para qué sirve cada cosa? (Guía)",
             font=("Segoe UI", 11, "bold"), height=32,
-            fg_color="#4338ca", hover_color="#3730a3",
+            fg_color="#4338ca", text_color="#ffffff", hover_color="#3730a3",
             border_width=1, border_color="#818cf8",
             command=self._abrir_guia_explicativa
         )
@@ -313,7 +313,9 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
             f_grid,
             values=["Español Diplomático", "Formal English (Model UN)"],
             font=("Segoe UI", 11, "bold"), height=34,
-            fg_color=COLOR_ACCENT_PRIMARY, button_color=COLOR_ACCENT_HOVER
+            fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+            dropdown_text_color=COLOR_TEXT_MAIN, dropdown_fg_color=COLOR_BG_CARD,
+            button_color=COLOR_ACCENT_HOVER
         )
         self.combo_idioma.set("Español Diplomático")
         self.combo_idioma.grid(row=1, column=3, sticky="ew", padx=4)
@@ -325,7 +327,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.btn_dossier = ctk.CTkButton(
             f_botones, text="🚀 Dossier 360° Masivo", height=36,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_CYAN,
-            hover_color=COLOR_ACCENT_CYAN_HOVER, text_color="#000",
+            hover_color=COLOR_ACCENT_CYAN_HOVER, text_color="#ffffff",
             command=lambda: self._iniciar_generacion("dossier")
         )
         self.btn_dossier.pack(side="left", padx=(0, 6), expand=True, fill="x")
@@ -333,7 +335,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.btn_paper = ctk.CTkButton(
             f_botones, text="📄 Position Paper Oficial", height=36,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
-            hover_color=COLOR_ACCENT_HOVER,
+            text_color="#ffffff", hover_color=COLOR_ACCENT_HOVER,
             command=lambda: self._iniciar_generacion("paper")
         )
         self.btn_paper.pack(side="left", padx=4, expand=True, fill="x")
@@ -341,7 +343,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.btn_speech = ctk.CTkButton(
             f_botones, text="🎤 Opening Speech (~1 min)", height=36,
             font=("Segoe UI", 11, "bold"), fg_color="#7c3aed",
-            hover_color="#6d28d9",
+            text_color="#ffffff", hover_color="#6d28d9",
             command=lambda: self._iniciar_generacion("speech")
         )
         self.btn_speech.pack(side="left", padx=4, expand=True, fill="x")
@@ -349,7 +351,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.btn_resolucion = ctk.CTkButton(
             f_botones, text="📜 Borrador de Resolución", height=36,
             font=("Segoe UI", 11, "bold"), fg_color="#059669",
-            hover_color="#047857",
+            text_color="#ffffff", hover_color="#047857",
             command=lambda: self._iniciar_generacion("resolucion")
         )
         self.btn_resolucion.pack(side="left", padx=4, expand=True, fill="x")
@@ -357,7 +359,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.btn_bloques = ctk.CTkButton(
             f_botones, text="🤝 Alianzas & Oposición", height=36,
             font=("Segoe UI", 11, "bold"), fg_color="#b45309",
-            hover_color="#92400e",
+            text_color="#ffffff", hover_color="#92400e",
             command=lambda: self._iniciar_generacion("bloques")
         )
         self.btn_bloques.pack(side="left", padx=4, expand=True, fill="x")
@@ -365,7 +367,7 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.btn_ataques = ctk.CTkButton(
             f_botones, text="⚔️ Simulador POIs / Ataques", height=36,
             font=("Segoe UI", 11, "bold"), fg_color="#be123c",
-            hover_color="#9f1239",
+            text_color="#ffffff", hover_color="#9f1239",
             command=lambda: self._iniciar_generacion("ataques")
         )
         self.btn_ataques.pack(side="left", padx=(4, 0), expand=True, fill="x")
@@ -420,7 +422,9 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         self.combo_historial = ctk.CTkOptionMenu(
             footer, values=["🕒 Investigaciones Recientes"],
             font=("Segoe UI", 10), width=210, height=32,
-            fg_color=COLOR_BG_CARD_LIGHT, button_color=COLOR_BORDER,
+            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+            dropdown_text_color=COLOR_TEXT_MAIN, dropdown_fg_color=COLOR_BG_CARD,
+            button_color=COLOR_BORDER,
             command=self._cargar_desde_historial
         )
         self.combo_historial.pack(side="left", padx=10)
@@ -429,21 +433,24 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
         btn_word = ctk.CTkButton(
             footer, text="📄 Exportar a Word (.docx)", height=32,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
-            hover_color=COLOR_ACCENT_HOVER, command=self._exportar_word
+            text_color="#ffffff", hover_color=COLOR_ACCENT_HOVER,
+            command=self._exportar_word
         )
         btn_word.pack(side="right", padx=(4, 16))
 
         btn_copiar = ctk.CTkButton(
             footer, text="📋 Copiar Pestaña", height=32, width=120,
             font=("Segoe UI", 11, "bold"), fg_color=COLOR_BG_SURFACE,
-            hover_color=COLOR_ACCENT_HOVER, command=self._copiar_al_portapapeles
+            text_color=COLOR_TEXT_MAIN, hover_color=COLOR_ACCENT_HOVER,
+            command=self._copiar_al_portapapeles
         )
         btn_copiar.pack(side="right", padx=4)
 
         btn_audio = ctk.CTkButton(
             footer, text="🔊 Escuchar Discurso", height=32, width=140,
             font=("Segoe UI", 11, "bold"), fg_color="#4f46e5",
-            hover_color="#4338ca", command=self._escuchar_speech
+            text_color="#ffffff", hover_color="#4338ca",
+            command=self._escuchar_speech
         )
         btn_audio.pack(side="right", padx=4)
 

@@ -18,6 +18,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_PURPLE,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_DANGER,
     aplicar_icono,
@@ -327,7 +328,7 @@ class VentanaTutoriaAlumnoProfesor(ctk.CTkToplevel):
                          text_color="#bfdbfe" if es_mio else COLOR_ACCENT_CYAN).pack(anchor="w", padx=10, pady=(6, 1))
 
             ctk.CTkLabel(frame_b, text=texto, font=("Segoe UI", 11),
-                         text_color="#ffffff", wraplength=440, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
+                         text_color="#ffffff" if es_mio else COLOR_TEXT_MAIN, wraplength=440, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
 
         self.scroll_chat_alumno._parent_canvas.yview_moveto(1.0)
 
@@ -533,7 +534,7 @@ class VentanaTutoriaAlumnoProfesor(ctk.CTkToplevel):
                                      text_color="#e9d5ff" if es_mio else COLOR_ACCENT_CYAN).pack(anchor="w", padx=10, pady=(6, 1))
 
                         ctk.CTkLabel(frame_b, text=texto, font=("Segoe UI", 11),
-                                     text_color="#ffffff", wraplength=380, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
+                                     text_color="#ffffff" if es_mio else COLOR_TEXT_MAIN, wraplength=380, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
 
                     self.scroll_mensajes_profe._parent_canvas.yview_moveto(1.0)
                 self.after(0, _render)

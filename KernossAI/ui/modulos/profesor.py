@@ -23,6 +23,7 @@ from KernossAI.core.theme import (
     COLOR_ACCENT_PURPLE_HOVER,
     COLOR_TEXT_MAIN,
     COLOR_TEXT_MUTED,
+    COLOR_TEXT_DIM,
     COLOR_SUCCESS,
     COLOR_SUCCESS_HOVER,
     COLOR_DANGER,
@@ -328,12 +329,14 @@ class ModuloCreadorEjercicios(ctk.CTkFrame):
                     ven.configure(fg_color=COLOR_BG_DARK)
                     ctk.CTkLabel(ven, text="💡 Solucionario Completo",
                                  font=("Segoe UI", 18, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=15)
-                    txt = ctk.CTkTextbox(ven, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+                    txt = ctk.CTkTextbox(ven, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT,
+                                         text_color=COLOR_TEXT_MAIN, border_width=1, border_color=COLOR_BORDER)
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 10))
                     txt.insert("end", sol)
                     txt.configure(state="disabled")
                     ctk.CTkButton(ven, text="📄 Exportar Solucionario a Word",
-                                  fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                                  fg_color=COLOR_SUCCESS, text_color="#ffffff",
+                                  hover_color=COLOR_SUCCESS_HOVER,
                                   command=lambda: self._exportar_solucionario(sol)).pack(fill="x", padx=15, pady=(0, 15))
                 self.after(0, _mostrar)
             except Exception as e:
@@ -497,12 +500,11 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
 
         panel_izq = ctk.CTkFrame(self, fg_color="transparent")
         panel_izq.grid(row=0, column=1, sticky="nsew", padx=(15, 7), pady=15)
-        panel_izq.grid_rowconfigure(1, weight=1)
-        panel_izq.grid_columnconfigure(0, weight=1)
-
         ctk.CTkLabel(panel_izq, text="📝 Enunciado y Criterios del examen",
                      font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, sticky="w", pady=(0, 8))
-        self.txt_enunciado = ctk.CTkTextbox(panel_izq, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+        self.txt_enunciado = ctk.CTkTextbox(panel_izq, font=("Consolas", 12),
+                                            fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                                            border_width=1, border_color=COLOR_BORDER)
         self.txt_enunciado.grid(row=1, column=0, sticky="nsew")
         self.txt_enunciado.insert("end",
             "Pega aquí el enunciado del examen y/o los criterios de corrección...\n\n"
@@ -518,7 +520,9 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
 
         ctk.CTkLabel(panel_der, text="✍️ Respuestas del alumno",
                      font=("Segoe UI", 15, "bold"), text_color=COLOR_TEXT_MAIN).grid(row=0, column=0, sticky="w", pady=(0, 8))
-        self.txt_respuestas = ctk.CTkTextbox(panel_der, font=("Consolas", 12), fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+        self.txt_respuestas = ctk.CTkTextbox(panel_der, font=("Consolas", 12),
+                                             fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                                             border_width=1, border_color=COLOR_BORDER)
         self.txt_respuestas.grid(row=1, column=0, sticky="nsew", pady=(0, 10))
         self.txt_respuestas.insert("end", "Pega o escribe aquí las respuestas del alumno...")
 
@@ -530,7 +534,8 @@ class ModuloCorrectorExamenes(ctk.CTkFrame):
         self.lbl_nota.pack(side="right")
 
         self.txt_correccion = ctk.CTkTextbox(panel_der, font=("Consolas", 12), state="disabled",
-                                            fg_color=COLOR_BG_CARD_LIGHT, border_width=1, border_color=COLOR_BORDER)
+                                             fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                                             border_width=1, border_color=COLOR_BORDER)
         self.txt_correccion.grid(row=3, column=0, sticky="nsew")
 
     def _set_modelo(self, m):

@@ -198,7 +198,8 @@ class DashboardEstudios(ctk.CTk):
         self.btn_home = ctk.CTkButton(
             self.scroll_sidebar_modulos, text=t("btn_home"),
             font=("Segoe UI", 13, "bold"), height=42, anchor="w",
-            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+            fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+            hover_color=COLOR_ACCENT_HOVER,
             command=self._mostrar_home_chat
         )
         self.btn_home.pack(fill="x", padx=11, pady=(2, 6))
@@ -273,8 +274,8 @@ class DashboardEstudios(ctk.CTk):
             self.btn_admin_top = ctk.CTkButton(
                 frame_top_derecha, text="👑 Moderación & Bans",
                 font=("Segoe UI", 11, "bold"), height=32,
-                fg_color="#3b0764", border_width=1, border_color="#c084fc",
-                text_color="#f3e8ff", hover_color="#6b21a8",
+                fg_color=("#f3e8ff", "#3b0764"), border_width=1, border_color="#c084fc",
+                text_color=("#6b21a8", "#f3e8ff"), hover_color="#6b21a8",
                 command=self._abrir_admin_moderacion
             )
             self.btn_admin_top.pack(side="right", padx=(6, 0))
@@ -283,9 +284,9 @@ class DashboardEstudios(ctk.CTk):
         self.btn_tutoria_top = ctk.CTkButton(
             frame_top_derecha, text=texto_tutoria,
             font=("Segoe UI", 11, "bold"), height=32,
-            fg_color="#1e1b4b" if self.rol == "Alumno" else "#312e81",
+            fg_color=("#e0e7ff", "#1e1b4b"),
             border_width=1, border_color="#818cf8",
-            text_color="#e0e7ff", hover_color="#4338ca",
+            text_color=("#3730a3", "#e0e7ff"), hover_color="#4338ca",
             command=self._abrir_tutoria_profesor
         )
         self.btn_tutoria_top.pack(side="right", padx=(6, 0))
@@ -293,8 +294,8 @@ class DashboardEstudios(ctk.CTk):
         self.btn_soporte_top = ctk.CTkButton(
             frame_top_derecha, text="🛡️ Soporte Oficial",
             font=("Segoe UI", 11, "bold"), height=32,
-            fg_color="#064e3b", border_width=1, border_color="#34d399",
-            text_color="#a7f3d0", hover_color="#059669",
+            fg_color=("#dcfce7", "#064e3b"), border_width=1, border_color="#34d399",
+            text_color=("#166534", "#a7f3d0"), hover_color="#059669",
             command=self._abrir_soporte_e2ee
         )
         self.btn_soporte_top.pack(side="right", padx=(6, 0))
@@ -302,8 +303,8 @@ class DashboardEstudios(ctk.CTk):
         self.btn_novedades_top = ctk.CTkButton(
             frame_top_derecha, text=t("btn_novedades"),
             font=("Segoe UI", 11, "bold"), height=32,
-            fg_color="#0c234a", border_width=1, border_color="#38bdf8",
-            text_color="#38bdf8", hover_color="#0284c7",
+            fg_color=("#e0f2fe", "#0c234a"), border_width=1, border_color="#38bdf8",
+            text_color=("#0369a1", "#38bdf8"), hover_color="#0284c7",
             command=self._abrir_modal_novedades_ia
         )
         self.btn_novedades_top.pack(side="right", padx=(6, 0))
@@ -584,6 +585,7 @@ class DashboardEstudios(ctk.CTk):
             parent, text=texto,
             font=("Segoe UI", 12, "bold"), height=36, anchor="w",
             fg_color=color, hover_color=COLOR_ACCENT_HOVER,
+            text_color=COLOR_TEXT_MAIN,
             command=lambda mid=modulo_id: self._abrir_modulo(mid)
         )
         btn.pack(fill="x", padx=11, pady=2)
@@ -644,12 +646,14 @@ class DashboardEstudios(ctk.CTk):
 
         for label, mid in modulos_rapidos:
             ctk.CTkButton(bar_modulos, text=label, height=28, font=("Segoe UI", 11, "bold"),
-                          fg_color=COLOR_BG_CARD_LIGHT, hover_color=COLOR_ACCENT_HOVER,
+                          fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                          hover_color=COLOR_ACCENT_HOVER,
                           border_width=1, border_color=COLOR_BORDER,
                           command=lambda m=mid: self._abrir_modulo(m)).pack(side="left", padx=3, pady=6)
 
         self.txt_home_chat = ctk.CTkTextbox(self.frame_home, font=("Segoe UI", 14), state="disabled", wrap="word",
-                                            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
+                                            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                            border_width=1, border_color=COLOR_BORDER,
                                             corner_radius=14)
         self.txt_home_chat.grid(row=2, column=0, sticky="nsew", padx=25, pady=(0, 12))
 
@@ -670,20 +674,23 @@ class DashboardEstudios(ctk.CTk):
 
         btn_enviar_home = ctk.CTkButton(input_container, text=t("btn_consultar_ia"), width=130, height=46,
                                        font=("Segoe UI", 13, "bold"),
-                                       fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                       fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                       hover_color=COLOR_ACCENT_HOVER,
                                        command=self._enviar_chat_home)
         btn_enviar_home.grid(row=0, column=1, padx=(0, 6))
 
         self.btn_tts_home = ctk.CTkButton(input_container, text=t("btn_escuchar"), width=105, height=46,
                                           font=("Segoe UI", 12, "bold"),
-                                          fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                          fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                          border_width=1, border_color=COLOR_ACCENT_CYAN,
                                           hover_color=COLOR_ACCENT_HOVER,
                                           command=self._toggle_tts_home)
         self.btn_tts_home.grid(row=0, column=2, padx=(0, 6))
 
         btn_word_home = ctk.CTkButton(input_container, text=t("btn_word"), width=75, height=46,
                                       font=("Segoe UI", 12, "bold"),
-                                      fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_BORDER,
+                                      fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                      border_width=1, border_color=COLOR_BORDER,
                                       hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                       command=self._exportar_home_word)
         btn_word_home.grid(row=0, column=3)

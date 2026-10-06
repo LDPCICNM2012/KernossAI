@@ -73,13 +73,15 @@ class ModuloResumidor(ctk.CTkFrame):
 
         self.btn_gemini = ctk.CTkButton(frame_model, text="🧠 Gemini (Visión)", height=28, width=100,
                                         font=("Segoe UI", 10, "bold"),
-                                        fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                        fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                        hover_color=COLOR_ACCENT_HOVER,
                                         command=lambda: self._set_modelo("gemini"))
         self.btn_gemini.pack(side="left", padx=2, pady=2)
 
         self.btn_groq = ctk.CTkButton(frame_model, text="⚡ Groq", height=28, width=70,
                                       font=("Segoe UI", 10, "bold"),
-                                      fg_color="transparent", hover_color=COLOR_ACCENT_PURPLE_HOVER,
+                                      fg_color="transparent", text_color=COLOR_TEXT_MAIN,
+                                      hover_color=COLOR_ACCENT_PURPLE_HOVER,
                                       command=lambda: self._set_modelo("groq"))
         self.btn_groq.pack(side="left", padx=2, pady=2)
 
@@ -135,21 +137,24 @@ class ModuloResumidor(ctk.CTkFrame):
 
         self.btn_adjuntar_img = ctk.CTkButton(f_img_actions, text="📁 Subir Varias Fotos", height=28,
                                               font=("Segoe UI", 11, "bold"),
-                                              fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                                              fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                              hover_color=COLOR_ACCENT_HOVER,
                                               border_width=1, border_color=COLOR_BORDER,
                                               command=self._adjuntar_imagenes)
         self.btn_adjuntar_img.pack(side="left", fill="x", expand=True, padx=(0, 4))
 
         self.btn_extraer_ocr = ctk.CTkButton(f_img_actions, text="🔍 Extraer Texto", height=28, width=110,
-                                            font=("Segoe UI", 10, "bold"),
-                                            fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_CYAN_HOVER,
-                                            border_width=1, border_color=COLOR_BORDER,
-                                            command=self._extraer_texto_imagenes)
+                                             font=("Segoe UI", 10, "bold"),
+                                             fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                             hover_color=COLOR_ACCENT_CYAN_HOVER,
+                                             border_width=1, border_color=COLOR_BORDER,
+                                             command=self._extraer_texto_imagenes)
         self.btn_extraer_ocr.pack(side="left", padx=(0, 4))
 
         self.btn_limpiar_img = ctk.CTkButton(f_img_actions, text="🗑️", width=32, height=28,
                                              font=("Segoe UI", 11),
-                                             fg_color=COLOR_BG_SURFACE, hover_color=COLOR_DANGER,
+                                             fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                                             hover_color=COLOR_DANGER,
                                              border_width=1, border_color=COLOR_BORDER,
                                              command=self._limpiar_imagenes)
         self.btn_limpiar_img.pack(side="right")
@@ -160,7 +165,9 @@ class ModuloResumidor(ctk.CTkFrame):
         self._actualizar_chips_imagenes()
 
         # Cuadro de Texto de Entrada
-        self.txt_input = ctk.CTkTextbox(input_f, font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT, wrap="word")
+        self.txt_input = ctk.CTkTextbox(input_f, font=("Segoe UI", 12),
+                                        fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                                        wrap="word")
         self.txt_input.grid(row=2, column=0, sticky="nsew", padx=16, pady=(0, 14))
         self.txt_input.bind("<KeyRelease>", self._actualizar_conteo)
 
@@ -177,11 +184,14 @@ class ModuloResumidor(ctk.CTkFrame):
                      text_color=COLOR_ACCENT_CYAN).pack(side="left")
 
         ctk.CTkButton(f_out_top, text="📋 Copiar", height=24, width=70, font=("Segoe UI", 10, "bold"),
-                      fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+                      fg_color=COLOR_BG_SURFACE, text_color=COLOR_TEXT_MAIN,
+                      hover_color=COLOR_ACCENT_HOVER,
                       border_width=1, border_color=COLOR_BORDER,
                       command=self._copiar_salida).pack(side="right")
 
-        self.txt_output = ctk.CTkTextbox(output_f, font=("Segoe UI", 12), fg_color=COLOR_BG_CARD_LIGHT, wrap="word")
+        self.txt_output = ctk.CTkTextbox(output_f, font=("Segoe UI", 12),
+                                         fg_color=COLOR_BG_CARD_LIGHT, text_color=COLOR_TEXT_MAIN,
+                                         wrap="word")
         self.txt_output.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 14))
 
         # Footer con Progreso y Botones de Acción
@@ -197,19 +207,22 @@ class ModuloResumidor(ctk.CTkFrame):
 
         self.btn_procesar = ctk.CTkButton(f_btn_row, text=t("resum_btn_resumir"),
                                           height=42, font=("Segoe UI", 13, "bold"),
-                                          fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER,
+                                          fg_color=COLOR_ACCENT_PRIMARY, text_color="#ffffff",
+                                          hover_color=COLOR_ACCENT_HOVER,
                                           command=self.iniciar_proceso)
         self.btn_procesar.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
         self.btn_tts_resumen = ctk.CTkButton(f_btn_row, text=t("btn_escuchar"), height=42, width=140,
                                             font=("Segoe UI", 12, "bold"),
-                                            fg_color=COLOR_BG_CARD, border_width=1, border_color=COLOR_ACCENT_CYAN,
+                                            fg_color=COLOR_BG_CARD, text_color=COLOR_TEXT_MAIN,
+                                            border_width=1, border_color=COLOR_ACCENT_CYAN,
                                             hover_color=COLOR_ACCENT_HOVER,
                                             command=self._toggle_tts)
         self.btn_tts_resumen.pack(side="left", padx=(0, 10))
 
         self.btn_word = ctk.CTkButton(f_btn_row, text=t("btn_word"), height=42, width=180,
-                                     fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER,
+                                     fg_color=COLOR_SUCCESS, text_color="#ffffff",
+                                     hover_color=COLOR_SUCCESS_HOVER,
                                      font=("Segoe UI", 13, "bold"),
                                      command=self.exportar_word)
         self.btn_word.pack(side="right")
