@@ -15,10 +15,41 @@ def main():
     global __spec__
     __spec__ = None
 
-    # 1. Intentar restaurar sesión persistida mediante token JWT
+    # 1. Comprobación obligatoria de Política de Privacidad & RGPD al iniciar la app
+    import os
+    import customtkinter as ctk
+    from KernossAI.ui.modals.privacidad import esta_politica_aceptada, VentanaPoliticaPrivacidad
+
+    if not esta_politica_aceptada():
+        ventana_init = ctk.CTk()
+        ventana_init.withdraw()
+
+        estado = [False]
+
+        def _al_aceptar():
+            estado[0] = True
+            ventana_init.destroy()
+
+        def _al_rechazar():
+            ventana_init.destroy()
+            os._exit(0)
+
+        modal = VentanaPoliticaPrivacidad(
+            ventana_init,
+            modo_inicio=True,
+            on_aceptar=_al_aceptar,
+            on_rechazar=_al_rechazar
+        )
+        modal.protocol("WM_DELETE_WINDOW", _al_rechazar)
+        ventana_init.mainloop()
+
+        if not estado[0]:
+            os._exit(0)
+
+    # 2. Intentar restaurar sesión persistida mediante token JWT
     _, sesion = token_guardado()
 
-    # 2. Si no hay sesión válida o ha caducado, solicitar inicio de sesión
+    # 3. Si no hay sesión válida o ha caducado, solicitar inicio de sesión
     if not sesion:
         pantalla_login = PantallaLogin()
         pantalla_login.mainloop()

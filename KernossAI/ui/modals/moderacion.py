@@ -213,15 +213,16 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                                 border_color=COLOR_DANGER if (baneado or ip_baneada or hwid_baneado) else COLOR_BORDER)
             card.pack(fill="x", padx=6, pady=4)
 
-            f_info = ctk.CTkFrame(card, fg_color="transparent")
-            f_info.pack(side="left", padx=12, pady=10, fill="x", expand=True)
+            # Contenedor con barra de desplazamiento horizontal para correos y HWIDs extensos
+            f_info = ctk.CTkScrollableFrame(card, orientation="horizontal", height=50, fg_color="transparent")
+            f_info.pack(side="left", padx=10, pady=4, fill="x", expand=True)
 
             status_str = "⛔ BANEADO" if baneado else "🟢 ACTIVO"
             ctk.CTkLabel(f_info, text=f"{nombre} ({email}) — {rol} [{status_str}]",
                          font=("Segoe UI", 12, "bold"),
                          text_color=COLOR_DANGER if baneado else COLOR_TEXT_MAIN).pack(anchor="w")
 
-            det = f"🌐 IP: {ip} {'(IP-BANEADA)' if ip_baneada else ''}  |  💻 HWID: {hwid[:16]}... {'(HWID-BANEADO)' if hwid_baneado else ''}"
+            det = f"🌐 IP: {ip} {'(IP-BANEADA)' if ip_baneada else ''}  |  💻 HWID: {hwid} {'(HWID-BANEADO)' if hwid_baneado else ''}"
             ctk.CTkLabel(f_info, text=det, font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED).pack(anchor="w", pady=(2, 0))
 
             f_actions = ctk.CTkFrame(card, fg_color="transparent")

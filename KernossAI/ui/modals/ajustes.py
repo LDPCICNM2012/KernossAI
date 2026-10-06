@@ -312,6 +312,15 @@ class VentanaAjustes(ctk.CTkToplevel):
         ctk.CTkLabel(self.scroll_tarjeta, text="Elimina de forma permanente tu usuario, historial y acceso del servidor.",
                      font=("Segoe UI", 9), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=18, pady=(0, 6))
 
+        btn_ver_privacidad = ctk.CTkButton(
+            self.scroll_tarjeta, text="📜 Política de Privacidad & Cumplimiento RGPD",
+            font=("Segoe UI", 11, "bold"), height=34,
+            fg_color=COLOR_BG_SURFACE, hover_color=COLOR_ACCENT_HOVER,
+            border_width=1, border_color=COLOR_BORDER,
+            command=self._abrir_politica_privacidad
+        )
+        btn_ver_privacidad.pack(fill="x", padx=18, pady=(0, 8))
+
         self.btn_eliminar_cuenta = ctk.CTkButton(
             self.scroll_tarjeta, text="🗑️ Borrar Mi Cuenta Definitivamente",
             font=("Segoe UI", 11, "bold"), height=34,
@@ -524,6 +533,10 @@ class VentanaAjustes(ctk.CTkToplevel):
         else:
             messagebox.showinfo(t("ajustes_titulo"), t("ajustes_guardado_ok"))
         self._cerrar()
+
+    def _abrir_politica_privacidad(self):
+        from KernossAI.ui.modals.privacidad import VentanaPoliticaPrivacidad
+        VentanaPoliticaPrivacidad(self, modo_inicio=False)
 
     def _solicitar_eliminar_cuenta(self):
         confirm = messagebox.askyesno(

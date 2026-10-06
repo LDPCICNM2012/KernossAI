@@ -42,6 +42,8 @@ from KernossAI.core.theme import (
     COLOR_SUCCESS,
     COLOR_WARNING,
     COLOR_DANGER,
+    centrar_ventana,
+    aplicar_icono,
 )
 from KernossAI.core.auth import consultar_ia, limpiar_respuesta_ia
 from KernossAI.core.tts import tts_engine
@@ -249,6 +251,15 @@ class ModuloGlobalClassrooms(ctk.CTkFrame):
             font=("Segoe UI", 11, "bold"), text_color="#38bdf8",
             fg_color="#0c2d48", corner_radius=8, padx=10, pady=4
         ).pack(side="right")
+
+        btn_guia = ctk.CTkButton(
+            f_badge, text="❓ ¿Para qué sirve cada cosa? (Guía)",
+            font=("Segoe UI", 11, "bold"), height=32,
+            fg_color="#4338ca", hover_color="#3730a3",
+            border_width=1, border_color="#818cf8",
+            command=self._abrir_guia_explicativa
+        )
+        btn_guia.pack(side="right", padx=(0, 10))
 
         # ── Tarjeta de Configuración de la Delegación ──
         card_inputs = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=12, border_width=1, border_color=COLOR_BORDER)
@@ -849,3 +860,90 @@ Para cada una de las 4 situaciones más difíciles o hipocresías que otros paí
                         break
         except Exception:
             pass
+
+    def _abrir_guia_explicativa(self):
+        ModalGuiaGlobalClassrooms(self)
+
+
+# ── Modal de Guía Explicativa de Global Classrooms ─────────────────
+
+class ModalGuiaGlobalClassrooms(ctk.CTkToplevel):
+    """Guía interactiva que explica detalladamente qué es cada función del módulo Global Classrooms."""
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("❓ Guía de Herramientas — Global Classrooms & Model UN")
+        self.geometry("840x680")
+        self.minsize(680, 520)
+        self.configure(fg_color=COLOR_BG_DARK)
+        self.transient(parent)
+        self.grab_set()
+        aplicar_icono(self)
+        centrar_ventana(self, 840, 680)
+
+        header = ctk.CTkFrame(self, fg_color=COLOR_BG_SURFACE, height=65, corner_radius=0)
+        header.pack(fill="x")
+
+        f_ht = ctk.CTkFrame(header, fg_color="transparent")
+        f_ht.pack(side="left", padx=20, pady=12)
+        ctk.CTkLabel(f_ht, text="❓ Guía Completa de Global Classrooms & Model UN",
+                     font=("Segoe UI", 16, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w")
+        ctk.CTkLabel(f_ht, text="Aprende para qué sirve cada herramienta diplomática y cómo destacar en tu conferencia.",
+                     font=("Segoe UI", 11), text_color=COLOR_TEXT_MUTED).pack(anchor="w")
+
+        ctk.CTkButton(header, text="✕", width=36, height=36, fg_color=COLOR_BG_CARD,
+                      hover_color=COLOR_DANGER, font=("Segoe UI", 13, "bold"), command=self.destroy).pack(side="right", padx=16)
+
+        scroll = ctk.CTkScrollableFrame(self, fg_color=COLOR_BG_CARD, corner_radius=12, border_width=1, border_color=COLOR_BORDER)
+        scroll.pack(fill="both", expand=True, padx=20, pady=(15, 12))
+
+        secciones = [
+            ("🌐 ¿Qué es Global Classrooms & Model UN (MUN)?",
+             "Es la simulación oficial de la Organización de las Naciones Unidas (ONU) y la Unión Europea para estudiantes. Cada delegación representa a un país soberano y debe defender su política exterior, debatir según las Reglas de Procedimiento parlamentarias y negociar resoluciones vinculantes sin abandonar su papel."),
+
+            ("🚀 1. Búsqueda Masiva & Dossier 360°",
+             "¿Para qué sirve? Realiza un rastreo en tiempo real en la web oficial (ONU, tratados bilaterales, estadísticas del Banco Mundial, declaraciones de embajadores).\n"
+             "• Genera la radiografía integral del país: principios rectores, líneas rojas innegociables, datos estadísticos clave y argumentos históricos de impacto."),
+
+            ("📄 2. Position Paper Oficial (Formato Canónico ONU)",
+             "¿Para qué sirve? Es el documento formal indispensable que toda delegación debe entregar a la presidencia (Chairs) antes de la conferencia.\n"
+             "• Estructurado estrictamente en las 3 secciones oficiales:\n"
+             "  I. Background of the Topic (diagnóstico global del problema).\n"
+             "  II. Country Policy & Past Actions (tratados ratificados, leyes nacionales y votaciones previas).\n"
+             "  III. Proposed Solutions (propuestas realistas y viables que tu país promoverá)."),
+
+            ("🎤 3. Opening Speech (~1 minuto cronometrado)",
+             "¿Para qué sirve? Es tu discurso de presentación ante la asamblea plenaria.\n"
+             "• Calibrado a exactamente 60 segundos (~110-130 palabras) para que no te corte la mesa.\n"
+             "• Estructura retórica: Saludo formal ('Honorable Chairs, distinguished delegates...'), un gancho conmovedor (Hook), la postura firme de tu país y un llamamiento a la acción (Call to action).\n"
+             "• Incluye contador de palabras, estimación de tiempo en vivo y reproducción de voz con Edge-TTS."),
+
+            ("📜 4. Borrador de Resolución (Draft Resolution)",
+             "¿Para qué sirve? El documento legislativo definitivo que se negocia y vota en la comisión.\n"
+             "• Cláusulas Preambulatorias: Justifican la resolución (verbos en cursiva: Affirming, Deeply concerned, Guided by...).\n"
+             "• Cláusulas Operativas: Acciones concretas, mandatos y asignación de fondos (verbos en cursiva: Calls upon, Urges, Recommends, Decides...)."),
+
+            ("🤝 5. Matriz de Alianzas y Oponentes (Bloc Matrix)",
+             "¿Para qué sirve? Es tu mapa táctico para las sesiones de negociación no moderada (unmoderated caucuses).\n"
+             "• Aliados Naturales: Países con intereses comunes para formar bloque y copatrocinar la resolución.\n"
+             "• Bloque Antagónico: Delegaciones que atacarán tu postura y argumentos que utilizarán.\n"
+             "• Países Oscilantes (Swing States): Delegaciones indecisas a las que puedes convencer mediante concesiones diplomáticas."),
+
+            ("⚔️ 6. Simulador de Ataques Hostiles (POIs - Points of Information)",
+             "¿Para qué sirve? Entrena tus réplicas ante preguntas trampa y ataques dialécticos de rivales.\n"
+             "• Te anticipa las contradicciones de tu país (derechos humanos, emisiones, gasto de defensa) y te proporciona la réplica diplomática elegante y documentada para defenderte sin salirte del personaje."),
+
+            ("💾 7. Exportación a Word (.docx) y Voz Neural (Edge-TTS)",
+             "¿Para qué sirve? Permite exportar cualquier documento a formato Word con encabezado oficial para imprimir o llevar a la sala, copiar al portapapeles y practicar tu pronunciación en inglés diplomático mediante lectura en voz alta.")
+        ]
+
+        for titulo, desc in secciones:
+            f_card = ctk.CTkFrame(scroll, fg_color=COLOR_BG_CARD_LIGHT, corner_radius=10, border_width=1, border_color=COLOR_BORDER)
+            f_card.pack(fill="x", padx=10, pady=6)
+
+            ctk.CTkLabel(f_card, text=titulo, font=("Segoe UI", 13, "bold"), text_color=COLOR_ACCENT_SKY).pack(anchor="w", padx=14, pady=(10, 4))
+            ctk.CTkLabel(f_card, text=desc, font=("Segoe UI", 11), text_color=COLOR_TEXT_MAIN, justify="left", wraplength=720).pack(anchor="w", padx=14, pady=(0, 10))
+
+        btn_entendido = ctk.CTkButton(self, text="Entendido, Volver a la Delegación", height=38,
+                                      font=("Segoe UI", 12, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+                                      hover_color=COLOR_ACCENT_HOVER, command=self.destroy)
+        btn_entendido.pack(fill="x", padx=20, pady=(0, 16))

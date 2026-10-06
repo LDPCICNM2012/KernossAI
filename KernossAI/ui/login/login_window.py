@@ -27,6 +27,11 @@ from KernossAI.core.auth import login, registro
 from KernossAI.core.config import obtener_idioma, guardar_idioma
 from KernossAI.core.i18n import t, fijar_idioma, IDIOMAS_DISPONIBLES, obtener_idioma_activo
 from KernossAI.ui.login.home_alert import VentanaConfirmacionHogar
+from KernossAI.ui.modals.privacidad import (
+    VentanaPoliticaPrivacidad,
+    esta_politica_aceptada,
+    registrar_aceptacion_politica,
+)
 
 
 class PantallaLogin(ctk.CTk):
@@ -147,10 +152,30 @@ class PantallaLogin(ctk.CTk):
                                            dropdown_fg_color=COLOR_BG_CARD)
         self.combo_rol.pack(fill="x", padx=10)
 
+        # Aceptación obligatoria de Política de Privacidad & RGPD
+        f_politica_reg = ctk.CTkFrame(reg, fg_color="transparent")
+        f_politica_reg.pack(fill="x", padx=10, pady=(10, 2))
+
+        self.var_acepta_politica = ctk.BooleanVar(value=esta_politica_aceptada())
+        self.chk_politica = ctk.CTkCheckBox(
+            f_politica_reg, text="Acepto la Política de Privacidad & RGPD",
+            variable=self.var_acepta_politica, font=("Segoe UI", 10),
+            checkbox_width=18, checkbox_height=18,
+            fg_color=COLOR_ACCENT_PRIMARY, hover_color=COLOR_ACCENT_HOVER
+        )
+        self.chk_politica.pack(side="left")
+
+        btn_ver_pol = ctk.CTkButton(
+            f_politica_reg, text="📜 Leer", width=55, height=22,
+            font=("Segoe UI", 9, "bold"), fg_color=COLOR_BG_CARD,
+            hover_color=COLOR_ACCENT_HOVER, command=self._abrir_politica
+        )
+        btn_ver_pol.pack(side="right")
+
         ctk.CTkButton(reg, text=t("btn_registro"), height=40,
                       fg_color=COLOR_ACCENT_CYAN, hover_color=COLOR_ACCENT_CYAN_HOVER,
                       font=("Segoe UI", 13, "bold"),
-                      command=self._registrar).pack(fill="x", padx=10, pady=(12, 4))
+                      command=self._registrar).pack(fill="x", padx=10, pady=(10, 4))
         self.lbl_reg_error = ctk.CTkLabel(reg, text="", text_color=COLOR_DANGER, font=("Segoe UI", 11))
         self.lbl_reg_error.pack()
 
@@ -179,7 +204,16 @@ class PantallaLogin(ctk.CTk):
         else:
             self.destroy()
 
+    def _abrir_politica(self):
+        def _al_aceptar():
+            self.var_acepta_politica.set(True)
+        VentanaPoliticaPrivacidad(self, modo_inicio=False, on_aceptar=_al_aceptar)
+
     def _registrar(self):
+        if not self.var_acepta_politica.get():
+            self.lbl_reg_error.configure(text="⚠️ Debes aceptar la Política de Privacidad para crear una cuenta.")
+            return
+
         nombre = self.entry_reg_nombre.get().strip()
         email = self.entry_reg_email.get().strip().lower()
         password = self.entry_reg_pass.get()
@@ -201,5 +235,6 @@ class PantallaLogin(ctk.CTk):
         if not exito:
             self.lbl_reg_error.configure(text=error, text_color=COLOR_DANGER)
             return
+        registrar_aceptacion_politica()
         self.usuario_autenticado = sesion
         self.destroy()
