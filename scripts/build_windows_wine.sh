@@ -6,7 +6,7 @@
 set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR"
+cd "$DIR/.."
 
 echo "============================================================"
 echo "  KernossAI — Compilación de Windows (.exe) desde Arch Linux"
@@ -57,7 +57,7 @@ wine "$PYTHON_WIN" -m pip install pyinstaller
 
 echo ""
 echo "⚙️ Compilando KernossAI.exe para Windows..."
-wine "$PYTHON_WIN" build_desktop.py
+wine "$PYTHON_WIN" scripts/build_desktop.py
 
 # 3. Comprobar Inno Setup en Wine
 INNO_PATH="$WINEPREFIX/drive_c/Program Files (x86)/Inno Setup 6/ISCC.exe"

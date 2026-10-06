@@ -3,6 +3,8 @@ REM ─────────────────────────�
 REM KernossAI — Compilador para Windows (.exe y Setup)
 REM ─────────────────────────────────────────────────────────────
 
+cd /d "%~dp0\.."
+
 echo ============================================================
 echo   KernossAI — Compilacion para Windows (64-bit)
 echo ============================================================
@@ -15,7 +17,7 @@ python -m pip install pyinstaller
 
 echo.
 echo [2/3] Compilando ejecutable nativo (.exe) con PyInstaller...
-python build_desktop.py
+python scripts\build_desktop.py
 
 echo.
 echo [3/3] Comprobando Inno Setup para crear instalador (.exe Setup)...

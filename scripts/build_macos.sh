@@ -47,14 +47,15 @@ elif [ -d "$PROJECT_ROOT/dist/KernossAI/KernossAI.app" ]; then
 else
     echo "⚠️ No se encontró dist/KernossAI.app, buscando estructura generada..."
     mkdir -p "$DMG_TEMP/KernossAI"
-    cp -R "$DIR/dist/KernossAI/"* "$DMG_TEMP/KernossAI/"
+    cp -R "$PROJECT_ROOT/dist/KernossAI/"* "$DMG_TEMP/KernossAI/"
 fi
 
 # Crear acceso directo arrastrable a /Applications
 ln -s /Applications "$DMG_TEMP/Applications"
 
 # Crear la imagen .dmg usando la herramienta nativa de macOS hdiutil
-DMG_OUTPUT="$DIR/dist/KernossAI_macOS_Installer.dmg"
+mkdir -p "$PROJECT_ROOT/dist"
+DMG_OUTPUT="$PROJECT_ROOT/dist/KernossAI_macOS_Installer.dmg"
 rm -f "$DMG_OUTPUT"
 
 hdiutil create -volname "KernossAI Installer" -srcfolder "$DMG_TEMP" -ov -format UDZO "$DMG_OUTPUT"
