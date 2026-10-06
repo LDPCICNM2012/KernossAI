@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Linux Binary
         run: |
-          bash build_linux.sh
+          bash scripts/build_linux.sh
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
@@ -69,7 +69,7 @@ jobs:
 
       - name: Build Windows Executable (.exe)
         run: |
-          python build_desktop.py
+          python scripts/build_desktop.py
 
       - name: Install Inno Setup
         shell: pwsh
@@ -118,7 +118,7 @@ jobs:
 
       - name: Build macOS Application and DMG Installer
         run: |
-          bash build_macos.sh
+          bash scripts/build_macos.sh
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4

@@ -69,7 +69,7 @@ tmp/
 *.tmp
 *.bak
 
-# ── Scripts locales de compilación y empaquetado ──
-build_*.sh
-build_*.bat
-build_desktop.py
+# ── Scripts sueltos en la raiz ──
+/build_*.sh
+/build_*.bat
+/build_desktop.py
