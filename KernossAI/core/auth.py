@@ -941,6 +941,61 @@ def admin_desbanear(objetivo: str, tipo: str = "usuario") -> Tuple[bool, str]:
     return True, f"Desbaneo de {tipo} '{obj_clean}' completado con éxito."
 
 
+def admin_cambiar_rol(email: str, nuevo_rol: str) -> Tuple[bool, str]:
+    """
+    Permite a administradores/moderadores cambiar el rol de cualquier usuario a:
+    Alumno, Profesor, Alumno+, Profesor+, Admin.
+    Actualiza la base de datos Supabase, notifica a Render y actualiza la sesión si es el usuario activo.
+    """
+    token, _ = _leer_token()
+    if not token:
+        return False, "Sin sesión admin."
+
+    roles_validos = ["Alumno", "Profesor", "Alumno+", "Profesor+", "Admin"]
+    if nuevo_rol not in roles_validos:
+        return False, f"Rol no válido. Permitidos: {', '.join(roles_validos)}"
+
+    email_clean = email.strip().lower()
+
+    # 1. Actualizar directamente en Supabase
+    try:
+        sb_url = "https://bqgzpfqowctvslahqqdt.supabase.co/rest/v1"
+        sb_key = "sb_publishable_dZj9klqezhfFdHddC5l2_A_Swi8OsMQ"
+        sb_headers = {
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+            "Content-Type": "application/json"
+        }
+        r = requests.patch(
+            f"{sb_url}/usuarios?email=eq.{email_clean}",
+            json={"rol": nuevo_rol},
+            headers=sb_headers,
+            timeout=8
+        )
+    except Exception as e:
+        print(f"[Admin] Error actualizando rol en Supabase: {e}")
+
+    # 2. Notificar al backend de Render
+    try:
+        requests.post(
+            f"{BACKEND_URL}/admin/cambiar_rol",
+            json={"email": email_clean, "rol": nuevo_rol},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=8
+        )
+    except Exception:
+        pass
+
+    # 3. Si se modifica al usuario de la sesión activa en este equipo, reflejarlo inmediatamente
+    token_actual, sesion_actual = _leer_token()
+    if sesion_actual and sesion_actual.get("email", "").strip().lower() == email_clean:
+        sesion_actual["rol"] = nuevo_rol
+        _guardar_token(token_actual, sesion_actual)
+        registrar_cuenta_en_switcher(email_clean, sesion_actual.get("nombre"), nuevo_rol, token_actual, sesion_actual)
+
+    return True, f"Rol de '{email_clean}' actualizado a '{nuevo_rol}' con éxito."
+
+
 def admin_eliminar_usuario(email: str) -> Tuple[bool, str]:
     """Elimina definitivamente la cuenta de un usuario de Supabase y Render (Acción de Administrador)."""
     token, _ = _leer_token()

@@ -14,4 +14,5 @@ from KernossAI.ui.modulos.profesor import (
     ModuloCreadorEjercicios,
     ModuloCorrectorExamenes,
 )
+from KernossAI.ui.modulos.global_classrooms import ModuloGlobalClassrooms
 from KernossAI.ui.modulos.dashboard import DashboardEstudios

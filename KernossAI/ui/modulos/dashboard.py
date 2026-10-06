@@ -38,6 +38,7 @@ from KernossAI.core.theme import (
     COLOR_DANGER_HOVER,
     COLOR_WARNING,
     aplicar_icono,
+    centrar_ventana,
     construir_prompt,
     es_version_superior,
 )
@@ -74,6 +75,7 @@ from KernossAI.ui.modulos.apuntador import ModuloApuntador
 from KernossAI.ui.modulos.ayudante import ModuloAyudador
 from KernossAI.ui.modulos.agenda import ModuloCalendario
 from KernossAI.ui.modulos.profesor import ModuloCreadorEjercicios, ModuloCorrectorExamenes
+from KernossAI.ui.modulos.global_classrooms import ModuloGlobalClassrooms
 
 
 class DashboardEstudios(ctk.CTk):
@@ -135,7 +137,12 @@ class DashboardEstudios(ctk.CTk):
         frame_user = ctk.CTkFrame(self.sidebar, fg_color=COLOR_BG_CARD, corner_radius=12,
                                   border_width=1, border_color=COLOR_BORDER)
         frame_user.pack(fill="x", padx=15, pady=(4, 8))
-        icono = "🎓" if self.rol == "Alumno" else "👨‍🏫"
+        if "Profesor" in self.rol:
+            icono = "👨‍🏫"
+        elif self.rol in ["Admin", "Administrador"]:
+            icono = "👑"
+        else:
+            icono = "🎓"
         self.lbl_perfil_nombre = ctk.CTkLabel(frame_user, text=f"{icono} {self.nombre}",
                                               font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN, anchor="w")
         self.lbl_perfil_nombre.pack(fill="x", padx=12, pady=(8, 2))
@@ -144,8 +151,22 @@ class DashboardEstudios(ctk.CTk):
                                              font=("Segoe UI", 10), text_color=COLOR_TEXT_MUTED, anchor="w")
         self.lbl_perfil_email.pack(fill="x", padx=12)
 
-        rol_texto = t("lbl_rol_alumno") if self.rol == "Alumno" else t("lbl_rol_profesor")
-        badge_color = COLOR_ACCENT_PRIMARY if self.rol == "Alumno" else COLOR_ACCENT_PURPLE
+        if self.rol in ["Admin", "Administrador"]:
+            rol_texto = "👑 Admin"
+            badge_color = "#b45309"
+        elif self.rol == "Profesor+":
+            rol_texto = "⭐ Profesor+"
+            badge_color = "#7c3aed"
+        elif self.rol == "Profesor":
+            rol_texto = t("lbl_rol_profesor")
+            badge_color = COLOR_ACCENT_PURPLE
+        elif self.rol == "Alumno+":
+            rol_texto = "⭐ Alumno+"
+            badge_color = "#0284c7"
+        else:
+            rol_texto = t("lbl_rol_alumno")
+            badge_color = COLOR_ACCENT_PRIMARY
+
         self.lbl_perfil_rol = ctk.CTkLabel(frame_user, text=f"  {rol_texto}  ",
                                            font=("Segoe UI", 10, "bold"), fg_color=badge_color,
                                            corner_radius=8, text_color="white")
@@ -211,7 +232,17 @@ class DashboardEstudios(ctk.CTk):
         self._btn(t("mod_ayudante"), "ayudador")
         self._btn(t("mod_agenda"), "calendario")
 
-        if self.rol == "Profesor":
+        # ── Sección Diplomacia & Model UN (Global Classrooms) ──
+        ctk.CTkFrame(self.scroll_sidebar_modulos, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=11, pady=6)
+        ctk.CTkLabel(self.scroll_sidebar_modulos, text=t("hdr_diplomacia"),
+                     font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_CYAN).pack(anchor="w", padx=16, pady=(2, 2))
+
+        if self._tiene_acceso_global_classrooms():
+            self._btn(t("mod_global_classrooms"), "global_classrooms", color="#0e2a47")
+        else:
+            self._btn("🌐 Global Classrooms 🔒", "global_classrooms_bloqueado", color="#0e1726")
+
+        if self.rol in ["Profesor", "Profesor+", "Admin", "Administrador"]:
             ctk.CTkFrame(self.scroll_sidebar_modulos, height=1, fg_color=COLOR_BORDER).pack(fill="x", padx=11, pady=6)
             ctk.CTkLabel(self.scroll_sidebar_modulos, text=t("hdr_herramientas_docente"),
                          font=("Segoe UI", 10, "bold"), text_color=COLOR_ACCENT_PURPLE).pack(anchor="w", padx=16, pady=(2, 2))
@@ -237,7 +268,7 @@ class DashboardEstudios(ctk.CTk):
         frame_top_derecha = ctk.CTkFrame(self.header_top, fg_color="transparent")
         frame_top_derecha.grid(row=0, column=1, sticky="e")
 
-        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or self.sesion.get("is_premium", False)
+        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or (str(self.rol).strip() in ["Admin", "Administrador"]) or self.sesion.get("is_premium", False)
         if es_admin:
             self.btn_admin_top = ctk.CTkButton(
                 frame_top_derecha, text="👑 Moderación & Bans",
@@ -291,7 +322,7 @@ class DashboardEstudios(ctk.CTk):
         VentanaNovedadesIA(self)
 
     def _abrir_soporte_e2ee(self):
-        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or self.sesion.get("is_premium", False)
+        es_admin = (self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or (str(self.rol).strip() in ["Admin", "Administrador"]) or self.sesion.get("is_premium", False)
         if es_admin:
             VentanaBandejaSoporte(self, self.sesion)
         else:
@@ -307,22 +338,40 @@ class DashboardEstudios(ctk.CTk):
         self.rol = nueva_sesion.get("rol", "Alumno")
         self.is_premium = nueva_sesion.get("is_premium", False)
 
-        icono = "🎓" if self.rol == "Alumno" else "👨‍🏫"
+        if "Profesor" in self.rol:
+            icono = "👨‍🏫"
+        elif self.rol in ["Admin", "Administrador"]:
+            icono = "👑"
+        else:
+            icono = "🎓"
         if hasattr(self, "lbl_perfil_nombre"):
             self.lbl_perfil_nombre.configure(text=f"{icono} {self.nombre}")
         if hasattr(self, "lbl_perfil_email"):
             self.lbl_perfil_email.configure(text=self.email)
         if hasattr(self, "lbl_perfil_rol"):
-            rol_texto = t("lbl_rol_alumno") if self.rol == "Alumno" else t("lbl_rol_profesor")
-            badge_color = COLOR_ACCENT_PRIMARY if self.rol == "Alumno" else COLOR_ACCENT_PURPLE
+            if self.rol in ["Admin", "Administrador"]:
+                rol_texto = "👑 Admin"
+                badge_color = "#b45309"
+            elif self.rol == "Profesor+":
+                rol_texto = "⭐ Profesor+"
+                badge_color = "#7c3aed"
+            elif self.rol == "Profesor":
+                rol_texto = t("lbl_rol_profesor")
+                badge_color = COLOR_ACCENT_PURPLE
+            elif self.rol == "Alumno+":
+                rol_texto = "⭐ Alumno+"
+                badge_color = "#0284c7"
+            else:
+                rol_texto = t("lbl_rol_alumno")
+                badge_color = COLOR_ACCENT_PRIMARY
             self.lbl_perfil_rol.configure(text=f"  {rol_texto}  ", fg_color=badge_color)
 
         if hasattr(self, "btn_tutoria_top"):
-            txt_t = t("btn_tutoria_alumno") if self.rol == "Alumno" else t("btn_tutoria_profesor")
-            fg_t = "#1e1b4b" if self.rol == "Alumno" else "#312e81"
+            txt_t = t("btn_tutoria_alumno") if "Alumno" in self.rol else t("btn_tutoria_profesor")
+            fg_t = "#1e1b4b" if "Alumno" in self.rol else "#312e81"
             self.btn_tutoria_top.configure(text=txt_t, fg_color=fg_t)
 
-        es_admin = (self.email in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or self.is_premium
+        es_admin = (self.email in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]) or (str(self.rol).strip() in ["Admin", "Administrador"]) or self.is_premium
         if hasattr(self, "btn_admin_top"):
             if es_admin:
                 self.btn_admin_top.pack(side="right", padx=(6, 0))
@@ -865,7 +914,60 @@ class DashboardEstudios(ctk.CTk):
 
         self.frame_home.grid(row=0, column=0, sticky="nsew")
 
+    def _tiene_acceso_global_classrooms(self) -> bool:
+        rol_clean = str(self.rol).strip()
+        if rol_clean in ["Alumno+", "Profesor+", "Admin", "Administrador"]:
+            return True
+        if self.email.lower() in ["kernossai@support.com", "admin@kernosai.com", "soporte@kernosai.com"]:
+            return True
+        if self.sesion.get("is_premium", False):
+            return True
+        return False
+
+    def _mostrar_modal_bloqueo_gc(self):
+        modal = ctk.CTkToplevel(self)
+        modal.title("🔒 Acceso Exclusivo — Global Classrooms")
+        modal.geometry("540x370")
+        modal.configure(fg_color=COLOR_BG_DARK)
+        modal.transient(self)
+        aplicar_icono(modal)
+        centrar_ventana(modal, 540, 370)
+
+        card = ctk.CTkFrame(modal, fg_color=COLOR_BG_CARD, corner_radius=14, border_width=1, border_color=COLOR_BORDER)
+        card.pack(fill="both", expand=True, padx=20, pady=20)
+
+        ctk.CTkLabel(card, text="🔒 Módulo Exclusivo — Global Classrooms (MUN)",
+                     font=("Segoe UI", 16, "bold"), text_color=COLOR_ACCENT_SKY).pack(pady=(22, 10))
+
+        desc = (
+            "El módulo de Inteligencia Diplomática 360°, Búsqueda Masiva de la ONU,\n"
+            "Position Papers y Asesoría de Debate está reservado exclusivamente\n"
+            "para perfiles con los rangos:\n\n"
+            "  ⭐ Alumno+\n"
+            "  ⭐ Profesor+\n"
+            "  👑 Administrador\n\n"
+            "Si estás preparando el programa oficial de Global Classrooms o Modelo UN,\n"
+            "solicita a los moderadores la activación de tu rango Alumno+ o Profesor+\n"
+            "a través del canal oficial de Soporte o contactando al administrador."
+        )
+        ctk.CTkLabel(card, text=desc, font=("Segoe UI", 11), text_color=COLOR_TEXT_MAIN, justify="center").pack(padx=20, pady=10)
+
+        f_btns = ctk.CTkFrame(card, fg_color="transparent")
+        f_btns.pack(pady=(12, 16))
+
+        ctk.CTkButton(f_btns, text="🛡️ Abrir Soporte Oficial", width=170, height=34,
+                     font=("Segoe UI", 11, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+                     hover_color=COLOR_ACCENT_HOVER,
+                     command=lambda: [modal.destroy(), self._abrir_soporte_e2ee()]).pack(side="left", padx=6)
+        ctk.CTkButton(f_btns, text="Cerrar", width=100, height=34,
+                     font=("Segoe UI", 11), fg_color=COLOR_BG_SURFACE,
+                     hover_color=COLOR_BORDER, command=modal.destroy).pack(side="left", padx=6)
+
     def _abrir_modulo(self, modulo_id):
+        if modulo_id == "global_classrooms_bloqueado":
+            self._mostrar_modal_bloqueo_gc()
+            return
+
         self.frame_home.grid_forget()
 
         if self._modulo_activo:
@@ -886,6 +988,7 @@ class DashboardEstudios(ctk.CTk):
             "examen": "🎯 Generador y Práctica de Exámenes",
             "ayudador": "🤖 Tutor y Ayudante de Dudas Académicas",
             "calendario": "📅 Agenda y Planificador de Estudios",
+            "global_classrooms": "🌐 Global Classrooms & Model United Nations (MUN)",
             "creador": "✏️ Creador de Ejercicios Didácticos",
             "corrector": "📋 Corrector Inteligente de Exámenes"
         }
@@ -907,6 +1010,8 @@ class DashboardEstudios(ctk.CTk):
                 self._modulos[modulo_id] = ModuloAyudador(self.frame_contenido, sesion=self.sesion)
             elif modulo_id == "calendario":
                 self._modulos[modulo_id] = ModuloCalendario(self.frame_contenido)
+            elif modulo_id == "global_classrooms":
+                self._modulos[modulo_id] = ModuloGlobalClassrooms(self.frame_contenido, sesion=self.sesion)
             elif modulo_id == "creador":
                 self._modulos[modulo_id] = ModuloCreadorEjercicios(self.frame_contenido)
             elif modulo_id == "corrector":

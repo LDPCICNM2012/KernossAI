@@ -26,6 +26,7 @@ from KernossAI.core.auth import (
     admin_listar_usuarios,
     admin_aplicar_ban,
     admin_desbanear,
+    admin_cambiar_rol,
     admin_ver_mensajes_raw,
     admin_eliminar_usuario,
 )
@@ -140,6 +141,29 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                                          hover_color="#b91c1c", command=self._aplicar_ban_manual)
         btn_ejecutar_ban.pack(fill="x", padx=20, pady=(0, 20))
 
+        # Tarjeta de Cambio Rápido de Roles
+        frame_roles = ctk.CTkFrame(self.tab_ban_manual, fg_color=COLOR_BG_SURFACE, corner_radius=12, border_width=1, border_color=COLOR_BORDER)
+        frame_roles.pack(fill="x", padx=30, pady=(0, 25))
+
+        ctk.CTkLabel(frame_roles, text="👑 Asignación Directa de Rol (Alumno / Profesor / Alumno+ / Profesor+ / Admin)",
+                     font=("Segoe UI", 13, "bold"), text_color=COLOR_TEXT_MAIN).pack(anchor="w", padx=20, pady=(15, 10))
+
+        ctk.CTkLabel(frame_roles, text="Correo Electrónico del Usuario:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
+        self.entry_rol_email = ctk.CTkEntry(frame_roles, font=("Segoe UI", 11), placeholder_text="ej: estudiante@colegio.com")
+        self.entry_rol_email.pack(fill="x", padx=20, pady=(2, 10))
+
+        ctk.CTkLabel(frame_roles, text="Nuevo Rol a Asignar:", font=("Segoe UI", 11, "bold"), text_color=COLOR_TEXT_MUTED).pack(anchor="w", padx=20)
+        self.combo_rol_manual = ctk.CTkOptionMenu(
+            frame_roles, values=["Alumno", "Profesor", "Alumno+", "Profesor+", "Admin"],
+            font=("Segoe UI", 11, "bold"), fg_color="#312e81", button_color="#4338ca"
+        )
+        self.combo_rol_manual.pack(fill="x", padx=20, pady=(2, 15))
+
+        btn_guardar_rol = ctk.CTkButton(frame_roles, text="💾 Asignar Rol en Base de Datos", height=38,
+                                        font=("Segoe UI", 12, "bold"), fg_color=COLOR_ACCENT_PRIMARY,
+                                        hover_color=COLOR_ACCENT_HOVER, command=self._asignar_rol_manual_btn)
+        btn_guardar_rol.pack(fill="x", padx=20, pady=(0, 20))
+
     def _cargar_usuarios(self):
         def _thread():
             ok, usuarios = admin_listar_usuarios()
@@ -230,9 +254,46 @@ class VentanaAdminModeracion(ctk.CTkToplevel):
                               font=("Segoe UI", 10, "bold"), fg_color=COLOR_SUCCESS, hover_color="#15803d",
                               command=lambda hw=hwid: self._desban_quick(hw, "hwid")).pack(side="left", padx=2)
 
+            # Selector de rol directo (Alumno / Profesor / Alumno+ / Profesor+ / Admin)
+            combo_rol = ctk.CTkOptionMenu(
+                f_actions,
+                values=["Alumno", "Profesor", "Alumno+", "Profesor+", "Admin"],
+                width=105, height=28,
+                font=("Segoe UI", 10, "bold"),
+                fg_color="#1e1b4b" if "Profesor" in rol else ("#0f2942" if "Alumno" in rol else "#78350f"),
+                button_color="#312e81" if "Profesor" in rol else ("#155e75" if "Alumno" in rol else "#b45309"),
+                dropdown_fg_color=COLOR_BG_CARD,
+                command=lambda nuevo, em=email: self._cambiar_rol_usuario(em, nuevo)
+            )
+            roles_validos = ["Alumno", "Profesor", "Alumno+", "Profesor+", "Admin"]
+            combo_rol.set(rol if rol in roles_validos else "Alumno")
+            combo_rol.pack(side="left", padx=3)
+
             ctk.CTkButton(f_actions, text="🗑️", width=30, height=28,
                           font=("Segoe UI", 10), fg_color="#7f1d1d", hover_color="#991b1b",
                           command=lambda em=email: self._eliminar_usuario_admin(em)).pack(side="left", padx=2)
+
+    def _asignar_rol_manual_btn(self):
+        email = self.entry_rol_email.get().strip().lower()
+        rol = self.combo_rol_manual.get()
+        if not email or "@" not in email:
+            messagebox.showwarning("Atención", "Introduce un correo electrónico válido.")
+            return
+        self._cambiar_rol_usuario(email, rol)
+
+    def _cambiar_rol_usuario(self, email: str, nuevo_rol: str):
+        def _thread():
+            ok, msg = admin_cambiar_rol(email, nuevo_rol)
+            if ok:
+                for u in self._lista_usuarios_cache:
+                    if u.get("email", "").strip().lower() == email.strip().lower():
+                        u["rol"] = nuevo_rol
+                self.after(0, lambda: self._filtrar_usuarios())
+                self.after(0, lambda: messagebox.showinfo("Rol Actualizado", f"El rol de {email} ha sido actualizado a '{nuevo_rol}' con éxito."))
+            else:
+                self.after(0, lambda: messagebox.showerror("Error al cambiar rol", msg))
+
+        threading.Thread(target=_thread, daemon=True).start()
 
     def _ban_ip_manual_dialog(self):
         dialogo = ctk.CTkInputDialog(

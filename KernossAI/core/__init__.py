@@ -70,6 +70,7 @@ from KernossAI.core.auth import (
     admin_listar_usuarios,
     admin_aplicar_ban,
     admin_desbanear,
+    admin_cambiar_rol,
     admin_ver_mensajes_raw,
     admin_eliminar_usuario,
     admin_obtener_tickets_soporte,
