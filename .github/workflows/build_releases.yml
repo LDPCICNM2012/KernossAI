@@ -105,14 +105,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
+          - os: macos-15-intel
             arch: x86_64
-            name: Intel (x86_64)
+            name: Intel (x86_64 - Sequoia)
             artifact_name: KernossAI-macOS-Intel-x64
             dmg_name: KernossAI_macOS_Intel_x64.dmg
-          - os: macos-14
+          - os: macos-15
             arch: arm64
-            name: Apple Silicon (arm64)
+            name: Apple Silicon (arm64 - Sequoia)
             artifact_name: KernossAI-macOS-AppleSilicon-arm64
             dmg_name: KernossAI_macOS_AppleSilicon_arm64.dmg
     steps:
