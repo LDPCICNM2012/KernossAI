@@ -142,12 +142,14 @@ class VentanaAjustes(ctk.CTkToplevel):
         self.configure(fg_color=COLOR_BG_DARK)
         self.transient(master)
         self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", self._cerrar)
         aplicar_icono(self)
         centrar_ventana(self, 620, 740)
         
         self.sesion_actual = getattr(master, "sesion", {})
         self.email_actual = self.sesion_actual.get("email", "").lower()
         self.rol_original = self.sesion_actual.get("rol", "Alumno")
+        self.tema_guardado_inicial = obtener_tema()
         
         self._build_ui()
 
@@ -551,7 +553,7 @@ class VentanaAjustes(ctk.CTkToplevel):
 
     def _al_cambiar_tema_live(self, valor):
         nuevo_modo = "light" if "Blanco" in valor else "dark"
-        aplicar_tema(nuevo_modo)
+        guardar_tema(nuevo_modo)
 
     def _guardar(self):
         # 1. Guardar y aplicar tema visual (Blanco / Oscuro)
@@ -626,7 +628,7 @@ class VentanaAjustes(ctk.CTkToplevel):
     def _cerrar(self, guardado: bool = False):
         tts_engine.detener()
         if not guardado:
-            # Si el usuario cierra sin guardar, restablecer el tema previo guardado
-            aplicar_tema(obtener_tema())
+            # Cancelar o cerrar con la X debe descartar el cambio visual provisional.
+            guardar_tema(self.tema_guardado_inicial)
+            aplicar_tema(self.tema_guardado_inicial)
         self.destroy()
-
